@@ -1,16 +1,21 @@
 var AutopUTIL = {
 
-	coinflip: function() : boolean {
+	coinflip: function() {
 		return (this.randint(0, 1) > 0);
 	},
 	
-	randint: function(min : number, max : number) : number {
+	randint: function(min, max) {
 		let range = max - min + 1;
 		return (((Math.random() * range) | 0) + min);
 	},
 	
-	chanceOneIn: function(v: number) : boolean {
+	chanceOneIn: function(v) {
 		return (this.randint(1, v) === v);
+	},
+	
+	randpow: function() {
+		let _r = Math.random();
+		return (_r * (_r > 0.5 ? _r : (1 - _r)));
 	}
 
 }
