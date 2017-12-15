@@ -7,7 +7,7 @@ var CFG = {
     scene: {
         preload: preload,
         create: create,
-		update: update
+		//update: update //tmp
     },
 	//other
 	custom: {
@@ -22,9 +22,9 @@ var CFG = {
 		gen_path: {
 			min_path_x_length: 0.4,
 			max_path_x_length: 0.6,
-			line_probability: 3,
+			line_probability: 3000, //tmp
 			long_short_probability: 3,
-			double_segment_probability: 10,
+			double_segment_probability: 1000, //tmp
 			segment_avg: 0.5,
 			first_line_length: [20, 50]
 		}
@@ -50,7 +50,7 @@ function config_preprocess(cfg, rwh, _w, _h) {
 	cfg.gen_path.max_y = this.game.config[_h] - cfg.gen_path.min_y;
 	cfg.gen_path.min_path_x_length = Math.round(this.game.config[_w] * cfg.gen_path.min_path_x_length);
 	cfg.gen_path.max_path_x_length = Math.round(this.game.config[_w] * cfg.gen_path.max_path_x_length);
-	cfg.gen_path.min_segment_x_length = cfg.playerWidthHeight[0];
+	cfg.gen_path.min_segment_x_length = cfg.playerWidthHeight[0] * 3;
 	cfg.gen_path.min_segment_y_length = cfg.playerWidthHeight[1];
 	cfg.gen_path.rwh = rwh;
 	cfg.gen_path.screen_length = CFG[_w];
@@ -69,7 +69,7 @@ function create ()
 	PathGenerator = new GenPath(cfg.gen_path, this);
 	
 	var _last_line = false;
-	for(let _i = 0; _i < 10; _i++) {		
+	for(let _i = 0; _i < 2; _i++) {		
 		let _p = PathGenerator.generate(_last_line, AutopUTIL.coinflip(), AutopUTIL.coinflip());
 		_last_line = _p.line;
 		paths.push(_p.path);
@@ -109,7 +109,7 @@ function create ()
         verticalAdjust: true
 	}
 	
-	player = multipath_follower(this, paths, follower_config, 'player');
+	//player = multipath_follower(this, paths, follower_config, 'player');//tmp
 }
 
 function update() {		

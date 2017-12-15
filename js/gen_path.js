@@ -59,6 +59,7 @@ class GenPath {
 			let _prev_length_y = prev_line.y2 - prev_line.y1;
 			let segment_length = segment_avg_length * segment_coeff;
 			let _pos = segment_length / _prev_length_x;			
+			//console.log(max_scale);//-tmp
 			if(segment_type === 'line') {
 				if(max_scale !== false && Math.abs(_pos) > Math.abs(max_scale)) {
 					_pos = max_scale * 0.4 + max_scale * 0.5 * Math.random();
@@ -72,8 +73,14 @@ class GenPath {
 				new_point[0] = prev_line.x2 + segment_length;
 				let _cp1_x_length = this.random_x_length(is_long, segment_length);
 				let _cp2_x_length = this.random_x_length(is_long, segment_length);
-				cp1[0] = prev_line.x2 + _cp1_x_length;
-				cp1[1] = prev_line.y2 + _prev_length_y * ((_cp1_x_length + _prev_length_x) / _prev_length_x);
+				_pos = (_prev_length_x + _cp1_x_length) / _prev_length_x;
+				if(_pos < 1.2) _pos = 1.2;
+				console.log(_pos);//tmp
+				let _cp1 = prev_line.getPoint(_pos);
+				//cp1[0] = prev_line.x2 + _cp1_x_length;
+				cp1[0] = _cp1.x;
+				//cp1[1] = prev_line.y2 + _prev_length_y * ((_cp1_x_length + _prev_length_x) / _prev_length_x);
+				cp1[1] = _cp1.y;
 				cp2[0] = new_point[0] - _cp2_x_length;				
 				
 				//new_point[1]				
@@ -104,12 +111,14 @@ class GenPath {
 					cp2[1] = new_point[1] - _c;
 				}				
 				
+				if(cp2[0] < cp1[0] && ((cp1[1] <= prev_line.y2 && _s === this.cfg.max_y) || (cp1[1] > prev_line.y2 && _s === this.cfg.min_y))) cp2[0] = new_point[0] - (new_point[0] - cp1[0]) * Math.random();
+				
 				prev_line = new Phaser.Geom.Line(cp2[0], cp2[1], new_point[0], new_point[1]);
 				path.cubicBezierTo(new_point[0], new_point[1], cp1[0], cp1[1], cp2[0], cp2[1]);
 				console.log(new_point[0], new_point[1], cp1[0], cp1[1], cp2[0], cp2[1]);//tmp
 				this.gr.strokeCircle(new_point[0], new_point[1], 2);//tmp
-				this.gr2.strokeCircle(cp2[0], cp2[1], 3);//tmp
 				this.gr2.strokeCircle(cp1[0], cp1[1], 6);//tmp
+				this.gr2.strokeCircle(cp2[0], cp2[1], 3);//tmp				
 			}
 		}
 	}
