@@ -26,7 +26,7 @@ class GenPath {
 		this.gr.strokeCircle(start[0], start[1], 2);//tmp
 		
 		if(prev_line === undefined || prev_line === false) {
-			let _l = start[0] + AutopUTIL.randint(...this.cfg.first_line_length);
+			let _l = start[0] + AutopRand.randint(...this.cfg.first_line_length);
 			prev_line = new Phaser.Geom.Line(start[0], start[1], _l, start[1])
 			path.lineTo(_l, start[1]);
 			this.gr.strokeCircle(_l, start[1], 2);//tmp
@@ -37,8 +37,8 @@ class GenPath {
 				path: path,
 				line: prev_line
 			};
-			segment_type = (AutopUTIL.chanceOneIn(this.cfg.line_probability) && segment_type !== undefined && segment_type !== 'line') ? 'line' : 'curve';
-			let segment_coeff = AutopUTIL.randpow();
+			segment_type = (AutopRand.chanceOneIn(this.cfg.line_probability) && segment_type !== undefined && segment_type !== 'line') ? 'line' : 'curve';
+			let segment_coeff = AutopRand.randpow();
 			if(many_segments) segment_coeff = 1 - segment_coeff;
 			if(prev_line.y2 === prev_line.y1) {
 				max_scale = false;
@@ -124,17 +124,17 @@ class GenPath {
 	}
 	
 	random_x_length(is_long, segment_length) {		
-		return (segment_length * this.is_long_invert(is_long) * (AutopUTIL.chanceOneIn(this.cfg.double_segment_probability) ? 2 : 1));		
+		return (segment_length * this.is_long_invert(is_long) * (AutopRand.chanceOneIn(this.cfg.double_segment_probability) ? 2 : 1));		
 	}	
 	
 	is_long_invert(is_long) {
-		let _r = AutopUTIL.randpow();		
+		let _r = AutopRand.randpow();		
 		if(this.is_long_chance(is_long)) _r = 1 - _r;
 		return _r;
 	}		
 	
 	is_long_chance(is_long) {
-		let _p = AutopUTIL.chanceOneIn(this.cfg.long_short_probability);
+		let _p = AutopRand.chanceOneIn(this.cfg.long_short_probability);
 		return ((is_long && !_p) || (!is_long && _p));
 	}
 

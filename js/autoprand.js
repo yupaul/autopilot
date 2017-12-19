@@ -1,4 +1,4 @@
-var AutopUTIL = {
+var AutopRand = {
 
 	coinflip: function() {
 		return (this.randint(0, 1) > 0);
