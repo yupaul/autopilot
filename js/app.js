@@ -24,10 +24,11 @@ var AutopCFG = {
 		gridCellTextureName: 'grid_cell',
 		showPaths: false,//tmp
 		randomizeButtons: true, //tmp
+		gameOver: true, //tmp
 		showPathStyle: [1, 0xffffff, 1],
 		wallWidth: 10,
 		wallStyle: 0xff0000,
-		wallOpenAlpha: 0.3,
+		wallOpenAlpha: 0.2,
 		wallTextureName: 'wall',
 		buttonEnableDelay: [600, 1000],
 		rtreeCoeff: 1.2,
@@ -37,7 +38,7 @@ var AutopCFG = {
 			line_probability: 3,
 			long_short_probability: 12,			
 			small_jump_coeff: 0.35,
-			min_max_segments: [3, 5],
+			min_max_segments: [4, 6],
 			first_line_length: [60, 120]
 		},
 		controls: {
@@ -305,10 +306,10 @@ multipath_follower: function(config, texture) {
 					
 					if(this.cfg._correct_selected) {						
 						let prev_tail = _all_pos[_all_pos.length - 1][0].tail;
-						let pobj_wrong = AutopLIB.generate_path(prev_tail);
 						let pobj_correct = AutopLIB.generate_path(prev_tail);		
 						pobj_correct.wall = this.sc.add.image(Math.round(pobj_correct.points.getEndPoint().x), 0, this.cfg.wallTextureName).setOrigin(0);
-						AutopLIB.generate_obstacles(pobj_correct);
+						let obs = AutopLIB.generate_obstacles(pobj_correct);
+						let pobj_wrong = AutopLIB.generate_path(prev_tail, obs);
 						this.sc.registry.get('path_objects').push([pobj_correct, pobj_wrong]);							
 					}
 				}				
@@ -351,6 +352,7 @@ multipath_follower: function(config, texture) {
 	},
 	
 	generate_obstacles: function(path_object) {
+		let out = new Phaser.Structs.Map();
 		let _pcoords = path_object.points.grid.values();
 		let min_x = parseInt(_pcoords[0].split('_')[0]);
 		let max_x = parseInt(_pcoords[_pcoords.length - 1].split('_')[0]);
@@ -358,12 +360,20 @@ multipath_follower: function(config, texture) {
 		let max_y = Phaser.Math.Snap.Floor(this.cfg.heightField, this.cfg.grid);
 		for(let x = min_x; x < (max_x - this.cfg.grid); x += this.cfg.grid) {
 			for(let y = min_y; y < max_y; y += this.cfg.grid) {
-				if(_pcoords.indexOf([x, y].join('_')) == -1 && !path_object.points.rtree.collides({minX: x, maxX: x + this.cfg.grid, minY: y, maxY: y + this.cfg.grid})) this.sc.add.image(0, 0, this.cfg.gridCellTextureName).setOrigin(0).setPosition(x, y);
+				if(_pcoords.indexOf([x, y].join('_')) == -1 && !path_object.points.rtree.collides({minX: x, maxX: x + this.cfg.grid, minY: y, maxY: y + this.cfg.grid})) {
+					this.sc.add.image(0, 0, this.cfg.gridCellTextureName).setOrigin(0).setPosition(x, y);
+					if(!out.has(x)) {
+						out.set(x, [y]);
+					} else {
+						out.get(x).push(y);
+					}
+				}
 			}
 		}
+		return out;
 	},
 	
-	generate_path: function(start) {
+	generate_path: function(start, obstacles) {
 		let cfg = this.cfg.gen_path;
 		var is_first, path, first_xy, max_x, last_xy, next_y_section;
 		
@@ -478,7 +488,9 @@ multipath_follower: function(config, texture) {
 	},
 	
 	gameover: function() {
-		this.sc.time.addEvent({delay: 1000, callback: function() {
+		if(!this.cfg.gameOver) return;
+		this.sc.cameras.cameras.forEach(function(c) {c.fade(1200);});
+		this.sc.time.addEvent({delay: 1100, callback: function() {
 			document.getElementById(AutopCFG.parent).innerHTML = '<div style="vertical-align:middle;padding-top:30px"><h1 style="font-size:40px;text-align:center">Game Over<br /><a href="javascript:;" onclick="javascript:document.location.reload();">Restart</a></h1></div>'
 		}});
 	}
@@ -523,11 +535,11 @@ function create ()
 	AutopLIB.show_path(pobj);	
 	AutopLIB.generate_obstacles(pobj);
 	
-	for(let i = 0; i < 3; i++) {
-		pobj_wrong = AutopLIB.generate_path(prev_tail);
+	for(let i = 0; i < 3; i++) {		
 		pobj_correct = AutopLIB.generate_path(prev_tail);
 		pobj_correct.wall = this.add.image(Math.round(pobj_correct.points.getEndPoint().x), 0, cfg.wallTextureName).setOrigin(0);
-		AutopLIB.generate_obstacles(pobj_correct);
+		let obs = AutopLIB.generate_obstacles(pobj_correct);
+		pobj_wrong = AutopLIB.generate_path(prev_tail, obs);
 		prev_tail = pobj_correct.tail;
 		this.registry.get('path_objects').push([pobj_correct, pobj_wrong]);		
 	}
