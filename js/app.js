@@ -15,7 +15,7 @@ var AutopCFG = {
 		playerFillStyle: 0x0000ff,
 		playerTrianglePoints: [0,0,0,30,15,15],
 		playerWidthHeight: [30, 30],		
-		speed: 125,
+		speed: 105,
 		cameraOffset: 0.2,
 		start_x: 10,
 		heightControlsRate: 0.2,
@@ -23,17 +23,21 @@ var AutopCFG = {
 		gridCellFillStyle: 0x000000,
 		gridCellTextureName: 'grid_cell',
 		showPaths: false,//tmp
+		randomizeButtons: true, //tmp
 		showPathStyle: [1, 0xffffff, 1],
-		wallWidth: 20,
+		wallWidth: 10,
 		wallStyle: 0xff0000,
-		wallOpenAlpha: 0.5,
+		wallOpenAlpha: 0.3,
 		wallTextureName: 'wall',
+		buttonEnableDelay: [600, 1000],
+		rtreeCoeff: 1.2,
 		gen_path: {
 			path_x_spread: 0.1,
-			scale_y: 5,
+			scale_y: 6,
 			line_probability: 3,
-			long_short_probability: 3,			
-			min_max_segments: [3, 6],
+			long_short_probability: 12,			
+			small_jump_coeff: 0.35,
+			min_max_segments: [3, 5],
 			first_line_length: [60, 120]
 		},
 		controls: {
@@ -69,7 +73,7 @@ class AutopPointsPath {
 	getPointsRects(offset, grid_size) {		
 		let out = [];
 		let next_grid_x_, next_grid_x = false;
-		for(let i = 0; i < this.points.length; ++i) {			
+		for(let i = 0; i < this.points.length; i++) {			
 			if(grid_size) {
 				next_grid_x_ = next_grid_x;
 				if(next_grid_x) {
@@ -82,8 +86,21 @@ class AutopPointsPath {
 					this.grid.set(i, [next_grid_x, Phaser.Math.Snap.Floor(this.points[i].y, grid_size)].join('_'));					
 				}
 			}
-			out.push({minX: this.points[i].x - offset, minY: this.points[i].y - offset,
-			maxX: this.points[i].x + offset, maxY: this.points[i].y + offset});
+			let offset2 = offset * 2;
+			let _d = 0;
+			let offsets = {minX: offset, minY: offset,
+			maxX: offset, maxY: offset};
+			if(i > 0) {				
+				['x', 'y'].forEach((xy) => {
+					_d = Math.abs(this.points[i][xy] - this.points[i - 1][xy]);
+					if(_d > offset2) {
+						let _k = this.points[i][xy] > this.points[i - 1][xy] ? ('min'+xy.toUpperCase()) : ('max'+xy.toUpperCase());
+						offsets[_k] = Math.ceil(_d) - offset + 2;
+					}
+				});				
+			}
+			out.push({minX: this.points[i].x - offsets.minX, minY: this.points[i].y - offsets.minY,
+			maxX: this.points[i].x + offsets.maxX, maxY: this.points[i].y + offsets.maxY});
 		}
 		return out;
 	}
@@ -129,7 +146,7 @@ class AutopPointsPath {
 		return out.copy(this.points[this.points.length - 1]);
 	}
 	
-	getPoint(i, out) {
+	getPoint(i, out) {		
 		if (out === undefined) { out = new Phaser.Math.Vector2(); }
 		if(i === 0) return out.copy(this.points[0]);
 		if(i < 1) i = this.points.length * i;
@@ -152,6 +169,7 @@ var AutopLIB = {
 		this.cfg.heightField = this.sc.game.config.height - this.cfg.heightControls;
 	
 		this.cfg.grid = (this.cfg.playerWidthHeight[0] + this.cfg.playerWidthHeight[1]);
+		this.cfg.rtreeOffset = Math.round((this.cfg.playerWidthHeight[0] + this.cfg.playerWidthHeight[1]) * this.cfg.rtreeCoeff);
 		
 		this.cfg.gen_path.start_x = this.cfg.start_x;
 		this.cfg.gen_path.min_y = this.cfg.playerWidthHeight[1];
@@ -180,8 +198,11 @@ multipath_follower: function(config, texture) {
     let _player = this.sc.add.follower(_p, 0, 0, texture);		
 	
 	config.onComplete = () => {
-			let _path = this.sc.registry.get('paths').shift();
-			if(_path === undefined) return;
+			let _path = this.sc.registry.get('paths').shift();			
+			if(_path === undefined) {
+				AutopLIB.gameover();
+				return;
+			}
 			let _clen = _path.getCurveLengths();
 			config.duration = Math.round((_clen[_clen.length - 1] / this.cfg.speed) * 1000);
 			_player.setPath(_path, config);
@@ -245,11 +266,13 @@ multipath_follower: function(config, texture) {
 	
 	controls_buttons_enable: function() {
 		let _this = this;
-		this.sc.time.addEvent({delay: AutopRand.randint(400, 600), callback: function() {
+		this.sc.time.addEvent({delay: AutopRand.randint(...this.cfg.buttonEnableDelay), callback: function() {
 			_this.cfg._buttons_enabled = true;
 			let _pos = _this.sc.registry.get('path_objects')[0];
+			let btn_order = [0, 1];
+			if(_this.cfg.randomizeButtons && AutopRand.coinflip()) btn_order.reverse();
 			for(let _i = 0; _i < _pos.length; _i++) {
-				_this.controls_set_path(_pos[_i].points, _i, !_i);
+				_this.controls_set_path(_pos[_i].points, btn_order[_i], !_i);
 			}
 		}, callbackScope: this});		
 	},
@@ -270,14 +293,15 @@ multipath_follower: function(config, texture) {
 					}					
 					this.controls_buttons_enable();
 				} else {
-					this.cfg._correct_selected = !i;
+					this.cfg._correct_selected = buttons[i].is_correct;
 					let _all_pos = this.sc.registry.get('path_objects');
-					let _pos = _all_pos.shift();					
+					let _pos = _all_pos.shift();						
+					let _pos_i = this.cfg._correct_selected ? 0 : 1;
 					let _wall = this.sc.registry.get('walls').shift();
 					if(_wall) _wall.setAlpha(this.cfg.wallOpenAlpha);
-					if(_pos[i].wall !== undefined) this.sc.registry.get('walls').push(_pos[i].wall);
-					this.sc.registry.get('paths').push(_pos[i].points);
-					AutopLIB.show_path(_pos[i]);
+					if(_pos[_pos_i].wall !== undefined) this.sc.registry.get('walls').push(_pos[_pos_i].wall);
+					this.sc.registry.get('paths').push(_pos[_pos_i].points);
+					AutopLIB.show_path(_pos[_pos_i]);
 					
 					if(this.cfg._correct_selected) {						
 						let prev_tail = _all_pos[_all_pos.length - 1][0].tail;
@@ -332,7 +356,7 @@ multipath_follower: function(config, texture) {
 		let max_x = parseInt(_pcoords[_pcoords.length - 1].split('_')[0]);
 		let min_y = 0;
 		let max_y = Phaser.Math.Snap.Floor(this.cfg.heightField, this.cfg.grid);
-		for(let x = min_x; x < max_x; x += this.cfg.grid) {
+		for(let x = min_x; x < (max_x - this.cfg.grid); x += this.cfg.grid) {
 			for(let y = min_y; y < max_y; y += this.cfg.grid) {
 				if(_pcoords.indexOf([x, y].join('_')) == -1 && !path_object.points.rtree.collides({minX: x, maxX: x + this.cfg.grid, minY: y, maxY: y + this.cfg.grid})) this.sc.add.image(0, 0, this.cfg.gridCellTextureName).setOrigin(0).setPosition(x, y);
 			}
@@ -377,7 +401,7 @@ multipath_follower: function(config, texture) {
 		
 		for(let _i = 0; _i < num_segments; _i++) {
 			sections.push(current_y_section);
-			let section_jump = AutopRand.randint(0, AutopRand.chanceOneIn(cfg.long_short_probability) ? cfg.scale_y : Math.round(cfg.scale_y * 0.5));
+			let section_jump = AutopRand.randint(0, AutopRand.chanceOneIn(cfg.long_short_probability) ? cfg.scale_y : Math.round(cfg.scale_y * cfg.small_jump_coeff));
 
 			next_y_section = false;
 			if(section_jump > 0) {
@@ -403,7 +427,7 @@ multipath_follower: function(config, texture) {
 				let __y_diff = Math.abs(next_y - last_xy[1]);			
 				if(__y_diff < cfg.min_segment_length) _min_x = Math.round(Math.sqrt(min_segment_length_sq  - __y_diff * __y_diff));			
 			
-				let _avg_x = Math.round(path_x_length / (num_segments - _i));
+				let _avg_x = Math.round(path_x_length / num_segments);
 				if(_avg_x < _min_x) {
 					next_x = last_xy[0] + _min_x;
 				} else {
@@ -411,6 +435,8 @@ multipath_follower: function(config, texture) {
 				}
 				if(next_x > max_x) next_x = Math.round(last_xy[0] + (max_x - last_xy[0]) / (num_segments - _i));
 			}
+			next_x = Math.round(next_x);
+			next_y = Math.round(next_y);
 			path.push([next_x, next_y]);			
 			last_xy = [next_x, next_y];
 			current_y_section = next_y_section;		
@@ -419,7 +445,7 @@ multipath_follower: function(config, texture) {
 		let _prev_tail = prev_tail === false ? [] : prev_tail;
 		let spline = new Phaser.Curves.Spline(_prev_tail.concat(path));
 		
-		let _length = Math.floor(spline.getLength());	
+		let _length = Math.floor(spline.getLength());
 		let _adding = false;
 		let prev_point = false;
 		for(let i = 0; i < _length; i++) {
@@ -440,7 +466,7 @@ multipath_follower: function(config, texture) {
 		/* scale_y: 5,
 		   line_probability: 3,
 		   long_short_probability: 3,	*/	
-		points.makeRtree(this.cfg.playerWidthHeight[0] + this.cfg.playerWidthHeight[1], this.cfg.grid);
+		points.makeRtree(this.cfg.rtreeOffset, this.cfg.grid);
 		tail = [path[path.length - 3], path[path.length - 2], path[path.length - 1]];
 		return {
 			path: path,
@@ -449,6 +475,12 @@ multipath_follower: function(config, texture) {
 			sections: sections,
 			points: points
 		}
+	},
+	
+	gameover: function() {
+		this.sc.time.addEvent({delay: 1000, callback: function() {
+			document.getElementById(AutopCFG.parent).innerHTML = '<div style="vertical-align:middle;padding-top:30px"><h1 style="font-size:40px;text-align:center">Game Over<br /><a href="javascript:;" onclick="javascript:document.location.reload();">Restart</a></h1></div>'
+		}});
 	}
 	
 }
@@ -507,7 +539,8 @@ function create ()
 			repeat: 0,
 			rotateToPath: false,
 			rotationOffset: 0,
-			verticalAdjust: true
+			verticalAdjust: true,
+			//ease: 'Circ.easeInOut'
 		}, 'player'));
 	this.registry.get('player').setDepth(-100);
 	
@@ -534,7 +567,7 @@ function update() {
 		}
 	} else {
 		if(player.y > (AutopCFG.height - AutopCFG.custom._cameraOffset)) {
-			let _p = Math.round(player.y) + AutopCFG.custom._cameraOffset	
+			let _p = Math.round(player.y) + AutopCFG.custom._cameraOffset;
 			if(_p < this.cameras.main.scrollY) this.cameras.main.setScroll(0, _p);
 		}
 	}
