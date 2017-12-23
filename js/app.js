@@ -15,15 +15,19 @@ var AutopCFG = {
 		playerFillStyle: 0x0000ff,
 		playerTrianglePoints: [0,0,0,30,15,15],
 		playerWidthHeight: [30, 30],		
-		speed: 100,
-		cameraOffset: 0.3,
+		speed: 125,
+		cameraOffset: 0.2,
 		start_x: 10,
 		heightControlsRate: 0.2,
 		pathLength: 0.5,
 		gridCellFillStyle: 0x000000,
 		gridCellTextureName: 'grid_cell',
-		showPaths: false,
-		showPathStyle: [1, 0xffffff, 1],		
+		showPaths: false,//tmp
+		showPathStyle: [1, 0xffffff, 1],
+		wallWidth: 20,
+		wallStyle: 0xff0000,
+		wallOpenAlpha: 0.5,
+		wallTextureName: 'wall',
 		gen_path: {
 			path_x_spread: 0.1,
 			scale_y: 5,
@@ -62,7 +66,7 @@ class AutopPointsPath {
 		return [this.points.length];
 	}
 	
-	getPointsRects(offset, grid_size) {
+	getPointsRects(offset, grid_size) {		
 		let out = [];
 		let next_grid_x_, next_grid_x = false;
 		for(let i = 0; i < this.points.length; ++i) {			
@@ -79,7 +83,7 @@ class AutopPointsPath {
 				}
 			}
 			out.push({minX: this.points[i].x - offset, minY: this.points[i].y - offset,
-			maxX: this.points[i].x + offset, maxY: this.points[i].y - offset});
+			maxX: this.points[i].x + offset, maxY: this.points[i].y + offset});
 		}
 		return out;
 	}
@@ -228,13 +232,20 @@ multipath_follower: function(config, texture) {
 	
 	grid_cell_make: function() {
 		var grs_rect = this.sc.make.graphics();
+		grs_rect.lineStyle(1, 0xffffff, 1);
 		grs_rect.fillStyle(this.cfg.gridCellFillStyle);
-		grs_rect.fillRect(0, 0, this.cfg.grid, this.cfg.grid).generateTexture(this.cfg.gridCellTextureName, this.cfg.grid, this.cfg.grid); 
+		grs_rect.fillRect(0, 0, this.cfg.grid, this.cfg.grid).strokeRect(0, 0, this.cfg.grid, this.cfg.grid).generateTexture(this.cfg.gridCellTextureName, this.cfg.grid, this.cfg.grid); 
 	},
+
+	wall_make: function() {
+		var grs_rect = this.sc.make.graphics();		
+		grs_rect.fillStyle(this.cfg.wallStyle);
+		grs_rect.fillRect(0, 0, this.cfg.wallWidth, this.cfg.heightField).generateTexture(this.cfg.wallTextureName, this.cfg.wallWidth, this.cfg.heightField); 
+	},	
 	
 	controls_buttons_enable: function() {
 		let _this = this;
-		this.sc.time.addEvent({delay: AutopRand.randint(25, 60), callback: function() {
+		this.sc.time.addEvent({delay: AutopRand.randint(400, 600), callback: function() {
 			_this.cfg._buttons_enabled = true;
 			let _pos = _this.sc.registry.get('path_objects')[0];
 			for(let _i = 0; _i < _pos.length; _i++) {
@@ -248,7 +259,6 @@ multipath_follower: function(config, texture) {
 		let buttons = this.sc.registry.get('buttons');		
 		for(let i = 0; i < buttons.length; i++) {
 			if(!buttons[i].button.visible) continue;
-			if(buttons[i].path !== undefined) buttons[i].path.setAlpha(this.cfg.controls.button_disabled_alpha);
 			if(event.x > buttons[i].bounds.x1 && event.y > buttons[i].bounds.y1 && event.x < buttons[i].bounds.x2 && event.y < buttons[i].bounds.y2) {
 				let player = this.sc.registry.get('player');
 				if(!player.isFollowing()) player.resume();
@@ -262,7 +272,10 @@ multipath_follower: function(config, texture) {
 				} else {
 					this.cfg._correct_selected = !i;
 					let _all_pos = this.sc.registry.get('path_objects');
-					let _pos = _all_pos.shift();
+					let _pos = _all_pos.shift();					
+					let _wall = this.sc.registry.get('walls').shift();
+					if(_wall) _wall.setAlpha(this.cfg.wallOpenAlpha);
+					if(_pos[i].wall !== undefined) this.sc.registry.get('walls').push(_pos[i].wall);
 					this.sc.registry.get('paths').push(_pos[i].points);
 					AutopLIB.show_path(_pos[i]);
 					
@@ -270,13 +283,18 @@ multipath_follower: function(config, texture) {
 						let prev_tail = _all_pos[_all_pos.length - 1][0].tail;
 						let pobj_wrong = AutopLIB.generate_path(prev_tail);
 						let pobj_correct = AutopLIB.generate_path(prev_tail);		
+						pobj_correct.wall = this.sc.add.image(Math.round(pobj_correct.points.getEndPoint().x), 0, this.cfg.wallTextureName).setOrigin(0);
 						AutopLIB.generate_obstacles(pobj_correct);
 						this.sc.registry.get('path_objects').push([pobj_correct, pobj_wrong]);							
 					}
 				}				
+				for(let _i2 = 0; _i2 < buttons.length; ++_i2) {
+					if(buttons[_i2].path !== undefined) buttons[_i2].path.setAlpha(this.cfg.controls.button_disabled_alpha);		
+				}				
+				this.cfg._buttons_enabled = false;				
 			}
 		}		
-		this.cfg._buttons_enabled = false;
+		
 	},
 	
 	controls_set_path(points, button_index, is_correct) {
@@ -451,6 +469,7 @@ function create ()
 	this.registry.set('buttons', []);
 	this.registry.set('paths', []);
 	this.registry.set('path_objects', []);
+	this.registry.set('walls', []);
 
 	AutopLIB.config_preprocess(rwh, _w, _h);
 	
@@ -461,16 +480,21 @@ function create ()
 	AutopLIB.controls_make_buttons();
 	AutopLIB.player_make();
 	AutopLIB.grid_cell_make();
+	AutopLIB.wall_make();
 	
 	let pobj = AutopLIB.generate_path();	
+	pobj.wall = this.add.image(Math.round(pobj.points.getEndPoint().x), 0, cfg.wallTextureName).setOrigin(0);
+	
 	let prev_tail = pobj.tail;
 	this.registry.get('paths').push(pobj.points);
+	this.registry.get('walls').push(pobj.wall);	
 	AutopLIB.show_path(pobj);	
 	AutopLIB.generate_obstacles(pobj);
 	
 	for(let i = 0; i < 3; i++) {
 		pobj_wrong = AutopLIB.generate_path(prev_tail);
 		pobj_correct = AutopLIB.generate_path(prev_tail);
+		pobj_correct.wall = this.add.image(Math.round(pobj_correct.points.getEndPoint().x), 0, cfg.wallTextureName).setOrigin(0);
 		AutopLIB.generate_obstacles(pobj_correct);
 		prev_tail = pobj_correct.tail;
 		this.registry.get('path_objects').push([pobj_correct, pobj_wrong]);		
@@ -485,6 +509,7 @@ function create ()
 			rotationOffset: 0,
 			verticalAdjust: true
 		}, 'player'));
+	this.registry.get('player').setDepth(-100);
 	
 	this.input.events.on('POINTER_DOWN_EVENT', function (event) {
 		AutopLIB.controls_on_click(event);
