@@ -28,8 +28,8 @@ var AutopCFG = {
 		randomizeButtons: true, //tmp
 		gameOver: true, //tmp
 		showPathStyle: [1, 0xffffff, 1],
-		wallWidth: 10,
-		wallStyle: 0xff0000,
+		wallWidth: 15,
+		wallStyle: 0xAB2121,
 		wallOpenAlpha: 0.1,
 		wallTextureName: 'wall',
 		buttonEnableDelay: [600, 1000],
@@ -311,7 +311,11 @@ multipath_follower: function(config, texture) {
 						let pobj_correct = AutopLIB.generate_path(prev_tail);		
 						pobj_correct.wall = this.sc.add.image(Math.round(pobj_correct.points.getEndPoint().x), 0, this.cfg.wallTextureName).setOrigin(0);
 						let obs = AutopLIB.generate_obstacles(pobj_correct);
-						let pobj_wrong = AutopLIB.generate_path(prev_tail, obs);
+						let pobj_wrong;
+						while(true) {
+							pobj_wrong = AutopLIB.generate_path(prev_tail, obs);
+							if(pobj_wrong !== false) break;
+						}
 						this.sc.registry.get('path_objects').push([pobj_correct, pobj_wrong]);							
 					}
 				}				
@@ -394,6 +398,7 @@ multipath_follower: function(config, texture) {
 		var min_segment_length_sq = cfg.min_segment_length * cfg.min_segment_length;
 		
 		var path, prev_tail, sections = [], tail = [];
+		var intersected_wo = false;
 		var points = new AutopPointsPath();
 		
 		if(start === undefined || !start) {
@@ -458,13 +463,54 @@ multipath_follower: function(config, texture) {
 				}
 				if(next_x > max_x) next_x = Math.round(last_xy[0] + (max_x - last_xy[0]) / (num_segments - _i));
 			}
-			next_x = Math.round(next_x);
+			next_x = Math.round(next_x);			
 			next_y = Math.round(next_y);
 			path.push([next_x, next_y]);			
 			last_xy = [next_x, next_y];
 			current_y_section = next_y_section;		
 			if(next_x >= max_x) break;
-		}
+		}		
+		
+		if(obstacles) {
+			for(let i = (path.length - 1); i >= 0; i--) {
+				let p = path[i];
+				let _x = Phaser.Math.Snap.Floor(p[0], this.cfg.grid);
+				let _ys = obstacles.get(_x);
+				
+				if(_ys) {			
+					for(i2 = 0; i2 < _ys.length; i2++) {
+						if((new Phaser.Geom.Rectangle(_x, _ys[i2], this.cfg.grid, this.cfg.grid)).contains(p[0], p[1])) {
+							intersected_wo = true;
+							break;
+						}
+					}				
+				}
+				if(intersected_wo) break;
+			}			
+			if(!intersected_wo) {				
+				let _min_y = new Phaser.Structs.Map();
+				for(let i = (path.length - 1); i >= 0; i--) {
+					let p = path[i];
+					let _x = Phaser.Math.Snap.Floor(p[0], this.cfg.grid);
+					let _ys = obstacles.get(_x);
+					if(_ys) {						
+						for(i2 = 0; i2 < _ys.length; i2++) {
+							let _d = Math.abs(p[1] - _ys[i2]);
+							if(_d <= scale_y_length_r && (!_min_y.has(i) || _d < _min_y.get(i)[1])) _min_y.set(i, [i2, _d, _ys[i2]]);
+						}				
+					}
+				}
+				let _min_y_i = _min_y.keys();
+				if(_min_y_i.length > 0) {
+					_min_y_i = Phaser.Utils.Array.Shuffle(_min_y_i);
+					let i = _min_y_i[0];
+					path[i][1] = _min_y.get(i)[2] + AutopRand.randint(1, this.cfg.grid);
+					intersected_wo = true;
+				}			
+			}			
+			if(!intersected_wo) return false;
+		}		
+		
 		let _prev_tail = prev_tail === false ? [] : prev_tail;
 		let spline = new Phaser.Curves.Spline(_prev_tail.concat(path));
 		
@@ -550,10 +596,14 @@ function create ()
 	AutopLIB.generate_obstacles(pobj);
 	
 	for(let i = 0; i < 3; i++) {		
-		pobj_correct = AutopLIB.generate_path(prev_tail);
+		let pobj_wrong;
+		let pobj_correct = AutopLIB.generate_path(prev_tail);
 		pobj_correct.wall = this.add.image(Math.round(pobj_correct.points.getEndPoint().x), 0, cfg.wallTextureName).setOrigin(0);
 		let obs = AutopLIB.generate_obstacles(pobj_correct);
-		pobj_wrong = AutopLIB.generate_path(prev_tail, obs);
+		while(true) {
+			pobj_wrong = AutopLIB.generate_path(prev_tail, obs);
+			if(pobj_wrong !== false) break;
+		}
 		prev_tail = pobj_correct.tail;
 		this.registry.get('path_objects').push([pobj_correct, pobj_wrong]);		
 	}
