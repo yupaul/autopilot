@@ -15,6 +15,8 @@ var AutopCFG = {
 		playerFillStyle: 0x0000ff,
 		playerTrianglePoints: [0,0,0,30,15,15],
 		playerWidthHeight: [30, 30],		
+		playerNumBodyParts: 150,
+		playerBodyEaSteps: 8,
 		speed: 105,
 		cameraOffset: 0.2,
 		start_x: 10,
@@ -28,7 +30,7 @@ var AutopCFG = {
 		showPathStyle: [1, 0xffffff, 1],
 		wallWidth: 10,
 		wallStyle: 0xff0000,
-		wallOpenAlpha: 0.2,
+		wallOpenAlpha: 0.1,
 		wallTextureName: 'wall',
 		buttonEnableDelay: [600, 1000],
 		rtreeCoeff: 1.2,
@@ -351,6 +353,17 @@ multipath_follower: function(config, texture) {
 		_player_graphics.fillStyle(this.cfg.playerFillStyle).fillTriangle(...this.cfg.playerTrianglePoints).generateTexture('player', ...this.cfg.playerWidthHeight);
 	},
 	
+	player_body_make: function() {		
+		var gr = this.sc.make.graphics();
+		let radius = Math.round(this.cfg.playerWidthHeight[0] * 0.5);
+		gr.fillStyle(this.cfg.playerFillStyle).fillCircle(0, 0, radius).generateTexture('player_body', radius, radius);
+		let g = this.sc.add.group({key: 'player_body', frameQuantity: this.cfg.playerNumBodyParts });
+		for(let i = 0; i < g.getChildren().length; i++) {
+			g.getChildren()[i].setAlpha(Phaser.Math.Easing.Stepped(i / g.getChildren().length, this.cfg.playerBodyEaSteps)); 
+		}
+		this.sc.registry.set('player_body_group', g);
+	},	
+	
 	generate_obstacles: function(path_object) {
 		let out = new Phaser.Structs.Map();
 		let _pcoords = path_object.points.grid.values();
@@ -523,6 +536,7 @@ function create ()
 	AutopLIB.controls_make();
 	AutopLIB.controls_make_buttons();
 	AutopLIB.player_make();
+	AutopLIB.player_body_make();
 	AutopLIB.grid_cell_make();
 	AutopLIB.wall_make();
 	
@@ -571,6 +585,13 @@ function update() {
 		player.pause();
 		AutopCFG.custom._pause_scheduled = false;
 		return;
+	}
+	if(!this.registry.has('player_xy')) {
+		this.registry.set('player_xy', [player.x, player.y]);
+	} else if(player.x !== this.registry.get('player_xy')[0] || player.y !== this.registry.get('player_xy')[1]) {		
+		Phaser.Actions.ShiftPosition(this.registry.get('player_body_group').getChildren(), ...this.registry.get('player_xy'));
+		this.registry.get('player_xy')[0] = player.x;
+		this.registry.get('player_xy')[1] = player.y;
 	}
 	if(!AutopCFG.custom.revertWidthHeight) {
 		if(player.x > AutopCFG.custom._cameraOffset) {
