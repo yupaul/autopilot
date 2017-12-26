@@ -16,12 +16,14 @@ var AutopCFG = {
 		playerTrianglePoints: [0,0,0,30,15,15],
 		playerWidthHeight: [30, 30],		
 		playerNumBodyParts: 150,
-		playerBodyEaSteps: 8,
+		playerBodyEaSteps: 11,
 		speed: 105,
+		speedUp: 5,
 		cameraOffset: 0.2,
 		start_x: 10,
 		heightControlsRate: 0.2,
 		pathLength: 0.5,
+		gridCellLineStyle: [1, 0xffffff, 1],
 		gridCellFillStyle: 0x000000,
 		gridCellTextureName: 'grid_cell',
 		showPaths: false,//tmp
@@ -37,8 +39,9 @@ var AutopCFG = {
 		gen_path: {
 			path_x_spread: 0.1,
 			scale_y: 6,
-			line_probability: 3,
-			long_short_probability: 12,			
+			long_short_probability: 3,			
+			long_multiplier: 2,
+			big_jump_probability: 7,
 			small_jump_coeff: 0.35,
 			min_max_segments: [4, 6],
 			first_line_length: [60, 120]
@@ -186,6 +189,43 @@ var AutopLIB = {
 		this.cfg.gen_path.screen_length = this.sc.game.config[_w];
 	},
 	
+	camera_follow(player) {
+		if(!this.cfg.revertWidthHeight) {
+			if(player.x > this.cfg._cameraOffset) {
+				let _p = Math.round(player.x) - this.cfg._cameraOffset;
+				if(_p > this.sc.cameras.main.scrollX) this.sc.cameras.main.setScroll(_p, 0);
+			}
+		} else {
+			if(player.y > (this.sc.game.config.height - this.cfg._cameraOffset)) {
+				let _p = Math.round(player.y) + this.cfg._cameraOffset;
+				if(_p < this.sc.cameras.main.scrollY) this.sc.cameras.main.setScroll(0, _p);
+			}	
+		}
+	},
+	
+	player_update(player) {
+		let _k = Phaser.Math.Snap.Floor(player.x, this.cfg.grid);
+		let _rects = this.sc.registry.get('obstacles').get(_k);
+		if(_rects && _rects.length > 0) {
+			for(let _i = 0; _i < _rects.length; _i++) {
+				if(_rects[_i].contains(player.x, player.y)) {
+					player.stop();
+					this.gameover();
+					return false;
+				}
+			}
+		}
+		
+		if(!this.sc.registry.has('player_xy')) {
+			this.sc.registry.set('player_xy', [player.x, player.y]);
+		} else if(player.x !== this.sc.registry.get('player_xy')[0] || player.y !== this.sc.registry.get('player_xy')[1]) {		
+			Phaser.Actions.ShiftPosition(this.sc.registry.get('player_body_group').getChildren(), ...this.sc.registry.get('player_xy'));
+			this.sc.registry.get('player_xy')[0] = player.x;
+			this.sc.registry.get('player_xy')[1] = player.y;
+		}
+		return true;
+	},
+	
 	show_path(path_object) {
 		if(!this.cfg.showPaths) return;
 		let gr = this.sc.add.graphics();
@@ -203,13 +243,14 @@ multipath_follower: function(config, texture) {
 	config.onComplete = () => {
 			let _path = this.sc.registry.get('paths').shift();			
 			if(_path === undefined) {
-				AutopLIB.gameover();
+				this.gameover();
 				return;
 			}
 			let _clen = _path.getCurveLengths();
 			config.duration = Math.round((_clen[_clen.length - 1] / this.cfg.speed) * 1000);
 			_player.setPath(_path, config);
-			_player.setRotateToPath(true, config.rotationOffset, config.verticalAdjust);			
+			_player.setRotateToPath(true, config.rotationOffset, config.verticalAdjust);	
+			if(this.cfg.speedUp) this.cfg.speed += this.cfg.speedUp;	
 			if(!this.cfg._buttons_enabled && this.cfg._correct_selected) this.controls_buttons_enable();
 		},
 	config.onCompleteScope = this.sc;	
@@ -256,7 +297,7 @@ multipath_follower: function(config, texture) {
 	
 	grid_cell_make: function() {
 		var grs_rect = this.sc.make.graphics();
-		grs_rect.lineStyle(1, 0xffffff, 1);
+		grs_rect.lineStyle(...this.cfg.gridCellLineStyle);1, 0xffffff, 1
 		grs_rect.fillStyle(this.cfg.gridCellFillStyle);
 		grs_rect.fillRect(0, 0, this.cfg.grid, this.cfg.grid).strokeRect(0, 0, this.cfg.grid, this.cfg.grid).generateTexture(this.cfg.gridCellTextureName, this.cfg.grid, this.cfg.grid); 
 	},
@@ -431,7 +472,7 @@ multipath_follower: function(config, texture) {
 		
 		for(let _i = 0; _i < num_segments; _i++) {
 			sections.push(current_y_section);
-			let section_jump = AutopRand.randint(0, AutopRand.chanceOneIn(cfg.long_short_probability) ? cfg.scale_y : Math.round(cfg.scale_y * cfg.small_jump_coeff));
+			let section_jump = AutopRand.randint(0, AutopRand.chanceOneIn(cfg.big_jump_probability) ? cfg.scale_y : Math.round(cfg.scale_y * cfg.small_jump_coeff));
 
 			next_y_section = false;
 			if(section_jump > 0) {
@@ -457,13 +498,19 @@ multipath_follower: function(config, texture) {
 				let __y_diff = Math.abs(next_y - last_xy[1]);			
 				if(__y_diff < cfg.min_segment_length) _min_x = Math.round(Math.sqrt(min_segment_length_sq  - __y_diff * __y_diff));			
 			
-				let _avg_x = Math.round(path_x_length / num_segments);
+				let _avg_x = Math.round(Math.abs(path_x_length - last_xy[0] + first_xy[0]) / (num_segments - _i));
 				if(_avg_x < _min_x) {
 					next_x = last_xy[0] + _min_x;
 				} else {
-					next_x = last_xy[0] + AutopRand.randint(_min_x, _avg_x * (AutopRand.chanceOneIn(cfg.long_short_probability) ? 2 : 1));
+					next_x = last_xy[0] + AutopRand.randint(_min_x, _avg_x * (AutopRand.chanceOneIn(cfg.long_short_probability) ? cfg.long_multiplier : 1));
 				}
-				if(next_x > max_x) next_x = Math.round(last_xy[0] + (max_x - last_xy[0]) / (num_segments - _i));
+				if(next_x > max_x) {
+					if((max_x - last_xy[0]) > cfg.min_segment_length) {
+						next_x = Math.round(last_xy[0] + (max_x - last_xy[0]) / (num_segments - _i));
+					} else {
+						next_x = max_x;
+					}
+				}
 			}
 			next_x = Math.round(next_x);			
 			next_y = Math.round(next_y);
@@ -541,10 +588,6 @@ multipath_follower: function(config, texture) {
 				}
 			}
 		}		
-		//min_segment_length
-		/* scale_y: 5,
-		   line_probability: 3,
-		   long_short_probability: 3,	*/	
 		points.makeRtree(this.cfg.rtreeOffset, this.cfg.grid);
 		tail = [path[path.length - 3], path[path.length - 2], path[path.length - 1]];
 		return {
@@ -650,36 +693,8 @@ function update() {
 		return;
 	}
 	
-	let _k = Phaser.Math.Snap.Floor(player.x, AutopCFG.custom.grid);
-	let _rects = this.registry.get('obstacles').get(_k);
-	if(_rects && _rects.length > 0) {
-		for(let _i = 0; _i < _rects.length; _i++) {
-			if(_rects[_i].contains(player.x, player.y)) {
-				player.stop();
-				AutopLIB.gameover();
-				return;
-			}
-		}
-	}
-	
-	if(!this.registry.has('player_xy')) {
-		this.registry.set('player_xy', [player.x, player.y]);
-	} else if(player.x !== this.registry.get('player_xy')[0] || player.y !== this.registry.get('player_xy')[1]) {		
-		Phaser.Actions.ShiftPosition(this.registry.get('player_body_group').getChildren(), ...this.registry.get('player_xy'));
-		this.registry.get('player_xy')[0] = player.x;
-		this.registry.get('player_xy')[1] = player.y;
-	}
-	if(!AutopCFG.custom.revertWidthHeight) {
-		if(player.x > AutopCFG.custom._cameraOffset) {
-			let _p = Math.round(player.x) - AutopCFG.custom._cameraOffset;
-			if(_p > this.cameras.main.scrollX) this.cameras.main.setScroll(_p, 0);
-		}
-	} else {
-		if(player.y > (AutopCFG.height - AutopCFG.custom._cameraOffset)) {
-			let _p = Math.round(player.y) + AutopCFG.custom._cameraOffset;
-			if(_p < this.cameras.main.scrollY) this.cameras.main.setScroll(0, _p);
-		}
-	}
+	if(!AutopLIB.player_update(player)) return;
+	AutopLIB.camera_follow(player);
 }
 
 var game = new Phaser.Game(AutopCFG);
