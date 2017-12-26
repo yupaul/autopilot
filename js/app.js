@@ -316,6 +316,7 @@ multipath_follower: function(config, texture) {
 							pobj_wrong = AutopLIB.generate_path(prev_tail, obs);
 							if(pobj_wrong !== false) break;
 						}
+						this.sc.registry.get('obstacles').merge(obs, true);
 						this.sc.registry.get('path_objects').push([pobj_correct, pobj_wrong]);							
 					}
 				}				
@@ -379,10 +380,11 @@ multipath_follower: function(config, texture) {
 			for(let y = min_y; y < max_y; y += this.cfg.grid) {
 				if(_pcoords.indexOf([x, y].join('_')) == -1 && !path_object.points.rtree.collides({minX: x, maxX: x + this.cfg.grid, minY: y, maxY: y + this.cfg.grid})) {
 					this.sc.add.image(0, 0, this.cfg.gridCellTextureName).setOrigin(0).setPosition(x, y);
+					let rect = new Phaser.Geom.Rectangle(x, y, this.cfg.grid, this.cfg.grid);
 					if(!out.has(x)) {
-						out.set(x, [y]);
+						out.set(x, [rect]);
 					} else {
-						out.get(x).push(y);
+						out.get(x).push(rect);
 					}
 				}
 			}
@@ -479,7 +481,7 @@ multipath_follower: function(config, texture) {
 				
 				if(_ys) {			
 					for(i2 = 0; i2 < _ys.length; i2++) {
-						if((new Phaser.Geom.Rectangle(_x, _ys[i2], this.cfg.grid, this.cfg.grid)).contains(p[0], p[1])) {
+						if(_ys[i2].contains(p[0], p[1])) {
 							intersected_wo = true;
 							break;
 						}
@@ -495,8 +497,16 @@ multipath_follower: function(config, texture) {
 					let _ys = obstacles.get(_x);
 					if(_ys) {						
 						for(i2 = 0; i2 < _ys.length; i2++) {
-							let _d = Math.abs(p[1] - _ys[i2]);
-							if(_d <= scale_y_length_r && (!_min_y.has(i) || _d < _min_y.get(i)[1])) _min_y.set(i, [i2, _d, _ys[i2]]);
+							let _d = Math.abs(p[1] - _ys[i2].y);
+							if(_d <= scale_y_length_r) {
+								if(!_min_y.has(i)) {
+									_min_y.set(i, [i2, _d, _ys[i2].y]);
+								} else if(_d < _min_y.get(i)[1]) {
+									_min_y.get(i)[0] = i2;
+									_min_y.get(i)[1] = _d;
+									_min_y.get(i)[2] = _ys[i2].y;
+								}
+							}
 						}				
 					}
 				}
@@ -544,10 +554,11 @@ multipath_follower: function(config, texture) {
 			sections: sections,
 			points: points
 		}
-	},
+	}, 
 	
 	gameover: function() {
-		if(!this.cfg.gameOver) return;
+		if(!this.cfg.gameOver || this.cfg._do_gameover !== undefined) return;
+		this.cfg._do_gameover = true;
 		this.sc.cameras.cameras.forEach(function(c) {c.fade(1200);});
 		this.sc.time.addEvent({delay: 1100, callback: function() {
 			document.getElementById(AutopCFG.parent).innerHTML = '<div style="vertical-align:middle;padding-top:30px"><h1 style="font-size:40px;text-align:center">Game Over<br /><a href="javascript:;" onclick="javascript:document.location.reload();">Restart</a></h1></div>'
@@ -573,6 +584,7 @@ function create ()
 	this.registry.set('paths', []);
 	this.registry.set('path_objects', []);
 	this.registry.set('walls', []);
+	this.registry.set('obstacles', (new Phaser.Structs.Map()));
 
 	AutopLIB.config_preprocess(rwh, _w, _h);
 	
@@ -604,6 +616,7 @@ function create ()
 			pobj_wrong = AutopLIB.generate_path(prev_tail, obs);
 			if(pobj_wrong !== false) break;
 		}
+		this.registry.get('obstacles').merge(obs, true);
 		prev_tail = pobj_correct.tail;
 		this.registry.get('path_objects').push([pobj_correct, pobj_wrong]);		
 	}
@@ -636,6 +649,19 @@ function update() {
 		AutopCFG.custom._pause_scheduled = false;
 		return;
 	}
+	
+	let _k = Phaser.Math.Snap.Floor(player.x, AutopCFG.custom.grid);
+	let _rects = this.registry.get('obstacles').get(_k);
+	if(_rects && _rects.length > 0) {
+		for(let _i = 0; _i < _rects.length; _i++) {
+			if(_rects[_i].contains(player.x, player.y)) {
+				player.stop();
+				AutopLIB.gameover();
+				return;
+			}
+		}
+	}
+	
 	if(!this.registry.has('player_xy')) {
 		this.registry.set('player_xy', [player.x, player.y]);
 	} else if(player.x !== this.registry.get('player_xy')[0] || player.y !== this.registry.get('player_xy')[1]) {		
