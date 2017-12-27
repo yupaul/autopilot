@@ -44,7 +44,9 @@ var AutopCFG = {
 			big_jump_probability: 7,
 			small_jump_coeff: 0.35,
 			min_max_segments: [4, 6],
-			first_line_length: [60, 120]
+			first_line_length: [60, 120],
+			next_x_method: 'longshort', //'softmax', 'minmax', 'longshort'
+			minmax_method_min_max: [0.35, 1.75]
 		},
 		controls: {
 			separator_line_style: [3, 0xff0000, 1],
@@ -435,14 +437,14 @@ multipath_follower: function(config, texture) {
 	
 	generate_path: function(start, obstacles) {
 		let cfg = this.cfg.gen_path;
-		var is_first, path, first_xy, max_x, last_xy, next_y_section;
+		var is_first, path, first_xy, max_x, last_xy, next_y_section, avg_x, softmax_parts;
 		
 		var scale_y_length_r = Math.round(cfg.scale_y_length);
 		var min_segment_length_sq = cfg.min_segment_length * cfg.min_segment_length;
 		
 		var path, prev_tail, sections = [], tail = [];
 		var intersected_wo = false;
-		var points = new AutopPointsPath();
+		var points = new AutopPointsPath();		
 		
 		if(start === undefined || !start) {
 			is_first = true;
@@ -467,6 +469,11 @@ multipath_follower: function(config, texture) {
 			first_xy = [last_xy[0], last_xy[1]];
 		}
 		max_x = first_xy[0] + path_x_length;
+		
+		if(cfg.next_x_method === 'softmax') {
+			avg_x = Math.round(path_x_length / num_segments);
+			softmax_parts = AutopRand.softmax(num_segments);
+		}		
 		
 		let current_y_section = Math.floor(last_xy[1] / cfg.scale_y_length);		
 		
@@ -496,13 +503,20 @@ multipath_follower: function(config, texture) {
 			} else {
 				let _min_x = 0;
 				let __y_diff = Math.abs(next_y - last_xy[1]);			
-				if(__y_diff < cfg.min_segment_length) _min_x = Math.round(Math.sqrt(min_segment_length_sq  - __y_diff * __y_diff));			
-			
-				let _avg_x = Math.round(Math.abs(path_x_length - last_xy[0] + first_xy[0]) / (num_segments - _i));
-				if(_avg_x < _min_x) {
+				if(__y_diff < cfg.min_segment_length) _min_x = Math.round(Math.sqrt(min_segment_length_sq  - __y_diff * __y_diff));						
+
+				if(cfg.next_x_method !== 'softmax') avg_x = Math.round(Math.abs(path_x_length - last_xy[0] + first_xy[0]) / (num_segments - _i));
+
+				if(avg_x < _min_x) {
 					next_x = last_xy[0] + _min_x;
 				} else {
-					next_x = last_xy[0] + AutopRand.randint(_min_x, _avg_x * (AutopRand.chanceOneIn(cfg.long_short_probability) ? cfg.long_multiplier : 1));
+					if(cfg.next_x_method === 'softmax') {
+						next_x = last_xy[0] + path_x_length * softmax_parts[_i];
+					} else if(cfg.next_x_method === 'minmax') {
+						next_x = last_xy[0] + (Math.random() * (cfg.minmax_method_min_max[1] - cfg.minmax_method_min_max[0]) + cfg.minmax_method_min_max[0]) * avg_x;					
+					} else {
+						next_x = last_xy[0] + AutopRand.randint(_min_x, avg_x * (AutopRand.chanceOneIn(cfg.long_short_probability) ? cfg.long_multiplier : 1));
+					}
 				}
 				if(next_x > max_x) {
 					if((max_x - last_xy[0]) > cfg.min_segment_length) {
