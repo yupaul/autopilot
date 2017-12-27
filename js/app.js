@@ -26,10 +26,14 @@ var AutopCFG = {
 		gridCellLineStyle: [1, 0xffffff, 1],
 		gridCellFillStyle: 0x000000,
 		gridCellTextureName: 'grid_cell',
-		showPaths: false,//tmp
+		
+		showPathStyle: [1, 0x919191, 0.05],		
+		showPathSubSet: 15,
+		showPathRadius: 5,
+		showPaths: true,//tmp
+		
 		randomizeButtons: true, //tmp
 		gameOver: true, //tmp
-		showPathStyle: [1, 0xffffff, 1],
 		wallWidth: 15,
 		wallStyle: 0xAB2121,
 		wallOpenAlpha: 0.1,
@@ -121,6 +125,20 @@ class AutopPointsPath {
 	getPoints() {
 		return this.points;
 	}
+	
+	getPointsSubSet(interval) {
+		let i = 0;
+		let out = [];
+		let l = this.points.length - 1;
+		while(true) {
+			if(i >= l) {
+				out.push(this.points[l]);
+				return out;
+			}
+			out.push(this.points[i]);
+			i += interval;
+		}
+	}		
 	
 	movePoints(x, y) {
 		let out = [];
@@ -231,8 +249,18 @@ var AutopLIB = {
 	show_path(path_object) {
 		if(!this.cfg.showPaths) return;
 		let gr = this.sc.add.graphics();
-		gr.lineStyle(...this.cfg.showPathStyle);
-		gr.strokePoints(path_object.points.getPoints());
+		
+		//gr.lineStyle(...this.cfg.showPathStyle);
+		//gr.strokePoints(path_object.points.getPoints());
+		/*let points1 = path_object.points.movePoints(0, this.cfg.playerWidthHeight[1]);
+		let points2 = path_object.points.movePoints(0, -this.cfg.playerWidthHeight[1]);
+		gr.strokePoints(points1);
+		gr.strokePoints(points2);*/
+		gr.fillStyle(this.cfg.showPathStyle[1], this.cfg.showPathStyle[2]);
+		let points = path_object.points.getPointsSubSet(this.cfg.showPathSubSet);
+		for(let i = 0; i < points.length; i++) {
+			gr.fillCircle(points[i].x, points[i].y, this.cfg.showPathRadius);
+		}
 	},
 	
 	
