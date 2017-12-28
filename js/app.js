@@ -15,9 +15,9 @@ var AutopCFG = {
 		playerFillStyle: 0x0000ff,
 		playerTrianglePoints: [0,0,0,30,15,15],
 		playerWidthHeight: [30, 30],		
-		playerNumBodyParts: 150,
-		playerBodyEaSteps: 11,
-		speed: 105,
+		playerNumBodyParts: 120,
+		playerBodyEaSteps: 3,
+		speed: 120,
 		speedUp: 5,
 		cameraOffset: 0.2,
 		start_x: 10,
@@ -27,10 +27,11 @@ var AutopCFG = {
 		gridCellFillStyle: 0x000000,
 		gridCellTextureName: 'grid_cell',
 		
-		showPathStyle: [1, 0x919191, 0.05],		
-		showPathSubSet: 15,
+		showPathStyle: [1, 0xff0000, 0.1],		
+		showPathSubSet: 25,
 		showPathRadius: 5,
 		showPaths: true,//tmp
+		showPathTextureName: 'show_path_circle',
 		
 		randomizeButtons: true, //tmp
 		gameOver: true, //tmp
@@ -49,8 +50,9 @@ var AutopCFG = {
 			small_jump_coeff: 0.35,
 			min_max_segments: [4, 6],
 			first_line_length: [60, 120],
-			next_x_method: 'longshort', //'softmax', 'minmax', 'longshort'
-			minmax_method_min_max: [0.35, 1.75]
+			next_x_method: 'softmax', //'softmax', 'minmax', 'longshort'
+			minmax_method_min_max: [0.5, 1.5],
+			spaced_points: true
 		},
 		controls: {
 			separator_line_style: [3, 0xff0000, 1],
@@ -82,7 +84,7 @@ class AutopPointsPath {
 		return [this.points.length];
 	}
 	
-	getPointsRects(offset, grid_size) {		
+	getPointsRects(offset, grid_size) {	
 		let out = [];
 		let next_grid_x_, next_grid_x = false;
 		for(let i = 0; i < this.points.length; i++) {			
@@ -168,7 +170,7 @@ class AutopPointsPath {
 	}
 	
 	getEndPoint(out) {
-		if (out === undefined) { out = new Phaser.Math.Vector2(); }
+		if (out === undefined) { out = new Phaser.Math.Vector2(); }		
 		return out.copy(this.points[this.points.length - 1]);
 	}
 	
@@ -189,6 +191,8 @@ class AutopPointsPath {
 var AutopLIB = {
 	sc: false,
 	cfg: AutopCFG.custom,
+	_current_camera_offset: 0,
+	_current_camera_inc_speed: 0,
 	config_preprocess: function(rwh, _w, _h) {
 		this.cfg._cameraOffset = Math.round(this.sc.game.config[_w] * this.cfg.cameraOffset);
 		this.cfg.heightControls = Math.round(this.sc.game.config.height * this.cfg.heightControlsRate);
@@ -245,10 +249,15 @@ var AutopLIB = {
 		}
 		return true;
 	},
-	
-	show_path(path_object) {
+
+	show_path_make() {
 		if(!this.cfg.showPaths) return;
 		let gr = this.sc.add.graphics();
+		gr.fillStyle(this.cfg.showPathStyle[1], this.cfg.showPathStyle[2]);
+		gr.fillCircle(this.cfg.showPathRadius, this.cfg.showPathRadius, this.cfg.showPathRadius).generateTexture(this.cfg.showPathTextureName, this.cfg.showPathRadius * 2, this.cfg.showPathRadius * 2);		
+	},
+	show_path(path_object) {
+		if(!this.cfg.showPaths) return;		
 		
 		//gr.lineStyle(...this.cfg.showPathStyle);
 		//gr.strokePoints(path_object.points.getPoints());
@@ -256,10 +265,11 @@ var AutopLIB = {
 		let points2 = path_object.points.movePoints(0, -this.cfg.playerWidthHeight[1]);
 		gr.strokePoints(points1);
 		gr.strokePoints(points2);*/
-		gr.fillStyle(this.cfg.showPathStyle[1], this.cfg.showPathStyle[2]);
+		//gr.fillStyle(this.cfg.showPathStyle[1], this.cfg.showPathStyle[2]);
 		let points = path_object.points.getPointsSubSet(this.cfg.showPathSubSet);
 		for(let i = 0; i < points.length; i++) {
-			gr.fillCircle(points[i].x, points[i].y, this.cfg.showPathRadius);
+			this.sc.add.image(0, 0, this.cfg.showPathTextureName).setPosition(points[i].x, points[i].y).setDepth(-101);
+			//gr.fillCircle(points[i].x, points[i].y, this.cfg.showPathRadius);
 		}
 	},
 	
@@ -435,7 +445,8 @@ multipath_follower: function(config, texture) {
 		gr.fillStyle(this.cfg.playerFillStyle).fillCircle(0, 0, radius).generateTexture('player_body', radius, radius);
 		let g = this.sc.add.group({key: 'player_body', frameQuantity: this.cfg.playerNumBodyParts });
 		for(let i = 0; i < g.getChildren().length; i++) {
-			g.getChildren()[i].setAlpha(Phaser.Math.Easing.Stepped(i / g.getChildren().length, this.cfg.playerBodyEaSteps)); 
+			//g.getChildren()[i].setAlpha(Phaser.Math.Easing.Stepped(i / g.getChildren().length, this.cfg.playerBodyEaSteps)); 
+			g.getChildren()[i].setAlpha(Phaser.Math.Easing.Sine.Out(i / g.getChildren().length) * 0.75);
 		}
 		this.sc.registry.set('player_body_group', g);
 	},	
@@ -612,18 +623,21 @@ multipath_follower: function(config, texture) {
 		
 		let _prev_tail = prev_tail === false ? [] : prev_tail;
 		let spline = new Phaser.Curves.Spline(_prev_tail.concat(path));
-		
+		spline.arcLengthDivisions = path_x_length;		
 		let _length = Math.floor(spline.getLength());
+		let spoints = cfg.spaced_points ? spline.getSpacedPoints(_length) : spline.getPoints(_length);
+		
 		let _adding = false;
 		let prev_point = false;
-		for(let i = 0; i < _length; i++) {
-			let _p = spline.getPoint(i / _length);			
+		for(let i = 0; i < spoints.length; i++) {
+			//let _p = spline.getPoint(i / _length);			
+			let _p = spoints[i];
 			if(_adding) {
 				points.addPoint(_p);
 			} else {
 				if(_p.x > first_xy[0]) {
-					_adding = true;
-					if(_prev_point) points.addPoint(_prev_point);
+					_adding = true;	
+					//if(_prev_point) points.addPoint(_prev_point);
 					points.addPoint(_p);
 				} else {
 					_prev_point = _p;
@@ -676,6 +690,7 @@ function create ()
 	this.cameras.main.setSize(this.cameras.main.width, cfg.heightField);
 	this.cameras.add(0, cfg.heightField, this.cameras.main.width, cfg.heightControls).setBounds(0, cfg.heightField, this.cameras.main.width, cfg.heightControls);
 	
+	AutopLIB.show_path_make();
 	AutopLIB.controls_make();
 	AutopLIB.controls_make_buttons();
 	AutopLIB.player_make();
