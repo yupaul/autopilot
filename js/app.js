@@ -23,21 +23,21 @@ var AutopCFG = {
 		start_x: 10,
 		heightControlsRate: 0.2,
 		pathLength: 0.5,
-		gridCellLineStyle: [1, 0xffffff, 1],
-		gridCellFillStyle: 0x000000,
+		gridCellLineStyle: false, //[1, 0x627261, 1] //tmp
+		gridCellFillStyle: 0x001020,
 		gridCellTextureName: 'grid_cell',
 		
-		showPathStyle: [1, 0xff0000, 0.1],		
-		showPathSubSet: 25,
-		showPathRadius: 5,
-		showPaths: true,//tmp
+		showPathStyle: [1, 0xff0000, 0.2],
+		showPathSubSet: 20,
+		showPathRadius: 4,
+		showPaths: true,
 		showPathTextureName: 'show_path_circle',
 		
 		randomizeButtons: true, //tmp
 		gameOver: true, //tmp
 		wallWidth: 15,
 		wallStyle: 0xAB2121,
-		wallOpenAlpha: 0.1,
+		wallOpenAlpha: 0.03,
 		wallTextureName: 'wall',
 		buttonEnableDelay: [600, 1000],
 		rtreeCoeff: 1.2,
@@ -200,6 +200,7 @@ var AutopLIB = {
 	
 		this.cfg.grid = (this.cfg.playerWidthHeight[0] + this.cfg.playerWidthHeight[1]);
 		this.cfg.rtreeOffset = Math.round((this.cfg.playerWidthHeight[0] + this.cfg.playerWidthHeight[1]) * this.cfg.rtreeCoeff);
+		this.cfg.speed_initial = this.cfg.speed;
 		
 		this.cfg.gen_path.start_x = this.cfg.start_x;
 		this.cfg.gen_path.min_y = this.cfg.playerWidthHeight[1];
@@ -267,7 +268,7 @@ var AutopLIB = {
 		gr.strokePoints(points2);*/
 		//gr.fillStyle(this.cfg.showPathStyle[1], this.cfg.showPathStyle[2]);
 		let points = path_object.points.getPointsSubSet(this.cfg.showPathSubSet);
-		for(let i = 0; i < points.length; i++) {
+		for(let i = 1; i < points.length; i++) {
 			this.sc.add.image(0, 0, this.cfg.showPathTextureName).setPosition(points[i].x, points[i].y).setDepth(-101);
 			//gr.fillCircle(points[i].x, points[i].y, this.cfg.showPathRadius);
 		}
@@ -337,9 +338,13 @@ multipath_follower: function(config, texture) {
 	
 	grid_cell_make: function() {
 		var grs_rect = this.sc.make.graphics();
-		grs_rect.lineStyle(...this.cfg.gridCellLineStyle);1, 0xffffff, 1
 		grs_rect.fillStyle(this.cfg.gridCellFillStyle);
-		grs_rect.fillRect(0, 0, this.cfg.grid, this.cfg.grid).strokeRect(0, 0, this.cfg.grid, this.cfg.grid).generateTexture(this.cfg.gridCellTextureName, this.cfg.grid, this.cfg.grid); 
+		grs_rect.fillRect(0, 0, this.cfg.grid, this.cfg.grid);
+		if(this.cfg.gridCellLineStyle) {
+			grs_rect.lineStyle(...this.cfg.gridCellLineStyle);1, 0xffffff, 1		
+			grs_rect.strokeRect(0, 0, this.cfg.grid, this.cfg.grid);
+		}
+		grs_rect.generateTexture(this.cfg.gridCellTextureName, this.cfg.grid, this.cfg.grid); 
 	},
 
 	wall_make: function() {
@@ -362,7 +367,10 @@ multipath_follower: function(config, texture) {
 	},
 	
 	controls_on_click: function(event) {
-		if(!this.cfg._buttons_enabled) return;
+		if(!this.cfg._buttons_enabled) {
+			this.sc.sys.pause();//tmp
+			return;
+		}
 		let buttons = this.sc.registry.get('buttons');		
 		for(let i = 0; i < buttons.length; i++) {
 			if(!buttons[i].button.visible) continue;
@@ -407,7 +415,7 @@ multipath_follower: function(config, texture) {
 				this.cfg._buttons_enabled = false;				
 			}
 		}		
-		
+		if(this.cfg._buttons_enabled) this.sc.sys.pause();//tmp		
 	},
 	
 	controls_set_path(points, button_index, is_correct) {
@@ -454,20 +462,26 @@ multipath_follower: function(config, texture) {
 	generate_obstacles: function(path_object) {
 		let out = new Phaser.Structs.Map();
 		let _pcoords = path_object.points.grid.values();
-		let min_x = parseInt(_pcoords[0].split('_')[0]);
+		let min_x = parseInt(_pcoords[0].split('_')[0]) + this.cfg.grid;
 		let max_x = parseInt(_pcoords[_pcoords.length - 1].split('_')[0]);
 		let min_y = 0;
 		let max_y = Phaser.Math.Snap.Floor(this.cfg.heightField, this.cfg.grid);
+		let prev_collided = 0;
 		for(let x = min_x; x < (max_x - this.cfg.grid); x += this.cfg.grid) {
 			for(let y = min_y; y < max_y; y += this.cfg.grid) {
 				if(_pcoords.indexOf([x, y].join('_')) == -1 && !path_object.points.rtree.collides({minX: x, maxX: x + this.cfg.grid, minY: y, maxY: y + this.cfg.grid})) {
-					this.sc.add.image(0, 0, this.cfg.gridCellTextureName).setOrigin(0).setPosition(x, y);
-					let rect = new Phaser.Geom.Rectangle(x, y, this.cfg.grid, this.cfg.grid);
-					if(!out.has(x)) {
-						out.set(x, [rect]);
-					} else {
-						out.get(x).push(rect);
+					if(prev_collided < 4) prev_collided++;
+					if(prev_collided < 2 || AutopRand.chanceOneIn(prev_collided * 3)) {
+						this.sc.add.image(0, 0, this.cfg.gridCellTextureName).setOrigin(0).setPosition(x, y);
+						let rect = new Phaser.Geom.Rectangle(x, y, this.cfg.grid, this.cfg.grid);
+						if(!out.has(x)) {
+							out.set(x, [rect]);
+						} else {
+							out.get(x).push(rect);
+						}
 					}
+				} else {
+					prev_collided = 0;
 				}
 			}
 		}
@@ -557,8 +571,8 @@ multipath_follower: function(config, texture) {
 						next_x = last_xy[0] + AutopRand.randint(_min_x, avg_x * (AutopRand.chanceOneIn(cfg.long_short_probability) ? cfg.long_multiplier : 1));
 					}
 				}
-				if(next_x > max_x) {
-					if((max_x - last_xy[0]) > cfg.min_segment_length) {
+				if(next_x > (max_x - cfg.min_segment_length)) {
+					if((max_x - last_xy[0]) > (cfg.min_segment_length * 2)) {
 						next_x = Math.round(last_xy[0] + (max_x - last_xy[0]) / (num_segments - _i));
 					} else {
 						next_x = max_x;
@@ -637,10 +651,11 @@ multipath_follower: function(config, texture) {
 			} else {
 				if(_p.x > first_xy[0]) {
 					_adding = true;	
+					if(Math.abs(Phaser.Math.Distance.Between(_p.x, _p.y, first_xy[0], first_xy[1])) < 1) _p.set(...first_xy);
 					//if(_prev_point) points.addPoint(_prev_point);
 					points.addPoint(_p);
 				} else {
-					_prev_point = _p;
+					prev_point = _p;
 				}
 			}
 		}		
@@ -733,7 +748,7 @@ function create ()
 		}, 'player'));
 	this.registry.get('player').setDepth(-100);
 	
-	this.input.events.on('POINTER_DOWN_EVENT', function (event) {
+	this.input.events.on('POINTER_DOWN_EVENT', (event) => {
 		AutopLIB.controls_on_click(event);
 	});
 	cfg._just_started = true;
