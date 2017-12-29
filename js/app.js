@@ -2,7 +2,7 @@ var AutopCFG = {
     type: Phaser.AUTO,
     width: 1200,
     height: 600,
-    backgroundColor: '#2d2d2d',
+    backgroundColor: '#ffffff',//'#2d2d2d'
     parent: 'game_div',
     scene: {
         preload: preload,
@@ -24,7 +24,7 @@ var AutopCFG = {
 		heightControlsRate: 0.2,
 		pathLength: 0.5,
 		gridCellLineStyle: false, //[1, 0x627261, 1] //tmp
-		gridCellFillStyle: 0x001020,
+		gridCellFillStyle: 0x007090,
 		gridCellTextureName: 'grid_cell',
 		
 		showPathStyle: [1, 0xff0000, 0.2],
