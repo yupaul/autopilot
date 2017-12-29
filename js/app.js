@@ -367,14 +367,13 @@ multipath_follower: function(config, texture) {
 	},
 	
 	controls_on_click: function(event) {
-		if(!this.cfg._buttons_enabled) {
-			this.sc.sys.pause();//tmp
-			return;
-		}
 		let buttons = this.sc.registry.get('buttons');		
+		let button_clicked = false;
 		for(let i = 0; i < buttons.length; i++) {
 			if(!buttons[i].button.visible) continue;
 			if(event.x > buttons[i].bounds.x1 && event.y > buttons[i].bounds.y1 && event.x < buttons[i].bounds.x2 && event.y < buttons[i].bounds.y2) {
+				button_clicked = true;
+				if(!this.cfg._buttons_enabled) break;
 				let player = this.sc.registry.get('player');
 				if(!player.isFollowing()) player.resume();
 				if(this.cfg._just_started) {
@@ -400,11 +399,7 @@ multipath_follower: function(config, texture) {
 						let pobj_correct = AutopLIB.generate_path(prev_tail);		
 						pobj_correct.wall = this.sc.add.image(Math.round(pobj_correct.points.getEndPoint().x), 0, this.cfg.wallTextureName).setOrigin(0);
 						let obs = AutopLIB.generate_obstacles(pobj_correct);
-						let pobj_wrong;
-						while(true) {
-							pobj_wrong = AutopLIB.generate_path(prev_tail, obs);
-							if(pobj_wrong !== false) break;
-						}
+						let pobj_wrong = AutopLIB.generate_path(prev_tail, obs);
 						this.sc.registry.get('obstacles').merge(obs, true);
 						this.sc.registry.get('path_objects').push([pobj_correct, pobj_wrong]);							
 					}
@@ -415,7 +410,7 @@ multipath_follower: function(config, texture) {
 				this.cfg._buttons_enabled = false;				
 			}
 		}		
-		if(this.cfg._buttons_enabled) this.sc.sys.pause();//tmp		
+		if(!button_clicked) this.sc.sys.pause();//tmp
 	},
 	
 	controls_set_path(points, button_index, is_correct) {
@@ -438,7 +433,7 @@ multipath_follower: function(config, texture) {
 		if(btn.path !== undefined && btn.path instanceof Phaser.GameObjects.Image && btn.path.active) btn.path.destroy();
 		let __bounds = btn.bounds;
 		let __coeff = (__bounds.x2 - __bounds.x1 - 8) / _plen;	
-		btn.path = this.sc.add.image(0, 0, texture_name).setScale(__coeff).setOrigin(0).setPosition(__bounds.x1 + 2, __bounds.y1);		
+		btn.path = this.sc.add.image(0, 0, texture_name).setScale(__coeff).setOrigin(0).setPosition(__bounds.x1 + 2, __bounds.y1 - 2);		
 		btn.is_correct = is_correct;
 	},
 	
@@ -491,6 +486,7 @@ multipath_follower: function(config, texture) {
 	generate_path: function(start, obstacles) {
 		let cfg = this.cfg.gen_path;
 		var is_first, path, first_xy, max_x, last_xy, next_y_section, avg_x, softmax_parts;
+		var _start = start === undefined ? false : start;
 		
 		var scale_y_length_r = Math.round(cfg.scale_y_length);
 		var min_segment_length_sq = cfg.min_segment_length * cfg.min_segment_length;
@@ -499,16 +495,16 @@ multipath_follower: function(config, texture) {
 		var intersected_wo = false;
 		var points = new AutopPointsPath();		
 		
-		if(start === undefined || !start) {
+		if(!_start) {
 			is_first = true;
 			let __line_length = AutopRand.randint(...cfg.first_line_length);
-			start = [[cfg.start_x, cfg.start_y], [cfg.start_x + Math.round(__line_length * 0.5), cfg.start_y], [cfg.start_x + __line_length, cfg.start_y]];
-			path = start;
+			_start = [[cfg.start_x, cfg.start_y], [cfg.start_x + Math.round(__line_length * 0.5), cfg.start_y], [cfg.start_x + __line_length, cfg.start_y]];
+			path = _start;
 			prev_tail = false;
 		} else {
 			is_first = false;
 			path = [];
-			prev_tail = start;
+			prev_tail = _start;
 		}
 		let num_segments = AutopRand.randint(...cfg.min_max_segments);
 		let path_x_length = AutopRand.randint(cfg.min_path_x_length, cfg.max_path_x_length);		
@@ -516,9 +512,9 @@ multipath_follower: function(config, texture) {
 		if(path.length > 0) { //is_first
 			--num_segments;			
 			last_xy = path[path.length - 1];			
-			first_xy = start[0];
+			first_xy = _start[0];
 		} else {			
-			last_xy = start[start.length - 1];
+			last_xy = _start[_start.length - 1];
 			first_xy = [last_xy[0], last_xy[1]];
 		}
 		max_x = first_xy[0] + path_x_length;
@@ -632,7 +628,7 @@ multipath_follower: function(config, texture) {
 					intersected_wo = true;
 				}			
 			}			
-			if(!intersected_wo) return false;
+			if(!intersected_wo) return this.generate_path(start, obstacles);
 		}		
 		
 		let _prev_tail = prev_tail === false ? [] : prev_tail;
@@ -647,11 +643,13 @@ multipath_follower: function(config, texture) {
 			//let _p = spline.getPoint(i / _length);			
 			let _p = spoints[i];
 			if(_adding) {
+				if(_p.y < 0 || _p.y > this.cfg.heightField) return this.generate_path(start, obstacles);
 				points.addPoint(_p);
 			} else {
 				if(_p.x > first_xy[0]) {
 					_adding = true;	
 					if(Math.abs(Phaser.Math.Distance.Between(_p.x, _p.y, first_xy[0], first_xy[1])) < 1) _p.set(...first_xy);
+					if(_p.y < 0 || _p.y > this.cfg.heightField) return this.generate_path(start, obstacles);					
 					//if(_prev_point) points.addPoint(_prev_point);
 					points.addPoint(_p);
 				} else {
@@ -722,15 +720,11 @@ function create ()
 	AutopLIB.show_path(pobj);	
 	AutopLIB.generate_obstacles(pobj);
 	
-	for(let i = 0; i < 3; i++) {		
-		let pobj_wrong;
+	for(let i = 0; i < 3; i++) {				
 		let pobj_correct = AutopLIB.generate_path(prev_tail);
 		pobj_correct.wall = this.add.image(Math.round(pobj_correct.points.getEndPoint().x), 0, cfg.wallTextureName).setOrigin(0);
 		let obs = AutopLIB.generate_obstacles(pobj_correct);
-		while(true) {
-			pobj_wrong = AutopLIB.generate_path(prev_tail, obs);
-			if(pobj_wrong !== false) break;
-		}
+		let pobj_wrong = AutopLIB.generate_path(prev_tail, obs);
 		this.registry.get('obstacles').merge(obs, true);
 		prev_tail = pobj_correct.tail;
 		this.registry.get('path_objects').push([pobj_correct, pobj_wrong]);		
