@@ -1,3 +1,6 @@
+import 'phaser';
+import AutopRand from './util/autoprand';
+
 var AutopCFG = {
     type: Phaser.AUTO,
     width: 1200,
@@ -485,7 +488,7 @@ multipath_follower: function(config, texture) {
 	
 	generate_path: function(start, obstacles) {
 		let cfg = this.cfg.gen_path;
-		var is_first, path, first_xy, max_x, last_xy, next_y_section, avg_x, softmax_parts;
+		var is_first, path, first_xy, max_x, last_xy, next_y_section, avg_x, softmax_parts, next_x;
 		var _start = start === undefined ? false : start;
 		
 		var scale_y_length_r = Math.round(cfg.scale_y_length);
@@ -590,7 +593,7 @@ multipath_follower: function(config, texture) {
 				let _ys = obstacles.get(_x);
 				
 				if(_ys) {			
-					for(i2 = 0; i2 < _ys.length; i2++) {
+					for(let i2 = 0; i2 < _ys.length; i2++) {
 						if(_ys[i2].contains(p[0], p[1])) {
 							intersected_wo = true;
 							break;
@@ -606,7 +609,7 @@ multipath_follower: function(config, texture) {
 					let _x = Phaser.Math.Snap.Floor(p[0], this.cfg.grid);
 					let _ys = obstacles.get(_x);
 					if(_ys) {						
-						for(i2 = 0; i2 < _ys.length; i2++) {
+						for(let i2 = 0; i2 < _ys.length; i2++) {
 							let _d = Math.abs(p[1] - _ys[i2].y);
 							if(_d <= scale_y_length_r) {
 								if(!_min_y.has(i)) {

@@ -1,4 +1,4 @@
-var AutopRand = {
+let AutopRand = {
 
 	coinflip: function() {
 		return (this.randint(0, 1) > 0);
@@ -28,3 +28,5 @@ var AutopRand = {
 		return nums.map((_x) => {return _x / s;});
 	}
 }
+
+export default AutopRand
