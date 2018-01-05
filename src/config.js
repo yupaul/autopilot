@@ -1,4 +1,5 @@
 import PlayMain from './scene/play_main';
+import Menu from './scene/menu';
 
 let AutopCFG = {
     type: Phaser.AUTO,
@@ -6,7 +7,7 @@ let AutopCFG = {
     height: 600,
     backgroundColor: '#ffffff',//'#2d2d2d'
     parent: 'game_div',
-    scene: [PlayMain],	//other
+    scene: [Menu, PlayMain],	//other
 	custom: {
 		dbg: true, //tmp
 		revertWidthHeight: false,
@@ -58,7 +59,8 @@ let AutopCFG = {
 			button_path_style: [20, 0xff0000, 1],
 			button_height: 0.9,
 			button_gap: 50,
-			button_disabled_alpha: 0.25
+			button_disabled_alpha: 0.25,
+			pause_button_x_position: 0.2
 		}
 	}
 };

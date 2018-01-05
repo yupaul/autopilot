@@ -154,7 +154,15 @@ multipath_follower(config, texture) {
 				y1 : __bounds.y,
 				y2 : __bounds.y + __bounds.height,
 			};		
-		}		
+		}
+		this.sc.registry.set('button_pause', {button: this.sc.add.image(Math.round(this.sc.game.config.width * this.cfg.controls.pause_button_x_position), position[1], 'pause').setInteractive()});
+		let __pbounds = this.sc.registry.get('button_pause').button.getBounds();
+		this.sc.registry.get('button_pause').bounds = {
+			x1 : __pbounds.x,
+			x2 : __pbounds.x + __pbounds.width,
+			y1 : __pbounds.y,
+			y2 : __pbounds.y + __pbounds.height,
+		};			
 	}
 	
 	controls_make() {
@@ -195,6 +203,13 @@ multipath_follower(config, texture) {
 	}
 	
 	controls_on_click(event) {
+		let button_pause = this.sc.registry.get('button_pause');
+		if(event.x > button_pause.bounds.x1 && event.y > button_pause.bounds.y1 && event.x < button_pause.bounds.x2 && event.y < button_pause.bounds.y2) {		
+			this.sc.scene.launch('Menu');
+			this.sc.scene.bringToTop('Menu');
+			this.sc.scene.sleep('PlayMain');
+			return;
+		}
 		let buttons = this.sc.registry.get('buttons');		
 		let button_clicked = false;
 		for(let i = 0; i < buttons.length; i++) {
@@ -238,7 +253,6 @@ multipath_follower(config, texture) {
 				this.cfg._buttons_enabled = false;				
 			}
 		}		
-		if(!button_clicked) this.sc.sys.pause();//tmp
 	}
 	
 	controls_set_path(points, button_index, is_correct) {

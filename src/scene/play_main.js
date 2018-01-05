@@ -23,6 +23,7 @@ preload () {
 	this.registry.set('obstacles', (new Phaser.Structs.Map()));
 
 	this.lib.config_preprocess(rwh, _w, _h);
+        this.load.image('pause', './assets/images/pause.png');
 }
 
 create () {		
