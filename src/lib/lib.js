@@ -17,8 +17,11 @@ class AutopLIB {
 	
 		this.cfg.grid = (this.cfg.playerWidthHeight[0] + this.cfg.playerWidthHeight[1]);
 		this.cfg.rtreeOffset = Math.round((this.cfg.playerWidthHeight[0] + this.cfg.playerWidthHeight[1]) * this.cfg.rtreeCoeff);
-		this.cfg.speed_initial = this.cfg.speed;
-		
+		if(this.cfg.speed_intial === undefined) {
+			this.cfg.speed_initial = this.cfg.speed;
+		} else {
+			this.cfg.speed = this.cfg.speed_initial;
+		}		
 		this.cfg.gen_path.start_x = this.cfg.start_x;
 		this.cfg.gen_path.min_y = this.cfg.playerWidthHeight[1];
 		this.cfg.gen_path.start_y = Math.round(this.cfg.heightField * 0.5 + this.cfg.gen_path.min_y);		
@@ -71,6 +74,7 @@ class AutopLIB {
 		if(!this.sc.registry.has('player_xy')) {
 			this.sc.registry.set('player_xy', [player.x, player.y]);
 		} else if(player.x !== this.sc.registry.get('player_xy')[0] || player.y !== this.sc.registry.get('player_xy')[1]) {		
+			if(!this.sc.registry.get('player_body_group').visible) this.sc.registry.get('player_body_group').visible = 1;
 			Phaser.Actions.ShiftPosition(this.sc.registry.get('player_body_group').getChildren(), ...this.sc.registry.get('player_xy'));
 			this.sc.registry.get('player_xy')[0] = player.x;
 			this.sc.registry.get('player_xy')[1] = player.y;
@@ -80,7 +84,7 @@ class AutopLIB {
 
 	show_path_make() {
 		if(!this.cfg.showPaths) return;
-		let gr = this.sc.add.graphics();
+		let gr = this.sc.make.graphics();
 		gr.fillStyle(this.cfg.showPathStyle[1], this.cfg.showPathStyle[2]);
 		gr.fillCircle(this.cfg.showPathRadius, this.cfg.showPathRadius, this.cfg.showPathRadius).generateTexture(this.cfg.showPathTextureName, this.cfg.showPathRadius * 2, this.cfg.showPathRadius * 2);		
 	}
@@ -96,8 +100,16 @@ class AutopLIB {
 		gr.strokePoints(points2);*/
 		//gr.fillStyle(this.cfg.showPathStyle[1], this.cfg.showPathStyle[2]);
 		let points = path_object.points.getPointsSubSet(this.cfg.showPathSubSet);
-		for(let i = 1; i < points.length; i++) {
+		if(this.sc.registry.get('show_path_last_point')) {
+			let _lp = this.sc.registry.get('show_path_last_point');
+			if(_lp.distance(points[1]) > points[1].distance(points[2]) * 1.5) {
+				let _fp = new Phaser.Math.Vector2((_lp.x + points[1].x) * 0.5, (_lp.y + points[1].y) * 0.5);
+				this.sc.add.image(0, 0, this.cfg.showPathTextureName).setPosition(_fp.x, _fp.y).setDepth(-101);
+			}
+		}
+		for(let i = 1; i < (points.length - 1); i++) {
 			this.sc.add.image(0, 0, this.cfg.showPathTextureName).setPosition(points[i].x, points[i].y).setDepth(-101);
+			if(i === (points.length - 2)) this.sc.registry.set('show_path_last_point', points[i]);
 			//gr.fillCircle(points[i].x, points[i].y, this.cfg.showPathRadius);
 		}
 	}	
@@ -114,6 +126,7 @@ multipath_follower(config, texture) {
 				this.gameover();
 				return;
 			}
+//			console.log('!!!!!', Math.random());//tmp debug to fix start / end 2 frame delay
 			let _clen = _path.getCurveLengths();
 			config.duration = Math.round((_clen[_clen.length - 1] / this.cfg.speed) * 1000);
 			_player.setPath(_path, config);
@@ -289,6 +302,7 @@ multipath_follower(config, texture) {
 		let radius = Math.round(this.cfg.playerWidthHeight[0] * 0.5);
 		gr.fillStyle(this.cfg.playerFillStyle).fillCircle(0, 0, radius).generateTexture('player_body', radius, radius);
 		let g = this.sc.add.group({key: 'player_body', frameQuantity: this.cfg.playerNumBodyParts });
+		g.visible = 0;
 		for(let i = 0; i < g.getChildren().length; i++) {
 			//g.getChildren()[i].setAlpha(Phaser.Math.Easing.Stepped(i / g.getChildren().length, this.cfg.playerBodyEaSteps)); 
 			g.getChildren()[i].setAlpha(Phaser.Math.Easing.Sine.Out(i / g.getChildren().length) * 0.75);
@@ -480,9 +494,9 @@ multipath_follower(config, texture) {
 		let spoints = cfg.spaced_points ? spline.getSpacedPoints(_length) : spline.getPoints(_length);
 		
 		let _adding = false;
-		let prev_point = false;
+//		let prev_point = false;//tmp to delete
 		for(let i = 0; i < spoints.length; i++) {
-			//let _p = spline.getPoint(i / _length);			
+			//let _p = spline.getPoint(i / _length);//tmp to delete
 			let _p = spoints[i];
 			if(_adding) {
 				if(_p.y < 0 || _p.y > this.cfg.heightField) return this.generate_path(start, obstacles);
@@ -490,13 +504,13 @@ multipath_follower(config, texture) {
 			} else {
 				if(_p.x > first_xy[0]) {
 					_adding = true;	
-					if(Math.abs(Phaser.Math.Distance.Between(_p.x, _p.y, first_xy[0], first_xy[1])) < 1) _p.set(...first_xy);
+					//if(Math.abs(Phaser.Math.Distance.Between(_p.x, _p.y, first_xy[0], first_xy[1])) < 1) _p.set(...first_xy);
 					if(_p.y < 0 || _p.y > this.cfg.heightField) return this.generate_path(start, obstacles);					
-					//if(_prev_point) points.addPoint(_prev_point);
+					//if(_prev_point) points.addPoint(_prev_point);//tmp to delete
 					points.addPoint(_p);
-				} else {
+				}/* else {//tmp to delete
 					prev_point = _p;
-				}
+				}*/
 			}
 		}		
 		points.makeRtree(this.cfg.rtreeOffset, this.cfg.grid);
@@ -511,12 +525,18 @@ multipath_follower(config, texture) {
 	} 
 	
 	gameover() {
-		if(!this.cfg.gameOver || this.cfg._do_gameover !== undefined) return;
-		this.cfg._do_gameover = true;
+		if(!this.cfg.gameOver) return; // || this.cfg._do_gameover !== undefined
+//		this.cfg._do_gameover = true;
+		this.sc.game.registry.set('_do_gameover', true);
 		this.sc.cameras.cameras.forEach(function(c) {c.fade(1200);});
 		var _this = this;
-		this.sc.time.addEvent({delay: 1100, callback: function() {	
-			document.getElementById(_this.sc.game.config.parent).innerHTML = '<div style="vertical-align:middle;padding-top:30px"><h1 style="font-size:40px;text-align:center">Game Over<br /><a href="javascript:;" onclick="javascript:document.location.reload();">Restart</a></h1></div>'
+		this.sc.time.addEvent({delay: 1100, callback: function() {	                         				
+			_this.sc.scene.stop('PlayMain');
+			_this.cfg.speed = _this.cfg.speed_initial;
+//			_this.sc.cameras.main.setScroll(0, 0);
+//			_this.sc.cameras.destroy();
+			_this.sc.scene.start('Menu');
+//			document.getElementById(_this.sc.game.config.parent).innerHTML = '<div style="vertical-align:middle;padding-top:30px"><h1 style="font-size:40px;text-align:center;color:#fff">Game Over<br /><a href="javascript:;" onclick="javascript:document.location.reload();">Restart</a></h1></div>'
 		}});
 	}
 	

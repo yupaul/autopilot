@@ -12,6 +12,11 @@ class PlayMain extends Phaser.Scene {
   }
 
 preload () {
+        this.load.image('pause', './assets/images/pause.png');
+}
+
+create () {		
+	console.log('PlayMain create()');//tmp
 	var rwh = this.cfg.revertWidthHeight;
 	var _w = rwh ? 'height' : 'width';
 	var _h = rwh ? 'width' : 'height';
@@ -21,14 +26,18 @@ preload () {
 	this.registry.set('path_objects', []);
 	this.registry.set('walls', []);
 	this.registry.set('obstacles', (new Phaser.Structs.Map()));
+	this.registry.get('show_path_last_point', false)
 
 	this.lib.config_preprocess(rwh, _w, _h);
-        this.load.image('pause', './assets/images/pause.png');
-}
 
-create () {		
 	this.cameras.main.setSize(this.cameras.main.width, this.cfg.heightField);
-	this.cameras.add(0, this.cfg.heightField, this.cameras.main.width, this.cfg.heightControls).setBounds(0, this.cfg.heightField, this.cameras.main.width, this.cfg.heightControls);
+	if(this.cameras.cameras.length < 2) this.cameras.add(0, this.cfg.heightField, this.cameras.main.width, this.cfg.heightControls).setBounds(0, this.cfg.heightField, this.cameras.main.width, this.cfg.heightControls);
+	for (let _i in this.cameras.cameras) {
+		this.cameras.cameras[_i].setScroll(0, 0);
+		for (let _k in this.cameras.cameras[_i]) {
+			if(_k.indexOf('_fade') === 0) this.cameras.cameras[_i][_k] = 0;
+		}
+	}
 	
 	this.lib.create();
 	
@@ -74,6 +83,7 @@ create () {
 update() {	
 	if(!this.registry.has('player')) return;
 	let player = this.registry.get('player');
+//	console.log(player.pathTween.getValue(), Math.round(player.x * 100) / 100, Math.round(player.y * 100) / 100);//tmp debug to fix start / end 2 frame delay
 	if(this.cfg._pause_scheduled !== undefined && this.cfg._pause_scheduled && player.isFollowing()) {
 		player.pause();
 		this.cfg._pause_scheduled = false;
