@@ -274,21 +274,37 @@ multipath_follower(config, texture) {
 		} else {
 			is_correct = !!is_correct;
 		}
-		var texture_name;
-		var grs = this.sc.make.graphics();
+		var texture_name, coeff_y, minipath_y;
+		var minipath = this.sc.make.graphics();
 		while(true) {
 			texture_name = '_grs'+((Math.random() * 1000000) | 0);
 			if(!this.sc.sys.textures.exists(texture_name)) break;
 		}
-		grs.lineStyle(...this.cfg.controls.button_path_style);	
-		grs.strokePoints(points.movePointsToZeroX());		
-		grs.generateTexture(texture_name);
-		let _plen = points.getLengthX();
+		minipath.lineStyle(...this.cfg.controls.button_path_style);	
+		let min_y = points.findExtrem().min_y;
+		let _points = points.movePoints(-points.getZeroX(), -min_y);
+		let _bounds = Phaser.Geom.Rectangle.FromPoints(_points);
+		//minipath.strokePoints(points.movePointsToZeroX());//tmp to delete	
+		minipath.strokePoints(_points);		
+		let minipath_wh = [Math.ceil(_bounds.width), Math.ceil(_bounds.height)];
+		minipath.generateTexture(texture_name, ...minipath_wh);
+		//let _plen = points.getLengthX();//tmp to delete
 		let btn = this.sc.registry.get('buttons')[button_index];
 		if(btn.path !== undefined && btn.path instanceof Phaser.GameObjects.Image && btn.path.active) btn.path.destroy();
 		let __bounds = btn.bounds;
-		let __coeff = (__bounds.x2 - __bounds.x1 - 8) / _plen;	
-		btn.path = this.sc.add.image(0, 0, texture_name).setScale(__coeff).setOrigin(0).setPosition(__bounds.x1 + 2, __bounds.y1 - 2);		
+		//let __coeff = (__bounds.x2 - __bounds.x1 - 8) / _plen;//tmp to delete
+		let coeff_x = (__bounds.x2 - __bounds.x1 - 2) / minipath_wh[0];	
+		min_y = Math.max(min_y, 0);
+		
+		let __height = (min_y + minipath_wh[1]) * coeff_x;
+		let __max_y = __bounds.y2 - __bounds.y1 - 2;
+		if(__height > __max_y) {
+			coeff_y = __max_y / (min_y + minipath_wh[1]);
+		} else {
+			coeff_y = coeff_x;			
+		}
+		minipath_y = min_y * coeff_y;
+		btn.path = this.sc.add.image(0, 0, texture_name).setScale(coeff_x, coeff_y).setOrigin(0).setPosition(__bounds.x1 + 1, __bounds.y1 + Math.max(minipath_y, 1));
 		btn.is_correct = is_correct;
 	}
 	
