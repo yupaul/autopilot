@@ -9,6 +9,8 @@ class AutopLIB {
 		this.cfg = this.sc.cfg;
 		this.rwh = this.cfg.revertWidthHeight;
 		this.gen_path = this.rwh ? (new AutopGenPathH(sc)) : (new AutopGenPathW(sc));
+		this.update_queue = [];
+		this._tmp = {};
 	}
 	
 	config_preprocess(rwh, _w, _h) {
@@ -277,17 +279,8 @@ multipath_follower(config, texture) {
 					this.sc.registry.get('paths').push(_pos[_pos_i].points);
 					this.show_path(_pos[_pos_i]);
 					
-					if(this.cfg._correct_selected) {						
-						let prev_tail = _all_pos[_all_pos.length - 1][0].tail;
-						let pobj_correct = this.generate_path(prev_tail);	
-						let pobj_correct_xy = [Math.round(pobj_correct.points.getEndPoint()[this.rwh ? 'y' : 'x']), 0];
-						if(this.rwh) pobj_correct_xy.reverse();
-						pobj_correct.wall = this.sc.add.image(pobj_correct_xy[0], pobj_correct_xy[1], this.cfg.wallTextureName).setOrigin(0);
-						let obs = this.generate_obstacles(pobj_correct);
-						let pobj_wrong = this.generate_path(prev_tail, obs);
-						this.sc.registry.get('obstacles').merge(obs, true);
-						this.sc.registry.get('path_objects').push([pobj_correct, pobj_wrong]);							
-					}
+					//if(this.cfg._correct_selected) this.generate_new();
+					if(this.cfg._correct_selected) this.add_to_update_queue('generate_new', AutopRand.randint(3,8));
 				}				
 				for(let _i2 = 0; _i2 < buttons.length; ++_i2) {
 					if(buttons[_i2].path !== undefined) buttons[_i2].path.setAlpha(this.cfg.controls.button_disabled_alpha);		
@@ -295,6 +288,45 @@ multipath_follower(config, texture) {
 				this.cfg._buttons_enabled = false;				
 			}
 		}		
+	}
+	
+	add_to_update_queue(method, num_delay_frames, args) {
+		if(num_delay_frames) {
+			for(let i = 0; i < parseInt(num_delay_frames); i++) {
+				this.update_queue.push(false);
+			}
+		}
+		if(args !== undefined) {
+			if(!(args instanceof Array)) args = [args];
+			this.update_queue.push([method, args]);
+		} else {
+			this.update_queue.push([method]);
+		}
+	}
+	
+	generate_new() {
+		let _all_pos = this.sc.registry.get('path_objects');
+		let prev_tail = _all_pos[_all_pos.length - 1][0].tail;
+		let pobj_correct = this.generate_path(prev_tail);	
+		this.add_to_update_queue('generate_new_step2', AutopRand.randint(2,6), [pobj_correct, prev_tail]);
+		this.add_to_update_queue('generate_new_step3', AutopRand.randint(2,6), [pobj_correct, prev_tail]);
+	}
+	
+	generate_new_step2(pobj_correct, prev_tail) {
+		let pobj_correct_xy = [Math.round(pobj_correct.points.getEndPoint()[this.rwh ? 'y' : 'x']), 0];
+		if(this.rwh) pobj_correct_xy.reverse();
+		pobj_correct.wall = this.sc.add.image(pobj_correct_xy[0], pobj_correct_xy[1], this.cfg.wallTextureName).setOrigin(0);		
+	}
+	
+	generate_new_step3(pobj_correct, prev_tail) {
+		let obs = this.generate_obstacles(pobj_correct);
+		this.add_to_update_queue('generate_new_step4', AutopRand.randint(2,6), [pobj_correct, prev_tail, obs]);
+	}
+
+	generate_new_step4(pobj_correct, prev_tail, obs) {
+		let pobj_wrong = this.generate_path(prev_tail, obs);
+		this.sc.registry.get('obstacles').merge(obs, true);
+		this.sc.registry.get('path_objects').push([pobj_correct, pobj_wrong]);		
 	}
 	
 	controls_set_path(points, button_index, is_correct) {
