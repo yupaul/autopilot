@@ -12,7 +12,7 @@ class PlayMain extends Phaser.Scene {
   }
 
 preload () {
-        this.load.image('pause', './assets/images/pause.png');
+     this.load.image('pause', './assets/images/pause.png');
 }
 
 create () {		

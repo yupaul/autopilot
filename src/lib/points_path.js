@@ -16,20 +16,25 @@ class AutopPointsPath {
 		return [this.points.length];
 	}
 	
-	getPointsRects(offset, grid_size) {	
+	getPointsRects(offset, grid_size, rwh) {	
 		let out = [];
 		let next_grid_x_, next_grid_x = false;
 		for(let i = 0; i < this.points.length; i++) {			
 			if(grid_size) {
 				next_grid_x_ = next_grid_x;
 				if(next_grid_x) {
-					if(this.points[i].x > next_grid_x) next_grid_x_ += grid_size;
+					if(rwh) {
+						if(this.points[i].y < next_grid_x) next_grid_x_ -= grid_size;
+					} else {
+						if(this.points[i].x > next_grid_x) next_grid_x_ += grid_size;
+					}
 				} else {
-					next_grid_x_ = Phaser.Math.Snap.Floor(this.points[i].x, grid_size);
+					next_grid_x_ = Phaser.Math.Snap[rwh? 'Ceil' : 'Floor'](this.points[i][rwh ? 'y' : 'x'], grid_size);
 				}
 				if(next_grid_x !== next_grid_x_) {					
 					next_grid_x = next_grid_x_;
-					this.grid.set(i, [next_grid_x, Phaser.Math.Snap.Floor(this.points[i].y, grid_size)].join('_'));					
+					let _ar = rwh ? [Phaser.Math.Snap.Floor(this.points[i].x, grid_size), next_grid_x] : [next_grid_x, Phaser.Math.Snap.Floor(this.points[i].y, grid_size)];
+					this.grid.set(i, _ar.join('_'));					
 				}
 			}
 			let offset2 = offset * 2;
@@ -51,9 +56,9 @@ class AutopPointsPath {
 		return out;
 	}
 	
-	makeRtree(offset, grid_size) {
+	makeRtree(offset, grid_size, rwh) {
 		if(grid_size === undefined) grid_size = 0;
-		this.rtree.load(this.getPointsRects(offset, grid_size));
+		this.rtree.load(this.getPointsRects(offset, grid_size, rwh));
 	}
 	
 	getPoints() {
@@ -90,8 +95,16 @@ class AutopPointsPath {
 		return this.movePoints(-this.points[0].x, 0);
 	}
 	
+	movePointsToZeroY() {
+		return this.movePoints(-this.points[0].y, 0);
+	}	
+	
 	getZeroX() {
 		return this.points[0].x;
+	}
+
+	getZeroY() {
+		return this.points[0].y;
 	}
 	
 	findExtrem() {		
@@ -147,6 +160,11 @@ class AutopPointsPath {
 	getLengthX() {
 		return Math.abs(this.points[this.points.length - 1].x - this.points[0].x);
 	}
+	
+	getLengthY() {
+		return Math.abs(this.points[this.points.length - 1].y - this.points[0].y);
+	}
+	
 }
 
 export default AutopPointsPath

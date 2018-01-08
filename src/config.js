@@ -2,17 +2,19 @@ import PlayMain from './scene/play_main';
 import Menu from './scene/menu';
 
 let parent_element_id = 'game_div';
+let _w = document.getElementById(parent_element_id).clientWidth;
+let _h = document.getElementById(parent_element_id).clientHeight;
 
 let AutopCFG = {
     type: Phaser.AUTO,
-    width: document.getElementById(parent_element_id).clientWidth, //1200
-    height: document.getElementById(parent_element_id).clientHeight, //600
+    width: _w, //1200
+    height: _h, //600
     backgroundColor: '#000000',//'#2d2d2d', '#ffffff'
     parent: parent_element_id,
     scene: [Menu, PlayMain],	//other
 	custom: {
 		dbg: true, //tmp
-		revertWidthHeight: false,
+		revertWidthHeight: (_h > _w),//false, //tmp
 		playerFillStyle: 0xffffff, //0x0000ff
 		playerTrianglePoints: [0,0,0,30,15,15],
 		playerWidthHeight: [30, 30],		
@@ -36,6 +38,7 @@ let AutopCFG = {
 		
 		randomizeButtons: true, //tmp
 		gameOver: true, //tmp
+		gameOverFade: 1200,
 		wallWidth: 15,
 		wallStyle: 0xffffff, //0xAB2121
 		wallOpenAlpha: 0.03,

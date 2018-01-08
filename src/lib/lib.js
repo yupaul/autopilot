@@ -1,19 +1,41 @@
 import AutopRand from '../util/autoprand';
 import AutopPointsPath from './points_path';
+import {AutopGenPathW, AutopGenPathH} from './gen_path';
 
 class AutopLIB {
 	
 	constructor(sc) {
 		this.sc = sc;
 		this.cfg = this.sc.cfg;
+		this.rwh = this.cfg.revertWidthHeight;
+		this.gen_path = this.rwh ? (new AutopGenPathH(sc)) : (new AutopGenPathW(sc));
 	}
 	
 	config_preprocess(rwh, _w, _h) {
+		let cfg_w, cfg_h;
+		this.cfg._rwhcfg = {
+			w : _w,
+			h : _h
+		};
+
 		this.cfg._current_camera_offset = 0;
 		this.cfg._current_camera_inc_speed = 0;		
-		this.cfg._cameraOffset = Math.round(this.sc.game.config[_w] * this.cfg.cameraOffset);
+		
 		this.cfg.heightControls = Math.round(this.sc.game.config.height * this.cfg.heightControlsRate);
-		this.cfg.heightField = this.sc.game.config.height - this.cfg.heightControls;
+		this.cfg.heightField = this.sc.game.config.height - this.cfg.heightControls;		
+		
+		if(rwh) {
+			cfg_w = this.cfg.heightField;
+			cfg_h = this.sc.game.config[_h];
+		} else {
+			cfg_w = this.sc.game.config[_w];
+			cfg_h = this.cfg.heightField;
+		}	
+		this.cfg._rwhcfg.cfg_w = cfg_w;
+		this.cfg._rwhcfg.cfg_h = cfg_h;
+		
+		this.cfg._cameraOffset = Math.round(cfg_w * (rwh ? (1 - this.cfg.cameraOffset) : this.cfg.cameraOffset));
+
 	
 		this.cfg.grid = (this.cfg.playerWidthHeight[0] + this.cfg.playerWidthHeight[1]);
 		this.cfg.rtreeOffset = Math.round((this.cfg.playerWidthHeight[0] + this.cfg.playerWidthHeight[1]) * this.cfg.rtreeCoeff);
@@ -22,27 +44,27 @@ class AutopLIB {
 		} else {
 			this.cfg.speed = this.cfg.speed_initial;
 		}		
-		this.cfg.gen_path.start_x = this.cfg.start_x;
+		this.cfg.gen_path.start_x = rwh ? (this.cfg.heightField - this.cfg.start_x) : this.cfg.start_x;
 		this.cfg.gen_path.min_y = this.cfg.playerWidthHeight[1];
 		this.cfg.gen_path.start_y = Math.round(this.cfg.heightField * 0.5 + this.cfg.gen_path.min_y);		
-		this.cfg.gen_path.max_y = (rwh ? this.sc.game.config[_h] : this.cfg.heightField) - this.cfg.gen_path.min_y;
+		this.cfg.gen_path.max_y = cfg_h - this.cfg.gen_path.min_y;
 		this.cfg.gen_path.scale_y_length = (this.cfg.gen_path.max_y - this.cfg.gen_path.min_y) / (this.cfg.gen_path.scale_y + 1);
-		this.cfg.gen_path.min_path_x_length = Math.round(this.sc.game.config[_w] * 0.5 - this.sc.game.config[_w] * this.cfg.gen_path.path_x_spread);
-		this.cfg.gen_path.max_path_x_length = Math.round(this.sc.game.config[_w] * 0.5 + this.sc.game.config[_w] * this.cfg.gen_path.path_x_spread);
+		this.cfg.gen_path.min_path_x_length = Math.round(cfg_w * (0.5 - this.cfg.gen_path.path_x_spread));
+		this.cfg.gen_path.max_path_x_length = Math.round(cfg_w * (0.5 + this.cfg.gen_path.path_x_spread));
 		this.cfg.gen_path.min_segment_length = this.cfg.playerWidthHeight[0] + this.cfg.playerWidthHeight[1];
 		this.cfg.gen_path.rwh = rwh;
-		this.cfg.gen_path.screen_length = this.sc.game.config[_w];
+		this.cfg.gen_path.screen_length = cfg_w;
 	}
 	
 	camera_follow(player) {
-		if(!this.cfg.revertWidthHeight) {
+		if(!this.rwh) {
 			if(player.x > this.cfg._cameraOffset) {
 				let _p = Math.round(player.x) - this.cfg._cameraOffset;
 				if(_p > this.sc.cameras.main.scrollX) this.sc.cameras.main.setScroll(_p, 0);
 			}
 		} else {
-			if(player.y > (this.sc.game.config.height - this.cfg._cameraOffset)) {
-				let _p = Math.round(player.y) + this.cfg._cameraOffset;
+			if(player.y < this.cfg._cameraOffset) {
+				let _p = Math.round(player.y) - this.cfg._cameraOffset;
 				if(_p < this.sc.cameras.main.scrollY) this.sc.cameras.main.setScroll(0, _p);
 			}	
 		}
@@ -59,7 +81,7 @@ class AutopLIB {
 	}
 	
 	player_update(player) {
-		let _k = Phaser.Math.Snap.Floor(player.x, this.cfg.grid);
+		let _k = Phaser.Math.Snap[this.rwh ? 'Ceil' : 'Floor'](player[this.rwh ? 'y' : 'x'], this.cfg.grid);
 		let _rects = this.sc.registry.get('obstacles').get(_k);
 		if(_rects && _rects.length > 0) {
 			for(let _i = 0; _i < _rects.length; _i++) {
@@ -116,9 +138,10 @@ class AutopLIB {
 	
 multipath_follower(config, texture) {
 	let _p = this.sc.registry.get('paths').shift();
+	let _start_point = _p.getStartPoint();
 	let _clen0 = _p.getCurveLengths();
 	config.duration = Math.round((_clen0[_clen0.length - 1] / this.cfg.speed) * 1000);
-    let _player = this.sc.add.follower(_p, 0, 0, texture);		
+    let _player = this.sc.add.follower(_p, _start_point.x, _start_point.y, texture);		
 	
 	config.onComplete = () => {
 			let _path = this.sc.registry.get('paths').shift();			
@@ -143,8 +166,10 @@ multipath_follower(config, texture) {
 }
 
 	controls_make_buttons() {
-		let button_width = Math.round(this.sc.game.config.width * this.cfg.heightControlsRate * this.cfg.pathLength * this.cfg.controls.button_height);
-		let button_height = Math.round(this.sc.game.config.height * (1 - this.cfg.heightControlsRate) * this.cfg.heightControlsRate * this.cfg.controls.button_height);
+		let _tmp = [this.cfg.pathLength,  (1 - this.cfg.heightControlsRate)];
+		if(this.rwh) _tmp.reverse();
+		let button_width = Math.round(this.sc.game.config.width * _tmp[0] * this.cfg.heightControlsRate * this.cfg.controls.button_height);
+		let button_height = Math.round(this.sc.game.config.height * _tmp[1] * this.cfg.heightControlsRate * this.cfg.controls.button_height);
 		
 		let position = [
 			Math.round(this.sc.game.config.width * 0.5 - this.cfg.controls.button_gap - button_width * 0.5), 
@@ -199,7 +224,9 @@ multipath_follower(config, texture) {
 	wall_make() {
 		var grs_rect = this.sc.make.graphics();		
 		grs_rect.fillStyle(this.cfg.wallStyle);
-		grs_rect.fillRect(0, 0, this.cfg.wallWidth, this.cfg.heightField).generateTexture(this.cfg.wallTextureName, this.cfg.wallWidth, this.cfg.heightField); 
+		let _wh = [this.cfg.wallWidth, this.cfg.heightField];
+		if(this.rwh) _wh.reverse();
+		grs_rect.fillRect(0, 0, ..._wh).generateTexture(this.cfg.wallTextureName, ..._wh); 
 	}	
 	
 	controls_buttons_enable() {
@@ -252,8 +279,10 @@ multipath_follower(config, texture) {
 					
 					if(this.cfg._correct_selected) {						
 						let prev_tail = _all_pos[_all_pos.length - 1][0].tail;
-						let pobj_correct = this.generate_path(prev_tail);		
-						pobj_correct.wall = this.sc.add.image(Math.round(pobj_correct.points.getEndPoint().x), 0, this.cfg.wallTextureName).setOrigin(0);
+						let pobj_correct = this.generate_path(prev_tail);	
+						let pobj_correct_xy = [Math.round(pobj_correct.points.getEndPoint()[this.rwh ? 'y' : 'x']), 0];
+						if(this.rwh) pobj_correct_xy.reverse();
+						pobj_correct.wall = this.sc.add.image(pobj_correct_xy[0], pobj_correct_xy[1], this.cfg.wallTextureName).setOrigin(0);
 						let obs = this.generate_obstacles(pobj_correct);
 						let pobj_wrong = this.generate_path(prev_tail, obs);
 						this.sc.registry.get('obstacles').merge(obs, true);
@@ -274,37 +303,16 @@ multipath_follower(config, texture) {
 		} else {
 			is_correct = !!is_correct;
 		}
-		var texture_name, coeff_y, minipath_y;
+		var texture_name;
 		var minipath = this.sc.make.graphics();
 		while(true) {
 			texture_name = '_grs'+((Math.random() * 1000000) | 0);
 			if(!this.sc.sys.textures.exists(texture_name)) break;
 		}
-		minipath.lineStyle(...this.cfg.controls.button_path_style);	
-		let min_y = points.findExtrem().min_y;
-		let _points = points.movePoints(-points.getZeroX(), -min_y);
-		let _bounds = Phaser.Geom.Rectangle.FromPoints(_points);
-		//minipath.strokePoints(points.movePointsToZeroX());//tmp to delete	
-		minipath.strokePoints(_points);		
-		let minipath_wh = [Math.ceil(_bounds.width), Math.ceil(_bounds.height)];
-		minipath.generateTexture(texture_name, ...minipath_wh);
-		//let _plen = points.getLengthX();//tmp to delete
 		let btn = this.sc.registry.get('buttons')[button_index];
-		if(btn.path !== undefined && btn.path instanceof Phaser.GameObjects.Image && btn.path.active) btn.path.destroy();
-		let __bounds = btn.bounds;
-		//let __coeff = (__bounds.x2 - __bounds.x1 - 8) / _plen;//tmp to delete
-		let coeff_x = (__bounds.x2 - __bounds.x1 - 2) / minipath_wh[0];	
-		min_y = Math.max(min_y, 0);
-		
-		let __height = (min_y + minipath_wh[1]) * coeff_x;
-		let __max_y = __bounds.y2 - __bounds.y1 - 2;
-		if(__height > __max_y) {
-			coeff_y = __max_y / (min_y + minipath_wh[1]);
-		} else {
-			coeff_y = coeff_x;			
-		}
-		minipath_y = min_y * coeff_y;
-		btn.path = this.sc.add.image(0, 0, texture_name).setScale(coeff_x, coeff_y).setOrigin(0).setPosition(__bounds.x1 + 1, __bounds.y1 + Math.max(minipath_y, 1));
+		if(btn.path !== undefined && btn.path instanceof Phaser.GameObjects.Image && btn.path.active) btn.path.destroy();		
+		minipath.lineStyle(...this.cfg.controls.button_path_style);	
+		btn.path = this.gen_path.minipath(minipath, points, btn, texture_name);
 		btn.is_correct = is_correct;
 	}
 	
@@ -541,18 +549,19 @@ multipath_follower(config, texture) {
 	} 
 	
 	gameover() {
-		if(!this.cfg.gameOver) return; // || this.cfg._do_gameover !== undefined
-//		this.cfg._do_gameover = true;
+		if(!this.cfg.gameOver) return;
 		this.sc.game.registry.set('_do_gameover', true);
-		this.sc.cameras.cameras.forEach(function(c) {c.fade(1200);});
+		this.sc.cameras.cameras.forEach((c) => {c.fade(this.cfg.gameOverFade);});
 		var _this = this;
-		this.sc.time.addEvent({delay: 1100, callback: function() {	                         				
+		this.sc.time.addEvent({delay: Math.round(this.cfg.gameOverFade * 0.9), callback: function() {	                         				
 			_this.sc.scene.stop('PlayMain');
 			_this.cfg.speed = _this.cfg.speed_initial;
-//			_this.sc.cameras.main.setScroll(0, 0);
-//			_this.sc.cameras.destroy();
 			_this.sc.scene.start('Menu');
+		
+/*			_this.sc.cameras.main.setScroll(0, 0); //tmp to delete
+			_this.sc.cameras.destroy();
 //			document.getElementById(_this.sc.game.config.parent).innerHTML = '<div style="vertical-align:middle;padding-top:30px"><h1 style="font-size:40px;text-align:center;color:#fff">Game Over<br /><a href="javascript:;" onclick="javascript:document.location.reload();">Restart</a></h1></div>'
+*/
 		}});
 	}
 	
