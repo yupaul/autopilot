@@ -234,7 +234,7 @@ multipath_follower(config, texture) {
 	}	
 
 	section_counter_make() {
-		this.sc.registry.set(this.cfg.sectionCounterName, this.sc.add.text(this.sc.game.config.width * 0.5 - 8, this.cfg.heightField + this.cfg.heightControls * 0.5 - 8, '0', this.cfg.sectionCounterStyle));
+		this.sc.registry.set(this.cfg.sectionCounterName, this.sc.add.text(50, this.cfg.heightField + this.cfg.heightControls * 0.5 - 20, '0', this.cfg.sectionCounterStyle));
 	}
 
 	update_section_counter() {

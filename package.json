@@ -6,6 +6,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "webpack",
+    "devbuild": "webpack --config webpack.nowatch.config.js",
     "deploy": "webpack --config webpack.production.config.js",
     "test": "eslint ./src/**/**.js"
   },
