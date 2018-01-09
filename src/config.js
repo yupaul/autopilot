@@ -2,8 +2,11 @@ import PlayMain from './scene/play_main';
 import Menu from './scene/menu';
 
 let parent_element_id = 'game_div';
-let _w = document.getElementById(parent_element_id).clientWidth;
-let _h = document.getElementById(parent_element_id).clientHeight;
+//let _w = document.getElementById(parent_element_id).innerWidth;
+//let _h = document.getElementById(parent_element_id).innerHeight;
+let _w = window.innerWidth;
+let _h = window.innerHeight;
+
 
 let AutopCFG = {
     type: Phaser.AUTO,
@@ -21,7 +24,7 @@ let AutopCFG = {
 		playerNumBodyParts: 120,
 		playerBodyEaSteps: 3,
 		speed: 120,
-		speedUp: 5,
+		speedUp: 10,
 		cameraOffset: 0.2,
 		start_x: 10,
 		heightControlsRate: 0.2,
