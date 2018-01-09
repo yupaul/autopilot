@@ -80,6 +80,7 @@ class AutopLIB {
 		this.player_body_make();
 		this.grid_cell_make();
 		this.wall_make();		
+		this.section_counter_make();
 	}
 	
 	player_update(player) {
@@ -158,6 +159,7 @@ multipath_follower(config, texture) {
 			_player.setRotateToPath(true, config.rotationOffset, config.verticalAdjust);	
 			if(this.cfg.speedUp) this.cfg.speed += this.cfg.speedUp;	
 			if(!this.cfg._buttons_enabled && this.cfg._correct_selected) this.controls_buttons_enable();
+			this.add_to_update_queue('update_section_counter', 5);
 		},
 	config.onCompleteScope = this.sc;	
 	
@@ -230,6 +232,15 @@ multipath_follower(config, texture) {
 		if(this.rwh) _wh.reverse();
 		grs_rect.fillRect(0, 0, ..._wh).generateTexture(this.cfg.wallTextureName, ..._wh); 
 	}	
+
+	section_counter_make() {
+		this.sc.registry.set(this.cfg.sectionCounterName, this.sc.add.text(this.sc.game.config.width * 0.5 - 8, this.cfg.heightField + this.cfg.heightControls * 0.5 - 8, '0', this.cfg.sectionCounterStyle));
+	}
+
+	update_section_counter() {
+		let current = parseInt(this.sc.registry.get(this.cfg.sectionCounterName).text);
+		this.sc.registry.get(this.cfg.sectionCounterName).setText((current + 1) + '');
+	}
 	
 	controls_buttons_enable() {
 		let _this = this;

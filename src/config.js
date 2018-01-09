@@ -14,7 +14,7 @@ let AutopCFG = {
     scene: [Menu, PlayMain],	//other
 	custom: {
 		dbg: true, //tmp
-		revertWidthHeight: (_h > _w),//false, //tmp
+		revertWidthHeight: false, // (_h > _w) //tmp
 		playerFillStyle: 0xffffff, //0x0000ff
 		playerTrianglePoints: [0,0,0,30,15,15],
 		playerWidthHeight: [30, 30],		
@@ -29,6 +29,10 @@ let AutopCFG = {
 		gridCellLineStyle: false, //[1, 0x627261, 1] //tmp
 		gridCellFillStyle: 0xffffff, // 0x007090
 		gridCellTextureName: 'grid_cell',
+		gameOverStyle: {color: '#ffffff', fill: '#ffffff', fontSize: '60px Tahoma'},
+		gameOverTest: 'Game Over',
+		sectionCounterStyle: {color: '#cd3221', fill: '#cd3221', fontSize: '40px Tahoma'},
+		sectionCounteName: 'section_counter',
 		
 		showPathStyle: [1, 0xffffff, 0.4], //[1, 0xff0000, 0.2],
 		showPathSubSet: 20,

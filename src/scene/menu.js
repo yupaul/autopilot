@@ -32,7 +32,7 @@ create() {
 	let play_triangle = new Phaser.Geom.Triangle(..._play_button_coords);
 	_play_button.fillStyle(this.cfg.menu.play_button_style).fillTriangle(..._play_button_coords);
 
-	let game_over_text = this.add.text(Math.round((0.5 + _hsize) * w * 0.5), Math.round((0.5 - _hsize) * h * 0.5), 'Game Over', {color: '#ffffff', fill: '#ffffff', fontSize: '60px Tahoma'});
+	let game_over_text = this.add.text(Math.round((0.5 + _hsize) * w * 0.5), Math.round((0.5 - _hsize) * h * 0.5), this.cfg.gameOverTest, this.cfg.gameOverStyle);
 	if(!this.game.registry.get('_do_gameover')) {
 		game_over_text.visible = 0;
 	} else {
