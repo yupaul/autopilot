@@ -41,6 +41,8 @@ class AutopLIB {
 	
 		this.cfg.grid = (this.cfg.playerWidthHeight[0] + this.cfg.playerWidthHeight[1]);
 		this.cfg.rtreeOffset = Math.round((this.cfg.playerWidthHeight[0] + this.cfg.playerWidthHeight[1]) * this.cfg.rtreeCoeff);
+		this.cfg.speed = Math.round(cfg_w * this.cfg.speedCoeff);
+//		this.cfg.speedUp = Math.round(this.cfg.speed * this.cfg.speedUpCoeff);
 		if(this.cfg.speed_intial === undefined) {
 			this.cfg.speed_initial = this.cfg.speed;
 		} else {
