@@ -31,6 +31,7 @@ let AutopCFG = {
 		start_x: 10,
 		heightControlsRate: 0.2,
 		pathLength: 0.5,
+		maxNumPaths: 4,
 		gridCellLineStyle: false, //[1, 0x627261, 1] //tmp
 		gridCellFillStyle: 0xffffff, // 0x007090
 		gridCellTextureName: 'grid_cell',

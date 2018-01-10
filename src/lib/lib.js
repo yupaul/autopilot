@@ -177,31 +177,59 @@ multipath_follower(config, texture) {
 		let button_width = Math.round(this.sc.game.config.width * _tmp[0] * this.cfg.heightControlsRate * this.cfg.controls.button_height);
 		let button_height = Math.round(this.sc.game.config.height * _tmp[1] * this.cfg.heightControlsRate * this.cfg.controls.button_height);
 		
-		let position = [
+		/*let position = [ //tmp to delete
 			Math.round(this.sc.game.config.width * 0.5 - this.cfg.controls.button_gap - button_width * 0.5), 
 			Math.round(this.sc.game.config.height - this.cfg.heightControls * 0.5)
-		];
+		];*/
 		
 		var grs_rect = this.sc.make.graphics();
 		grs_rect.lineStyle(...this.cfg.controls.button_bounds_style);
 		grs_rect.strokeRect(0, 0, button_width, button_height).generateTexture('button_bounds', button_width, button_height); 
-		this.sc.registry.get('buttons').push({button: this.sc.add.image(0, 0, 'button_bounds').setPosition(...position).setInteractive()});
-//		this.sc.registry.get('buttons').push({button: this.sc.add.image(position[0], position[1], 'button_bounds').setInteractive()});//tmp
+		for(let i = 0; i < this.cfg.maxNumPaths; i++) {
+//			this.sc.registry.get('buttons').push({button: this.sc.add.image(0, 0, 'button_bounds').setPosition(...position).setInteractive()}); //tmp to delete
+			this.sc.registry.get('buttons').push({button: this.sc.add.image(0, 0, 'button_bounds').setInteractive().setVisible(false)});
+		}
+/*		this.sc.registry.get('buttons').push({button: this.sc.add.image(position[0], position[1], 'button_bounds').setInteractive()});//tmp to delete
 		position[0] = Math.round(this.sc.game.config.width * 0.5 + this.cfg.controls.button_gap + button_width * 0.5);
 		this.sc.registry.get('buttons').push({button: this.sc.add.image(0, 0, 'button_bounds').setPosition(...position).setInteractive().setVisible(false)});	
 		
 		for(let i = 0; i < this.sc.registry.get('buttons').length; i++) {
-			let __bounds = this.sc.registry.get('buttons')[i].button.getBounds();
-			this.sc.registry.get('buttons')[i].bounds = {
-				x1 : __bounds.x,
-				x2 : __bounds.x + __bounds.width,
-				y1 : __bounds.y,
-				y2 : __bounds.y + __bounds.height,
-			};		
+			this._set_button_bounds('buttons', i);
+		}*/
+		this.activate_path_buttons(2);//tmp
+		this.sc.registry.get('buttons')[1].button.setVisible(false);//tmp
+	}
+	
+	activate_path_buttons(num) {	
+		let x;		
+		let _tmp = [this.cfg.pathLength,  (1 - this.cfg.heightControlsRate)];
+		if(this.rwh) _tmp.reverse();
+		let button_width = Math.round(this.sc.game.config.width * _tmp[0] * this.cfg.heightControlsRate * this.cfg.controls.button_height);
+		if((num % 2) === 0) {
+			x = Math.round((this.sc.game.config.width - this.cfg.controls.button_gap * num - button_width * (num - 1)) * 0.5);
+		} else {
+			x = Math.round((this.sc.game.config.width - this.cfg.controls.button_gap * (num - 1) - button_width * num) * 0.5);
 		}
-		this.sc.registry.set('button_pause', {button: this.sc.add.image(Math.round(this.sc.game.config.width * this.cfg.controls.pause_button_x_position), position[1], 'pause').setInteractive()});
-		let __pbounds = this.sc.registry.get('button_pause').button.getBounds();
-		this.sc.registry.get('button_pause').bounds = {
+		let y = Math.round(this.sc.game.config.height - this.cfg.heightControls * 0.5);
+		for(let i = 0; i < this.sc.registry.get('buttons').length; i++) {
+			if(i >= num) {
+				if(this.sc.registry.get('buttons')[i].path && this.sc.registry.get('buttons')[i].path.destroy) {
+					this.sc.registry.get('buttons')[i].path.destroy();
+					this.sc.registry.get('buttons')[i].path = false;
+				}
+				this.sc.registry.get('buttons')[i].button.setVisible(false);
+			} else {
+				this.sc.registry.get('buttons')[i].button.setPosition(x + (button_width + this.cfg.controls.button_gap) * i, y).setVisible(true);
+				this._set_button_bounds('buttons', i);
+			}
+		}
+
+	}
+
+	_set_button_bounds(k, i) {
+		let btn = i !== undefined ? this.sc.registry.get(k)[i] : this.sc.registry.get(k);
+		let __pbounds = btn.button.getBounds();
+		btn.bounds = {
 			x1 : __pbounds.x,
 			x2 : __pbounds.x + __pbounds.width,
 			y1 : __pbounds.y,
@@ -210,6 +238,8 @@ multipath_follower(config, texture) {
 	}
 	
 	controls_make() {
+		this.sc.registry.set('button_pause', {button: this.sc.add.image(Math.round(this.sc.game.config.width * this.cfg.controls.pause_button_x_position), Math.round(this.sc.game.config.height - this.cfg.heightControls * 0.5), 'pause').setInteractive()});
+		this._set_button_bounds('button_pause');
 		var gr_separator_line = this.sc.add.graphics();
 		gr_separator_line.lineStyle(...this.cfg.controls.separator_line_style);	
 		let _l = new Phaser.Curves.Line([0, this.cfg.heightField + 1, this.sc.game.config.width + 1, this.cfg.heightField + 1]);
@@ -249,8 +279,9 @@ multipath_follower(config, texture) {
 		this.sc.time.addEvent({delay: AutopRand.randint(...this.cfg.buttonEnableDelay), callback: function() {
 			_this.cfg._buttons_enabled = true;
 			let _pos = _this.sc.registry.get('path_objects')[0];
-			let btn_order = [0, 1];
-			if(_this.cfg.randomizeButtons && AutopRand.coinflip()) btn_order.reverse();
+			let btn_order = [...Array(_pos.length).keys()];
+			if(_this.cfg.randomizeButtons) Phaser.Utils.Array.Shuffle(btn_order);
+			this.activate_path_buttons(_pos.length);
 			for(let _i = 0; _i < _pos.length; _i++) {
 				_this.controls_set_path(_pos[_i].points, btn_order[_i], !_i);
 			}
@@ -267,7 +298,7 @@ multipath_follower(config, texture) {
 		}
 		let buttons = this.sc.registry.get('buttons');		
 		let button_clicked = false;
-		for(let i = 0; i < buttons.length; i++) {
+		for(let i = 0; i < buttons.length; i++) { // tmp
 			if(!buttons[i].button.visible) continue;
 			if(event.x > buttons[i].bounds.x1 && event.y > buttons[i].bounds.y1 && event.x < buttons[i].bounds.x2 && event.y < buttons[i].bounds.y2) {
 				button_clicked = true;
@@ -277,9 +308,7 @@ multipath_follower(config, texture) {
 				if(this.cfg._just_started) {
 					this.cfg._just_started = false;
 					this.cfg._correct_selected = true;
-					for(let i2 = 0; i2 < buttons.length; i2++) {
-						if(!buttons[i2].button.visible) buttons[i2].button.visible = true;
-					}					
+					buttons[1].button.setVisible(true);
 					this.controls_buttons_enable();
 				} else {
 					this.cfg._correct_selected = buttons[i].is_correct;
@@ -296,9 +325,10 @@ multipath_follower(config, texture) {
 					if(this.cfg._correct_selected) this.add_to_update_queue('generate_new', AutopRand.randint(3,8));
 				}				
 				for(let _i2 = 0; _i2 < buttons.length; ++_i2) {
-					if(buttons[_i2].path !== undefined) buttons[_i2].path.setAlpha(this.cfg.controls.button_disabled_alpha);		
+					if(buttons[_i2].button.visible && buttons[_i2].path !== undefined) buttons[_i2].path.setAlpha(this.cfg.controls.button_disabled_alpha);		
 				}				
 				this.cfg._buttons_enabled = false;				
+				break;
 			}
 		}		
 	}
@@ -340,7 +370,21 @@ multipath_follower(config, texture) {
 		let pobj_wrong = this.generate_path(prev_tail, obs);
 		this.sc.registry.get('obstacles').merge(obs, true);
 		this.sc.registry.get('path_objects').push([pobj_correct, pobj_wrong]);		
+		if(this.cfg.maxNumPaths > 2 && AutopRand.chanceOneIn(3)) {
+			let _to_gen = this.cfg.maxNumPaths - 2;
+			if(_to_gen > 1) _to_gen = AutopRand.randint(1, _to_gen);
+			for(let i = 0; i < _to_gen; i++) {
+				this.add_to_update_queue('generate_new_step4_2', AutopRand.randint(2,6), [prev_tail, obs]); //tmp
+			}
+		}
 	}
+
+	generate_new_step4_2(prev_tail, obs) {
+		let pobj_wrong = this.generate_path(prev_tail, obs);
+		let l = this.sc.registry.get('path_objects').length;
+		this.sc.registry.get('path_objects')[l - 1].push(pobj_wrong);		
+	}
+
 	
 	controls_set_path(points, button_index, is_correct) {
 		if(is_correct === undefined) {
@@ -547,7 +591,7 @@ multipath_follower(config, texture) {
 				}
 				let _min_y_i = _min_y.keys();
 				if(_min_y_i.length > 0) {
-					_min_y_i = Phaser.Utils.Array.Shuffle(_min_y_i);
+					Phaser.Utils.Array.Shuffle(_min_y_i);
 					let i = _min_y_i[0];
 					path[i][1] = _min_y.get(i)[2] + AutopRand.randint(1, this.cfg.grid);
 					intersected_wo = true;
