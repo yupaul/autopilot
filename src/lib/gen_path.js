@@ -3,6 +3,7 @@ class AutopGenPath {
 
 	constructor(sc) {
 		this.sc = sc;
+		this.offset = 3;
 	}
 }
 
@@ -23,11 +24,11 @@ export class AutopGenPathW extends AutopGenPath {
 		minipath.generateTexture(texture_name, ...minipath_wh);
 
 		let __bounds = btn.bounds;
-		let coeff_xy = (__bounds.x2 - __bounds.x1 - 2) / minipath_wh[0];	
+		let coeff_xy = (__bounds.x2 - __bounds.x1 - this.offset * 2) / minipath_wh[0];	
 		min_xy = Math.max(min_xy, 0);
 		
 		let __height = (min_xy + minipath_wh[1]) * coeff_xy;
-		let __max_xy = __bounds.y2 - __bounds.y1 - 2;
+		let __max_xy = __bounds.y2 - __bounds.y1 - this.offset * 2;
 		if(__height > __max_xy) {
 			coeff_y = __max_xy / (min_xy + minipath_wh[1]);
 		} else {
@@ -35,7 +36,7 @@ export class AutopGenPathW extends AutopGenPath {
 		}
 		let coeff_x = coeff_xy;
 		minipath_xy = min_xy * coeff_y;
-		return this.sc.add.image(0, 0, texture_name).setScale(coeff_x, coeff_y).setOrigin(0).setPosition(__bounds.x1 + 1, __bounds.y1 + Math.max(minipath_xy, 1));
+		return this.sc.add.image(0, 0, texture_name).setScale(coeff_x, coeff_y).setOrigin(0).setPosition(__bounds.x1 + this.offset, __bounds.y1 + Math.max(minipath_xy, this.offset));
 	}
 
 
@@ -58,11 +59,11 @@ export class AutopGenPathH extends AutopGenPath {
 		minipath.generateTexture(texture_name, ...minipath_wh);
 
 		let __bounds = btn.bounds;
-		let coeff_xy = (__bounds.y2 - __bounds.y1 - 2) / minipath_wh[1];	
+		let coeff_xy = (__bounds.y2 - __bounds.y1 - this.offset * 2) / minipath_wh[1];	
 		min_xy = Math.max(min_xy, 0);
 		
 		let __height = (min_xy + minipath_wh[0]) * coeff_xy;
-		let __max_xy = __bounds.x2 - __bounds.x1 - 2;
+		let __max_xy = __bounds.x2 - __bounds.x1 - this.offset * 2;
 		if(__height > __max_xy) {
 			coeff_x = __max_xy / (min_xy + minipath_wh[0]);
 		} else {
@@ -70,7 +71,7 @@ export class AutopGenPathH extends AutopGenPath {
 		}
 		let coeff_y = coeff_xy;
 		minipath_xy = min_xy * coeff_x;
-		return this.sc.add.image(0, 0, texture_name).setScale(coeff_x, coeff_y).setOrigin(0).setPosition(__bounds.x1 + Math.max(minipath_xy, 1), __bounds.y1 + 1);
+		return this.sc.add.image(0, 0, texture_name).setScale(coeff_x, coeff_y).setOrigin(0).setPosition(__bounds.x1 + Math.max(minipath_xy, this.offset), __bounds.y1 + this.offset);
 	}
 
 }

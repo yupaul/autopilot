@@ -48,13 +48,14 @@ class AutopLIB {
 		} else {
 			this.cfg.speed = this.cfg.speed_initial;
 		}		
+		this.cfg.playerNumBodyParts = Math.round(cfg_w * this.cfg.playerNumBodyPartsCoeff);
 		this.cfg.gen_path.start_x = rwh ? (this.cfg.heightField - this.cfg.start_x) : this.cfg.start_x;
 		this.cfg.gen_path.min_y = this.cfg.playerWidthHeight[1];
 		this.cfg.gen_path.start_y = Math.round(this.cfg.heightField * 0.5 + this.cfg.gen_path.min_y);		
 		this.cfg.gen_path.max_y = cfg_h - this.cfg.gen_path.min_y;
 		this.cfg.gen_path.scale_y_length = (this.cfg.gen_path.max_y - this.cfg.gen_path.min_y) / (this.cfg.gen_path.scale_y + 1);
-		this.cfg.gen_path.min_path_x_length = Math.round(cfg_w * (0.5 - this.cfg.gen_path.path_x_spread));
-		this.cfg.gen_path.max_path_x_length = Math.round(cfg_w * (0.5 + this.cfg.gen_path.path_x_spread));
+		this.cfg.gen_path.min_path_x_length = Math.round(cfg_w * (0.5 - this.cfg.gen_path.path_x_spread_min));
+		this.cfg.gen_path.max_path_x_length = Math.round(cfg_w * (0.5 + this.cfg.gen_path.path_x_spread_max));
 		this.cfg.gen_path.min_segment_length = this.cfg.playerWidthHeight[0] + this.cfg.playerWidthHeight[1];
 		this.cfg.gen_path.rwh = rwh;
 		this.cfg.gen_path.screen_length = cfg_w;

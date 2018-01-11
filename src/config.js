@@ -21,7 +21,8 @@ let AutopCFG = {
 		playerFillStyle: 0xffffff, //0x0000ff
 		playerTrianglePoints: [0,0,0,30,15,15],
 		playerWidthHeight: [30, 30],		
-		playerNumBodyParts: 120,
+		playerNumBodyParts: 45,
+		playerNumBodyPartsCoeff: 0.04,
 		playerBodyEaSteps: 3,
 		speedCoeff: 0.08,
 //		speedUpCoeff: 0.07,
@@ -56,7 +57,8 @@ let AutopCFG = {
 		buttonEnableDelay: [600, 1000],
 		rtreeCoeff: 1.2,
 		gen_path: {
-			path_x_spread: 0.1,
+			path_x_spread_min: 0.22,
+			path_x_spread_max: 0.12,
 			scale_y: 6,
 			long_short_probability: 3,			
 			long_multiplier: 2,
