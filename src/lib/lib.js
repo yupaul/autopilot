@@ -9,7 +9,7 @@ class AutopLIB {
 		this.cfg = this.sc.cfg;
 		this.rwh = this.cfg.revertWidthHeight;
 		this.gen_path = this.rwh ? (new AutopGenPathH(sc)) : (new AutopGenPathW(sc));
-		this.update_queue = [];
+//		this.update_queue = []; //tmp to delete
 		this._tmp = {};
 	}
 	
@@ -284,7 +284,7 @@ multipath_follower(config, texture) {
 			if(_this.cfg.randomizeButtons) Phaser.Utils.Array.Shuffle(btn_order);
 			this.activate_path_buttons(_pos.length);
 			for(let _i = 0; _i < _pos.length; _i++) {
-				_this.controls_set_path(_pos[_i].points, btn_order[_i], !_i);
+				_this.controls_set_path(_pos[_i].points, btn_order[_i], !_i, _i);
 			}
 		}, callbackScope: this});		
 	}
@@ -315,7 +315,8 @@ multipath_follower(config, texture) {
 					this.cfg._correct_selected = buttons[i].is_correct;
 					let _all_pos = this.sc.registry.get('path_objects');
 					let _pos = _all_pos.shift();						
-					let _pos_i = this.cfg._correct_selected ? 0 : 1;
+					//let _pos_i = this.cfg._correct_selected ? 0 : 1;
+					let _pos_i = buttons[i].path_index;
 					let _wall = this.sc.registry.get('walls').shift();
 					if(_wall) _wall.setAlpha(this.cfg.wallOpenAlpha);
 					if(_pos[_pos_i].wall !== undefined) this.sc.registry.get('walls').push(_pos[_pos_i].wall);
@@ -335,7 +336,9 @@ multipath_follower(config, texture) {
 	}
 	
 	add_to_update_queue(method, num_delay_frames, args) {
-		if(num_delay_frames) {
+		if(args !== undefined && !(args instanceof Array)) args = [args];
+		this.sc.time.addEvent({delay: num_delay_frames * 20, callback: () => {args ? this[method](...args) : this[method]();}, callbackScope: this});
+/*		if(num_delay_frames) {
 			for(let i = 0; i < parseInt(num_delay_frames); i++) {
 				this.update_queue.push(false);
 			}
@@ -345,7 +348,7 @@ multipath_follower(config, texture) {
 			this.update_queue.push([method, args]);
 		} else {
 			this.update_queue.push([method]);
-		}
+		} */ //tmp to delete
 	}
 	
 	generate_new() {
@@ -371,7 +374,7 @@ multipath_follower(config, texture) {
 		let pobj_wrong = this.generate_path(prev_tail, obs);
 		this.sc.registry.get('obstacles').merge(obs, true);
 		this.sc.registry.get('path_objects').push([pobj_correct, pobj_wrong]);		
-		if(this.cfg.maxNumPaths > 2 && AutopRand.chanceOneIn(3)) {
+		if(this.cfg.maxNumPaths > 2 && AutopRand.chanceOneIn(3)) {//tmp
 			let _to_gen = this.cfg.maxNumPaths - 2;
 			if(_to_gen > 1) _to_gen = AutopRand.randint(1, _to_gen);
 			for(let i = 0; i < _to_gen; i++) {
@@ -387,7 +390,7 @@ multipath_follower(config, texture) {
 	}
 
 	
-	controls_set_path(points, button_index, is_correct) {
+	controls_set_path(points, button_index, is_correct, path_index) {
 		if(is_correct === undefined) {
 			is_correct = false;
 		} else {
@@ -403,6 +406,7 @@ multipath_follower(config, texture) {
 		if(btn.path !== undefined && btn.path instanceof Phaser.GameObjects.Image && btn.path.active) btn.path.destroy();		
 		minipath.lineStyle(...this.cfg.controls.button_path_style);	
 		btn.path = this.gen_path.minipath(minipath, points, btn, texture_name);
+		btn.path_index = path_index;
 		btn.is_correct = is_correct;
 	}
 	

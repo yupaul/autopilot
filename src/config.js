@@ -57,8 +57,8 @@ let AutopCFG = {
 		buttonEnableDelay: [600, 1000],
 		rtreeCoeff: 1.2,
 		gen_path: {
-			path_x_spread_min: 0.22,
-			path_x_spread_max: 0.12,
+			path_x_spread_min: 0.1,
+			path_x_spread_max: 0.1,
 			scale_y: 6,
 			long_short_probability: 3,			
 			long_multiplier: 2,
