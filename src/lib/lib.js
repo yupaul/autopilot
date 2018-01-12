@@ -284,7 +284,7 @@ multipath_follower(config, texture) {
 			if(_this.cfg.randomizeButtons) Phaser.Utils.Array.Shuffle(btn_order);
 			this.activate_path_buttons(_pos.length);
 			for(let _i = 0; _i < _pos.length; _i++) {
-				_this.controls_set_path(_pos[_i].points, btn_order[_i], !_i, _i);
+				_this.controls_set_path(_pos[_i].points, btn_order[_i], _pos[_i].is_correct, _i);
 			}
 		}, callbackScope: this});		
 	}
@@ -354,8 +354,9 @@ multipath_follower(config, texture) {
 	generate_new() {
 		let _all_pos = this.sc.registry.get('path_objects');
 		let prev_tail = _all_pos[_all_pos.length - 1][0].tail;
-		let pobj_correct = this.generate_path(prev_tail);	
-		this.add_to_update_queue('generate_new_step2', AutopRand.randint(2,6), [pobj_correct, prev_tail]);
+		let pobj_correct = [this.generate_path(prev_tail)];	
+		//if(AutopRand.chanceOneIn(3)) pobj_correct.push(this.generate_path(prev_tail, false, pobj_correct[0].path_x_length));//tmp
+		this.add_to_update_queue('generate_new_step2', AutopRand.randint(2,6), [pobj_correct[0], prev_tail]);
 		this.add_to_update_queue('generate_new_step3', AutopRand.randint(2,6), [pobj_correct, prev_tail]);
 	}
 	
@@ -373,9 +374,9 @@ multipath_follower(config, texture) {
 	generate_new_step4(pobj_correct, prev_tail, obs) {
 		let pobj_wrong = this.generate_path(prev_tail, obs);
 		this.sc.registry.get('obstacles').merge(obs, true);
-		this.sc.registry.get('path_objects').push([pobj_correct, pobj_wrong]);		
-		if(this.cfg.maxNumPaths > 2 && AutopRand.chanceOneIn(3)) {//tmp
-			let _to_gen = this.cfg.maxNumPaths - 2;
+		this.sc.registry.get('path_objects').push([...pobj_correct, pobj_wrong]);		
+		if(pobj_correct.length < 2 /* //tmp */ && this.cfg.maxNumPaths > (pobj_correct.length + 1) && AutopRand.chanceOneIn(3)) {//tmp
+			let _to_gen = this.cfg.maxNumPaths - pobj_correct.length - 1;
 			if(_to_gen > 1) _to_gen = AutopRand.randint(1, _to_gen);
 			for(let i = 0; i < _to_gen; i++) {
 				this.add_to_update_queue('generate_new_step4_2', AutopRand.randint(2,6), [prev_tail, obs]); //tmp
@@ -428,17 +429,52 @@ multipath_follower(config, texture) {
 		this.sc.registry.set('player_body_group', g);
 	}	
 	
-	generate_obstacles(path_object) {
+	generate_obstacles(path_objects) {
+		if(!(path_objects instanceof Array)) path_objects = [path_objects];
 		let out = new Phaser.Structs.Map();
-		let _pcoords = path_object.points.grid.values();
-		let min_x = parseInt(_pcoords[0].split('_')[0]) + this.cfg.grid;
-		let max_x = parseInt(_pcoords[_pcoords.length - 1].split('_')[0]);
+		let _pcoords = [];
+		path_objects.forEach((po) => {_pcoords.push(po.points.grid.values());});
+		let polen = path_objects.length;
+
+		let min_x = parseInt(_pcoords[0][0].split('_')[0]) + this.cfg.grid;
+		let max_x = parseInt(_pcoords[0][_pcoords[0].length - 1].split('_')[0]);
 		let min_y = 0;
 		let max_y = Phaser.Math.Snap.Floor(this.cfg.heightField, this.cfg.grid);
 		let prev_collided = 0;
 		for(let x = min_x; x < (max_x - this.cfg.grid); x += this.cfg.grid) {
 			for(let y = min_y; y < max_y; y += this.cfg.grid) {
-				if(_pcoords.indexOf([x, y].join('_')) == -1 && !path_object.points.rtree.collides({minX: x, maxX: x + this.cfg.grid, minY: y, maxY: y + this.cfg.grid})) {
+				let __collided = false;
+				for(let i = 0; i < polen; i++ ) {
+					if(_pcoords[i].indexOf([x, y].join('_')) != -1) {
+						__collided = true;
+						break;
+					}
+				}
+				if(!__collided) {
+					for(let i = 0; i < polen; i++ ) {
+						if(path_objects[i].points.rtree.collides({minX: x, maxX: x + this.cfg.grid, minY: y, maxY: y + this.cfg.grid})) {				
+							__collided = true;
+							break;
+						}
+					}
+				}
+				if(__collided) {
+					prev_collided = 0;
+					continue;
+				}
+				if(prev_collided < 4) prev_collided++;
+				if(prev_collided < 2 || AutopRand.chanceOneIn(prev_collided * 3)) {
+					this.sc.add.image(0, 0, this.cfg.gridCellTextureName).setOrigin(0).setPosition(x, y);
+					let rect = new Phaser.Geom.Rectangle(x, y, this.cfg.grid, this.cfg.grid);
+					if(!out.has(x)) {
+						out.set(x, [rect]);
+					} else {
+						out.get(x).push(rect);
+					}
+				}
+
+  				//tmp to delete
+				/*if(_pcoords.indexOf([x, y].join('_')) == -1 && !path_object.points.rtree.collides({minX: x, maxX: x + this.cfg.grid, minY: y, maxY: y + this.cfg.grid})) {
 					if(prev_collided < 4) prev_collided++;
 					if(prev_collided < 2 || AutopRand.chanceOneIn(prev_collided * 3)) {
 						this.sc.add.image(0, 0, this.cfg.gridCellTextureName).setOrigin(0).setPosition(x, y);
@@ -451,13 +487,13 @@ multipath_follower(config, texture) {
 					}
 				} else {
 					prev_collided = 0;
-				}
+				}*/
 			}
 		}
 		return out;
 	}
 	
-	generate_path(start, obstacles) {
+	generate_path(start, obstacles, path_x_length) {
 		let cfg = this.cfg.gen_path;
 		var is_first, path, first_xy, max_x, last_xy, next_y_section, avg_x, softmax_parts, next_x;
 		var _start = start === undefined ? false : start;
@@ -481,7 +517,7 @@ multipath_follower(config, texture) {
 			prev_tail = _start;
 		}
 		let num_segments = AutopRand.randint(...cfg.min_max_segments);
-		let path_x_length = AutopRand.randint(cfg.min_path_x_length, cfg.max_path_x_length);		
+		if(!path_x_length) path_x_length = AutopRand.randint(cfg.min_path_x_length, cfg.max_path_x_length);		
 		
 		if(path.length > 0) { //is_first
 			--num_segments;			
@@ -635,10 +671,12 @@ multipath_follower(config, texture) {
 		tail = [path[path.length - 3], path[path.length - 2], path[path.length - 1]];
 		return {
 			path: path,
+			path_x_length: path_x_length,
 			tail: tail,
 			prev_tail: prev_tail,
 			sections: sections,
-			points: points
+			points: points,
+			is_correct: !obstacles
 		}
 	} 
 	
