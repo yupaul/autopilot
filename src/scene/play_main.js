@@ -67,6 +67,7 @@ create () {
 			rotateToPath: false,
 			rotationOffset: 0,
 			verticalAdjust: true,
+			useFrames: (this.cfg.useFrames ? true : false),
 			//ease: 'Circ.easeInOut'
 		}, 'player'));
 	this.registry.get('player').setDepth(-100);

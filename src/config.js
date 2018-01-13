@@ -24,10 +24,11 @@ let AutopCFG = {
 		playerNumBodyParts: 45,
 		playerNumBodyPartsCoeff: 0.04,
 		playerBodyEaSteps: 3,
-		speedCoeff: 0.12,
+		speedCoeff: 0.15, //0.12
+		useFrames: true,
 //		speedUpCoeff: 0.07,
 //		speed: 120,
-		speedUp: 7,
+		speedUp: 10, //7
 		cameraOffset: 0.35,
 		start_x: 10,
 		heightControlsRate: 0.2,
@@ -54,7 +55,7 @@ let AutopCFG = {
 		wallStyle: 0xffffff, //0xAB2121
 		wallOpenAlpha: 0.03,
 		wallTextureName: 'wall',
-		buttonEnableDelay: [600, 1000],
+		buttonEnableDelay: [500, 850],
 		rtreeCoeff: 1.2,
 		gen_path: {
 			path_x_spread_min: 0.1,

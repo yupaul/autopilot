@@ -141,14 +141,15 @@ class AutopLIB {
 		}
 	}	
 	
-multipath_follower(config, texture) {
-	let _p = this.sc.registry.get('paths').shift();
-	let _start_point = _p.getStartPoint();
-	let _clen0 = _p.getCurveLengths();
-	config.duration = Math.round((_clen0[_clen0.length - 1] / this.cfg.speed) * 1000);
-    let _player = this.sc.add.follower(_p, _start_point.x, _start_point.y, texture);		
+	multipath_follower(config, texture) {
+		let _p = this.sc.registry.get('paths').shift();
+		let _start_point = _p.getStartPoint();
+		let _clen0 = _p.getCurveLengths();
+		let speed_mult = config.useFrames ? 100 : 1000;
+		config.duration = Math.round((_clen0[_clen0.length - 1] / this.cfg.speed) * speed_mult);
+		let _player = this.sc.add.follower(_p, _start_point.x, _start_point.y, texture);		
 	
-	config.onComplete = () => {
+		config.onComplete = () => {
 			let _path = this.sc.registry.get('paths').shift();			
 			if(_path === undefined) {
 				this.gameover();
@@ -156,20 +157,20 @@ multipath_follower(config, texture) {
 			}
 //			console.log('!!!!!', Math.random());//tmp debug to fix start / end 2 frame delay
 			let _clen = _path.getCurveLengths();
-			config.duration = Math.round((_clen[_clen.length - 1] / this.cfg.speed) * 1000);
+			config.duration = Math.round((_clen[_clen.length - 1] / this.cfg.speed) * speed_mult);
 			_player.setPath(_path, config);
 			_player.setRotateToPath(true, config.rotationOffset, config.verticalAdjust);	
 			if(this.cfg.speedUp) this.cfg.speed += this.cfg.speedUp;	
 			if(!this.cfg._buttons_enabled && this.cfg._correct_selected) this.controls_buttons_enable();
 			this.add_to_update_queue('update_section_counter', 5);
-		},
-	config.onCompleteScope = this.sc;	
+		};
+		config.onCompleteScope = this.sc;	
 	
-    _player.start(config);
-	_player.setRotateToPath(true, config.rotationOffset, config.verticalAdjust);	
-	this.cfg._pause_scheduled = true;	
-	return _player;	
-}
+		_player.start(config);
+		_player.setRotateToPath(true, config.rotationOffset, config.verticalAdjust);	
+		this.cfg._pause_scheduled = true;	
+		return _player;	
+	}
 
 	controls_make_buttons() {
 		let _tmp = [this.cfg.pathLength,  (1 - this.cfg.heightControlsRate)];
@@ -268,7 +269,8 @@ multipath_follower(config, texture) {
 	
 	controls_buttons_enable() {
 		let _this = this;
-		this.sc.time.addEvent({delay: AutopRand.randint(...this.cfg.buttonEnableDelay), callback: function() {
+		let delay_multiplier = 1 - this.cfg.speedUp / this.cfg.speed;
+		this.sc.time.addEvent({delay: AutopRand.randint(...this.cfg.buttonEnableDelay.map((_x) => {return Math.round(_x * delay_multiplier);})), callback: function() {
 			_this.cfg._buttons_enabled = true;
 			let _pos = _this.sc.registry.get('path_objects')[0];
 			let btn_order = [...Array(_pos.length).keys()];
@@ -279,51 +281,52 @@ multipath_follower(config, texture) {
 			}
 		}, callbackScope: this});		
 	}
+
+	click_just_started() {
+		this.cfg._just_started = false;
+		this.cfg._correct_selected = true;
+		this.sc.registry.get('buttons')[1].button.setVisible(true);
+		this.controls_buttons_enable();
+	}
+
+	click_path_button(button) {
+		this.cfg._correct_selected = button.is_correct;
+		let _all_pos = this.sc.registry.get('path_objects');
+		let _pos = _all_pos.shift();						
+					
+		let _pos_i = button.path_index;
+		let _wall = this.sc.registry.get('walls').shift();
+		if(_wall) _wall.setAlpha(this.cfg.wallOpenAlpha);
+					
+		if(_pos[_pos_i].nxt && _pos[_pos_i].nxt[0].wall_coords) this.wall_show(_pos[_pos_i].nxt[0]);					
+
+		this.sc.registry.get('paths').push(_pos[_pos_i].points);
+		this.show_path(_pos[_pos_i]);					
+					
+		if(this.cfg._correct_selected) {
+			if(_pos[_pos_i].nxt) this.sc.registry.get('path_objects').push(_pos[_pos_i].nxt);
+			if(_pos[_pos_i].obs) {
+				this.draw_obstacles(_pos[_pos_i].obs);
+				this.sc.registry.get('obstacles').merge(_pos[_pos_i].obs, true);
+			}
+			this.add_to_update_queue('generate_new', AutopRand.randint(3,8));
+		}
+	}
 	
 	controls_on_click(event) {
 		let button_pause = this.sc.registry.get('button_pause');
-		if(event.x > button_pause.bounds.x1 && event.y > button_pause.bounds.y1 && event.x < button_pause.bounds.x2 && event.y < button_pause.bounds.y2) {		
-			this.sc.scene.launch('Menu');
-			this.sc.scene.bringToTop('Menu');
-			this.sc.scene.sleep('PlayMain');
-			return;
-		}
+		if(event.x > button_pause.bounds.x1 && event.y > button_pause.bounds.y1 && event.x < button_pause.bounds.x2 && event.y < button_pause.bounds.y2) return this.pause();
+		if(!this.cfg._buttons_enabled) return;
 		let buttons = this.sc.registry.get('buttons');		
-		let button_clicked = false;
 		for(let i = 0; i < buttons.length; i++) { // tmp
 			if(!buttons[i].button.visible) continue;
 			if(event.x > buttons[i].bounds.x1 && event.y > buttons[i].bounds.y1 && event.x < buttons[i].bounds.x2 && event.y < buttons[i].bounds.y2) {
-				button_clicked = true;
-				if(!this.cfg._buttons_enabled) break;
 				let player = this.sc.registry.get('player');
 				if(!player.isFollowing()) player.resume();
 				if(this.cfg._just_started) {
-					this.cfg._just_started = false;
-					this.cfg._correct_selected = true;
-					buttons[1].button.setVisible(true);
-					this.controls_buttons_enable();
+					this.click_just_started();
 				} else {
-					this.cfg._correct_selected = buttons[i].is_correct;
-					let _all_pos = this.sc.registry.get('path_objects');
-					let _pos = _all_pos.shift();						
-					
-					let _pos_i = buttons[i].path_index;
-					let _wall = this.sc.registry.get('walls').shift();
-					if(_wall) _wall.setAlpha(this.cfg.wallOpenAlpha);
-					
-					if(_pos[_pos_i].nxt && _pos[_pos_i].nxt[0].wall_coords) this.wall_show(_pos[_pos_i].nxt[0]);					
-
-					this.sc.registry.get('paths').push(_pos[_pos_i].points);
-					this.show_path(_pos[_pos_i]);					
-					
-					if(this.cfg._correct_selected) {
-						if(_pos[_pos_i].nxt) this.sc.registry.get('path_objects').push(_pos[_pos_i].nxt);
-						if(_pos[_pos_i].obs) {
-							this.draw_obstacles(_pos[_pos_i].obs);
-							this.sc.registry.get('obstacles').merge(_pos[_pos_i].obs, true);
-						}
-						this.add_to_update_queue('generate_new', AutopRand.randint(3,8));
-					}
+					this.click_path_button(buttons[i]);
 				}				
 				for(let _i2 = 0; _i2 < buttons.length; ++_i2) {
 					if(buttons[_i2].button.visible && buttons[_i2].path !== undefined) buttons[_i2].path.setAlpha(this.cfg.controls.button_disabled_alpha);
@@ -674,6 +677,13 @@ multipath_follower(config, texture) {
 			is_correct: !obstacles
 		}
 	} 
+
+	pause() {
+		this.sc.scene.launch('Menu');
+		this.sc.scene.bringToTop('Menu');
+		this.sc.scene.sleep('PlayMain');
+		return true;
+	}
 	
 	gameover() {
 		if(!this.cfg.gameOver) return;
