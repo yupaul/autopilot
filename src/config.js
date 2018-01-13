@@ -39,7 +39,7 @@ let AutopCFG = {
 		gameOverStyle: {color: '#ffffff', fill: '#ffffff', fontSize: '60px Tahoma'},
 		gameOverTest: 'Game Over',
 		sectionCounterStyle: {color: '#cd3221', fill: '#cd3221', fontSize: '40px Tahoma'},
-		sectionCounteName: 'section_counter',
+		sectionCounterName: 'section_counter',
 		
 		showPathStyle: [1, 0xffffff, 0.4], //[1, 0xff0000, 0.2],
 		showPathSubSet: 20,

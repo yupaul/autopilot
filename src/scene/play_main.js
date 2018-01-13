@@ -40,18 +40,23 @@ create () {
 	this.lib.create();
 	
 	let pobj = this.lib.generate_path();	
-	pobj.wall = this.add.image(Math.round(pobj.points.getEndPoint().x), 0, this.cfg.wallTextureName).setOrigin(0);
+//	pobj.wall = this.add.image(Math.round(pobj.points.getEndPoint().x), 0, this.cfg.wallTextureName).setOrigin(0);
+	this.lib.generate_wall(pobj);
 	
 	let prev_tail = pobj.tail;
 	this.registry.get('paths').push(pobj.points);
-	this.registry.get('walls').push(pobj.wall);	
+//	this.registry.get('walls').push(pobj.wall);	
+	this.lib.wall_show(pobj);
 	this.lib.show_path(pobj);	
-	this.lib.generate_obstacles(pobj);
+	this.lib.draw_obstacles(this.lib.generate_obstacles(pobj));
 	
 	for(let i = 0; i < 3; i++) {				
 		let pobj_correct = this.lib.generate_path(prev_tail);
-		pobj_correct.wall = this.add.image(Math.round(pobj_correct.points.getEndPoint().x), 0, this.cfg.wallTextureName).setOrigin(0);
+//		pobj_correct.wall = this.add.image(Math.round(pobj_correct.points.getEndPoint().x), 0, this.cfg.wallTextureName).setOrigin(0);
+		this.lib.generate_wall(pobj_correct);		
+		this.lib.wall_show(pobj_correct);
 		let obs = this.lib.generate_obstacles(pobj_correct);
+		this.lib.draw_obstacles(obs);
 		let pobj_wrong = this.lib.generate_path(prev_tail, obs);
 		this.registry.get('obstacles').merge(obs, true);
 		prev_tail = pobj_correct.tail;
