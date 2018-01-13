@@ -115,26 +115,9 @@ class AutopPointsPath {
 			min_y : bounds.y,
 			max_y : bounds.y + bounds.height
 		};
-		/*//tmp to delete
-		
-		for(let i2 = 0; i2 < specs.length; i2++) {			
-			if(specs[i2].length < 3) specs[i2].push(specs[i2].join(''));
-			let _number_key = specs[i2][0] === 'min' ? 'MAX' : 'MIN';
-			out[specs[i2][2]] = Number[_number_key+'_SAFE_INTEGER'];
-		}
-		console.log(out);//tmp
-		if(specs.length === 2 && typeof specs[0] === 'string') specs = [specs];
-		for (let i = 0; i < this.points.length; i++) {
-			for(let i2 = 0; i2 < specs.length; i2++) {
-				out[specs[i2][2]] = Math[specs[i2][0]](out[specs[i2][2]], this.points[i][specs[i2][1]]);
-			}
-		}
-		return out;*/
 	}
 	
 	addPoint(p) {
-		//p.x = Math.round(p.x);
-		//p.y = Math.round(p.y);
 		this.points.push(p);
 	}
 	

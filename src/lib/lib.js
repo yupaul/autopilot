@@ -9,7 +9,6 @@ class AutopLIB {
 		this.cfg = this.sc.cfg;
 		this.rwh = this.cfg.revertWidthHeight;
 		this.gen_path = this.rwh ? (new AutopGenPathH(sc)) : (new AutopGenPathW(sc));
-//		this.update_queue = []; //tmp to delete
 		this._tmp = {};
 	}
 	
@@ -176,27 +175,14 @@ multipath_follower(config, texture) {
 		let _tmp = [this.cfg.pathLength,  (1 - this.cfg.heightControlsRate)];
 		if(this.rwh) _tmp.reverse();
 		let button_width = Math.round(this.sc.game.config.width * _tmp[0] * this.cfg.heightControlsRate * this.cfg.controls.button_height);
-		let button_height = Math.round(this.sc.game.config.height * _tmp[1] * this.cfg.heightControlsRate * this.cfg.controls.button_height);
-		
-		/*let position = [ //tmp to delete
-			Math.round(this.sc.game.config.width * 0.5 - this.cfg.controls.button_gap - button_width * 0.5), 
-			Math.round(this.sc.game.config.height - this.cfg.heightControls * 0.5)
-		];*/
+		let button_height = Math.round(this.sc.game.config.height * _tmp[1] * this.cfg.heightControlsRate * this.cfg.controls.button_height);	
 		
 		var grs_rect = this.sc.make.graphics();
 		grs_rect.lineStyle(...this.cfg.controls.button_bounds_style);
 		grs_rect.strokeRect(0, 0, button_width, button_height).generateTexture('button_bounds', button_width, button_height); 
 		for(let i = 0; i < this.cfg.maxNumPaths; i++) {
-//			this.sc.registry.get('buttons').push({button: this.sc.add.image(0, 0, 'button_bounds').setPosition(...position).setInteractive()}); //tmp to delete
 			this.sc.registry.get('buttons').push({button: this.sc.add.image(0, 0, 'button_bounds').setInteractive().setVisible(false)});
 		}
-/*		this.sc.registry.get('buttons').push({button: this.sc.add.image(position[0], position[1], 'button_bounds').setInteractive()});//tmp to delete
-		position[0] = Math.round(this.sc.game.config.width * 0.5 + this.cfg.controls.button_gap + button_width * 0.5);
-		this.sc.registry.get('buttons').push({button: this.sc.add.image(0, 0, 'button_bounds').setPosition(...position).setInteractive().setVisible(false)});	
-		
-		for(let i = 0; i < this.sc.registry.get('buttons').length; i++) {
-			this._set_button_bounds('buttons', i);
-		}*/
 		this.activate_path_buttons(2);//tmp
 		this.sc.registry.get('buttons')[1].button.setVisible(false);//tmp
 	}
@@ -322,16 +308,10 @@ multipath_follower(config, texture) {
 					let _pos = _all_pos.shift();						
 					
 					let _pos_i = buttons[i].path_index;
-					//_wall.destroy();//tmp to delete
-					//console.log(_wall);//tmp to delete
 					let _wall = this.sc.registry.get('walls').shift();
 					if(_wall) _wall.setAlpha(this.cfg.wallOpenAlpha);
 					
-					if(_pos[_pos_i].nxt && _pos[_pos_i].nxt[0].wall_coords) this.wall_show(_pos[_pos_i].nxt[0]);
-						//_pos[_pos_i].wall = this.sc.add.image(_pos[_pos_i].wall_coords[0], _pos[_pos_i].wall_coords[1], this.cfg.wallTextureName).setOrigin(0);//tmp to delete
-//						this.sc.registry.get('walls').push(this.sc.add.image(_pos[_pos_i].wall_coords[0], _pos[_pos_i].wall_coords[1], this.cfg.wallTextureName).setOrigin(0));
-//					}					
-					
+					if(_pos[_pos_i].nxt && _pos[_pos_i].nxt[0].wall_coords) this.wall_show(_pos[_pos_i].nxt[0]);					
 
 					this.sc.registry.get('paths').push(_pos[_pos_i].points);
 					this.show_path(_pos[_pos_i]);					
@@ -357,17 +337,6 @@ multipath_follower(config, texture) {
 	add_to_update_queue(method, num_delay_frames, args) {
 		if(args !== undefined && !(args instanceof Array)) args = [args];
 		this.sc.time.addEvent({delay: num_delay_frames * 20, callback: () => {args ? this[method](...args) : this[method]();}, callbackScope: this});
-/*		if(num_delay_frames) {
-			for(let i = 0; i < parseInt(num_delay_frames); i++) {
-				this.update_queue.push(false);
-			}
-		}
-		if(args !== undefined) {
-			if(!(args instanceof Array)) args = [args];
-			this.update_queue.push([method, args]);
-		} else {
-			this.update_queue.push([method]);
-		} */ //tmp to delete
 	}
 	
 	find_last_paths(pos) {
@@ -387,14 +356,11 @@ multipath_follower(config, texture) {
 	
 	generate_new() {
 		let _all_pos = this.sc.registry.get('path_objects');
-		//console.log(_all_pos);//tmp
 		let _pos = this.find_last_paths(_all_pos[_all_pos.length - 1]);
-		//console.log(_pos.length);//tmp
 		for(let i = 0; i < _pos.length; i++) {
 			let prev_tail = _pos[i].tail;
 			let pobj_correct = [this.generate_path(prev_tail)];	
 			if(AutopRand.chanceOneIn(3)) pobj_correct.push(this.generate_path(prev_tail, false, pobj_correct[0].path_x_length));
-//			if(i < 1) this.add_to_update_queue('generate_wall', AutopRand.randint(2,6), [pobj_correct[0]]);//tmp to delete
 			this.generate_wall(pobj_correct[0]);
 			this.add_to_update_queue('generate_new_step3', AutopRand.randint(2,6), [pobj_correct, _pos[i]]);
 		}
@@ -402,11 +368,6 @@ multipath_follower(config, texture) {
 	
 	generate_wall(pobj_correct) {
 		pobj_correct.wall_coords = Math.round(pobj_correct.points.getEndPoint().x);
-//		let pobj_correct_xy = [Math.round(pobj_correct.points.getEndPoint()[this.rwh ? 'y' : 'x']), 0];
-//		if(this.rwh) pobj_correct_xy.reverse();
-
-//		pobj_correct.wall_coords = [pobj_correct_xy[0], pobj_correct_xy[1]];//tmp to delete
-		//this.sc.add.image(pobj_correct_xy[0], pobj_correct_xy[1], this.cfg.wallTextureName).setOrigin(0);
 	}
 	
 	generate_new_step3(pobj_correct, prev_obj) {
@@ -417,11 +378,8 @@ multipath_follower(config, texture) {
 	generate_new_step4(pobj_correct, prev_obj, obs) {
 		let prev_tail = prev_obj.tail;
 		let pobj_wrong = this.generate_path(prev_tail, obs);
-		//this.sc.registry.get('obstacles').merge(obs, true); //tmp to delete
-		//this.sc.registry.get('path_objects').push([...pobj_correct, pobj_wrong]); //tmp to delete
 		prev_obj.nxt = [...pobj_correct, pobj_wrong];
 		prev_obj.obs = obs;
-		//console.log(prev_obj.nxt);//tmp
 		
 		if(pobj_correct.length < 2 /* //tmp */ && this.cfg.maxNumPaths > (pobj_correct.length + 1) && AutopRand.chanceOneIn(3)) {//tmp
 			let _to_gen = this.cfg.maxNumPaths - pobj_correct.length - 1;
@@ -437,8 +395,6 @@ multipath_follower(config, texture) {
 		let pobj_wrong = this.generate_path(prev_tail, obs);
 		if(!prev_obj.nxt) prev_obj.nxt = [];
 		prev_obj.nxt.push(pobj_wrong);		
-		//let l = this.sc.registry.get('path_objects').length; //tmp to delete
-		//this.sc.registry.get('path_objects')[l - 1].push(pobj_wrong); //tmp to delete
 	}
 
 	
@@ -516,7 +472,6 @@ multipath_follower(config, texture) {
 				}
 				if(prev_collided < 4) prev_collided++;
 				if(prev_collided < 2 || AutopRand.chanceOneIn(prev_collided * 3)) {
-					//this.sc.add.image(0, 0, this.cfg.gridCellTextureName).setOrigin(0).setPosition(x, y);
 					let rect = new Phaser.Geom.Rectangle(x, y, this.cfg.grid, this.cfg.grid);
 					if(!out.has(x)) {
 						out.set(x, [rect]);
@@ -525,21 +480,6 @@ multipath_follower(config, texture) {
 					}
 				}
 
-  				//tmp to delete
-				/*if(_pcoords.indexOf([x, y].join('_')) == -1 && !path_object.points.rtree.collides({minX: x, maxX: x + this.cfg.grid, minY: y, maxY: y + this.cfg.grid})) {
-					if(prev_collided < 4) prev_collided++;
-					if(prev_collided < 2 || AutopRand.chanceOneIn(prev_collided * 3)) {
-						this.sc.add.image(0, 0, this.cfg.gridCellTextureName).setOrigin(0).setPosition(x, y);
-						let rect = new Phaser.Geom.Rectangle(x, y, this.cfg.grid, this.cfg.grid);
-						if(!out.has(x)) {
-							out.set(x, [rect]);
-						} else {
-							out.get(x).push(rect);
-						}
-					}
-				} else {
-					prev_collided = 0;
-				}*/
 			}
 		}
 		return out;
@@ -709,9 +649,7 @@ multipath_follower(config, texture) {
 		let spoints = cfg.spaced_points ? spline.getSpacedPoints(_length) : spline.getPoints(_length);
 		
 		let _adding = false;
-//		let prev_point = false;//tmp to delete
 		for(let i = 0; i < spoints.length; i++) {
-			//let _p = spline.getPoint(i / _length);//tmp to delete
 			let _p = spoints[i];
 			if(_adding) {
 				if(_p.y < 0 || _p.y > this.cfg.heightField) return this.generate_path(start, obstacles);
@@ -719,13 +657,9 @@ multipath_follower(config, texture) {
 			} else {
 				if(_p.x > first_xy[0]) {
 					_adding = true;	
-					//if(Math.abs(Phaser.Math.Distance.Between(_p.x, _p.y, first_xy[0], first_xy[1])) < 1) _p.set(...first_xy);
 					if(_p.y < 0 || _p.y > this.cfg.heightField) return this.generate_path(start, obstacles);					
-					//if(_prev_point) points.addPoint(_prev_point);//tmp to delete
 					points.addPoint(_p);
-				}/* else {//tmp to delete
-					prev_point = _p;
-				}*/
+				}
 			}
 		}		
 		points.makeRtree(this.cfg.rtreeOffset, this.cfg.grid);
@@ -751,10 +685,6 @@ multipath_follower(config, texture) {
 			_this.cfg.speed = _this.cfg.speed_initial;
 			_this.sc.scene.start('Menu');
 		
-/*			_this.sc.cameras.main.setScroll(0, 0); //tmp to delete
-			_this.sc.cameras.destroy();
-//			document.getElementById(_this.sc.game.config.parent).innerHTML = '<div style="vertical-align:middle;padding-top:30px"><h1 style="font-size:40px;text-align:center;color:#fff">Game Over<br /><a href="javascript:;" onclick="javascript:document.location.reload();">Restart</a></h1></div>'
-*/
 		}});
 	}
 	

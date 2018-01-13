@@ -26,7 +26,6 @@ create () {
 	this.registry.get('show_path_last_point', false)
 
 	this.lib.config_preprocess(rwh, _w, _h);
-//	if(this.lib.update_queue.length > 0) this.lib.update_queue = [];//tmp to delete
 
 	this.cameras.main.setSize(this.cameras.main.width, this.cfg.heightField);
 	if(this.cameras.cameras.length < 2) this.cameras.add(0, this.cfg.heightField, this.cameras.main.width, this.cfg.heightControls).setBounds(0, this.cfg.heightField, this.cameras.main.width, this.cfg.heightControls);
@@ -40,19 +39,16 @@ create () {
 	this.lib.create();
 	
 	let pobj = this.lib.generate_path();	
-//	pobj.wall = this.add.image(Math.round(pobj.points.getEndPoint().x), 0, this.cfg.wallTextureName).setOrigin(0);
 	this.lib.generate_wall(pobj);
 	
 	let prev_tail = pobj.tail;
 	this.registry.get('paths').push(pobj.points);
-//	this.registry.get('walls').push(pobj.wall);	
 	this.lib.wall_show(pobj);
 	this.lib.show_path(pobj);	
 	this.lib.draw_obstacles(this.lib.generate_obstacles(pobj));
 	
 	for(let i = 0; i < 3; i++) {				
 		let pobj_correct = this.lib.generate_path(prev_tail);
-//		pobj_correct.wall = this.add.image(Math.round(pobj_correct.points.getEndPoint().x), 0, this.cfg.wallTextureName).setOrigin(0);
 		this.lib.generate_wall(pobj_correct);		
 		this.lib.wall_show(pobj_correct);
 		let obs = this.lib.generate_obstacles(pobj_correct);
@@ -84,16 +80,6 @@ create () {
 }
 
 update() {	
-/*	if(this.lib.update_queue.length > 0) {
-		let _up = this.lib.update_queue.shift();
-		if(_up && (typeof this.lib[_up[0]] === 'function')) {
-			if(_up.length > 1) {
-				this.lib[_up[0]](..._up[1]);
-			} else {
-				this.lib[_up[0]]();
-			}
-		}
-	} */ //tmp to delete
 	if(!this.registry.has('player')) return;
 	let player = this.registry.get('player');
 //	console.log(player.pathTween.getValue(), Math.round(player.x * 100) / 100, Math.round(player.y * 100) / 100);//tmp debug to fix start / end 2 frame delay
