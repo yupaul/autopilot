@@ -363,7 +363,7 @@ class AutopLIB {
 		for(let i = 0; i < _pos.length; i++) {
 			let prev_tail = _pos[i].tail;
 			let pobj_correct = [this.generate_path(prev_tail)];	
-			if(AutopRand.chanceOneIn(3)) pobj_correct.push(this.generate_path(prev_tail, false, pobj_correct[0].path_x_length));
+			if(AutopRand.chanceOneIn(this.cfg.twoCorrectChance)) pobj_correct.push(this.generate_path(prev_tail, false, pobj_correct[0].path_x_length));
 			this.generate_wall(pobj_correct[0]);
 			this.add_to_update_queue('generate_new_step3', AutopRand.randint(2,6), [pobj_correct, _pos[i]]);
 		}
@@ -384,7 +384,7 @@ class AutopLIB {
 		prev_obj.nxt = [...pobj_correct, pobj_wrong];
 		prev_obj.obs = obs;
 		
-		if(pobj_correct.length < 2 /* //tmp */ && this.cfg.maxNumPaths > (pobj_correct.length + 1) && AutopRand.chanceOneIn(3)) {//tmp
+		if(this.cfg.maxNumPaths > (pobj_correct.length + 1) && AutopRand.chanceOneIn(this.cfg.fourPathsChance)) {
 			let _to_gen = this.cfg.maxNumPaths - pobj_correct.length - 1;
 			if(_to_gen > 1) _to_gen = AutopRand.randint(1, _to_gen);
 			for(let i = 0; i < _to_gen; i++) {
@@ -447,6 +447,7 @@ class AutopLIB {
 		path_objects.forEach((po) => {_pcoords.push(po.points.grid.values());});
 		let polen = path_objects.length;
 
+		let _added = 0;
 		let min_x = parseInt(_pcoords[0][0].split('_')[0]) + this.cfg.grid;
 		let max_x = parseInt(_pcoords[0][_pcoords[0].length - 1].split('_')[0]);
 		let min_y = 0;
@@ -463,7 +464,7 @@ class AutopLIB {
 				}
 				if(!__collided) {
 					for(let i = 0; i < polen; i++ ) {
-						if(path_objects[i].points.rtree.collides({minX: x, maxX: x + this.cfg.grid, minY: y, maxY: y + this.cfg.grid})) {				
+						if(path_objects[i].points.rtree.collides({minX: x, maxX: x + this.cfg.grid, minY: y, maxY: y + this.cfg.grid})) {
 							__collided = true;
 							break;
 						}
@@ -476,15 +477,17 @@ class AutopLIB {
 				if(prev_collided < 4) prev_collided++;
 				if(prev_collided < 2 || AutopRand.chanceOneIn(prev_collided * 3)) {
 					let rect = new Phaser.Geom.Rectangle(x, y, this.cfg.grid, this.cfg.grid);
+					_added++;
 					if(!out.has(x)) {
 						out.set(x, [rect]);
 					} else {
 						out.get(x).push(rect);
 					}
 				}
-
 			}
 		}
+		//console.log(_added);//tmp to delete
+		if(!_added) return false;
 		return out;
 	}
 
@@ -500,6 +503,7 @@ class AutopLIB {
 	generate_path(start, obstacles, path_x_length) {
 		let cfg = this.cfg.gen_path;
 		var is_first, path, first_xy, max_x, last_xy, next_y_section, avg_x, softmax_parts, next_x;
+		var new_path_x_length = false;
 		var _start = start === undefined ? false : start;
 		
 		var scale_y_length_r = Math.round(cfg.scale_y_length);
@@ -521,7 +525,10 @@ class AutopLIB {
 			prev_tail = _start;
 		}
 		let num_segments = AutopRand.randint(...cfg.min_max_segments);
-		if(!path_x_length) path_x_length = AutopRand.randint(cfg.min_path_x_length, cfg.max_path_x_length);		
+		if(!path_x_length) {
+			new_path_x_length = true;
+			path_x_length = AutopRand.randint(cfg.min_path_x_length, cfg.max_path_x_length);		
+		}
 		
 		if(path.length > 0) { //is_first
 			--num_segments;			
@@ -642,7 +649,7 @@ class AutopLIB {
 					intersected_wo = true;
 				}			
 			}			
-			if(!intersected_wo) return this.generate_path(start, obstacles);
+			if(!intersected_wo) return this.generate_path(start, obstacles, (new_path_x_length ? false : path_x_length));
 		}		
 		
 		let _prev_tail = prev_tail === false ? [] : prev_tail;
@@ -655,12 +662,12 @@ class AutopLIB {
 		for(let i = 0; i < spoints.length; i++) {
 			let _p = spoints[i];
 			if(_adding) {
-				if(_p.y < 0 || _p.y > this.cfg.heightField) return this.generate_path(start, obstacles);
+				if(_p.y < 0 || _p.y > this.cfg.heightField) return this.generate_path(start, obstacles, (new_path_x_length ? false : path_x_length));
 				points.addPoint(_p);
 			} else {
 				if(_p.x > first_xy[0]) {
 					_adding = true;	
-					if(_p.y < 0 || _p.y > this.cfg.heightField) return this.generate_path(start, obstacles);					
+					if(_p.y < 0 || _p.y > this.cfg.heightField) return this.generate_path(start, obstacles, (new_path_x_length ? false : path_x_length));
 					points.addPoint(_p);
 				}
 			}
@@ -679,9 +686,19 @@ class AutopLIB {
 	} 
 
 	pause() {
-		this.sc.scene.launch('Menu');
-		this.sc.scene.bringToTop('Menu');
-		this.sc.scene.sleep('PlayMain');
+		//console.log('pause');//tmp to delete
+		if(!this.cfg.dbg) {
+			this.sc.scene.launch('Menu');
+			this.sc.scene.bringToTop('Menu');
+			this.sc.scene.sleep('PlayMain');
+		} else {		
+			var p = this.sc.registry.get('player');
+			if(p.pathTween.isPlaying()) {
+				p.pause();
+			} else {
+				p.resume();
+			}
+		}
 		return true;
 	}
 	

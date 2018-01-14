@@ -17,6 +17,8 @@ let AutopCFG = {
     scene: [Menu, PlayMain],	//other
 	custom: {
 		dbg: true, //tmp
+		twoCorrectChance: 3, //tmp
+		fourPathsChance: 3, //tmp
 		revertWidthHeight: false, // (_h > _w) //tmp
 		playerFillStyle: 0xffffff, //0x0000ff
 		playerTrianglePoints: [0,0,0,30,15,15],
@@ -24,7 +26,7 @@ let AutopCFG = {
 		playerNumBodyParts: 45,
 		playerNumBodyPartsCoeff: 0.04,
 		playerBodyEaSteps: 3,
-		speedCoeff: 0.15, //0.12
+		speedCoeff: 0.2, //0.12, 0.15
 		useFrames: true,
 //		speedUpCoeff: 0.07,
 //		speed: 120,
