@@ -9,7 +9,6 @@ class AutopLIB {
 		this.cfg = this.sc.cfg;
 		this.rwh = this.cfg.revertWidthHeight;
 		this.gen_path = this.rwh ? (new AutopGenPathH(sc)) : (new AutopGenPathW(sc));
-		this._tmp = {};
 	}
 	
 	config_preprocess(rwh, _w, _h) {
@@ -47,6 +46,7 @@ class AutopLIB {
 		} else {
 			this.cfg.speed = this.cfg.speed_initial;
 		}		
+		this.cfg.speedMult = this.cfg.useFrames ? 100 : 1000;
 		this.cfg.playerNumBodyParts = Math.round(cfg_w * this.cfg.playerNumBodyPartsCoeff);
 		this.cfg.gen_path.start_x = rwh ? (this.cfg.heightField - this.cfg.start_x) : this.cfg.start_x;
 		this.cfg.gen_path.min_y = this.cfg.playerWidthHeight[1];
@@ -145,31 +145,33 @@ class AutopLIB {
 		let _p = this.sc.registry.get('paths').shift();
 		let _start_point = _p.getStartPoint();
 		let _clen0 = _p.getCurveLengths();
-		let speed_mult = config.useFrames ? 100 : 1000;
-		config.duration = Math.round((_clen0[_clen0.length - 1] / this.cfg.speed) * speed_mult);
+
+		config.duration = Math.round((_clen0[_clen0.length - 1] / this.cfg.speed) * this.cfg.speedMult);
 		let _player = this.sc.add.follower(_p, _start_point.x, _start_point.y, texture);		
 	
-		config.onComplete = () => {
-			let _path = this.sc.registry.get('paths').shift();			
-			if(_path === undefined) {
-				this.gameover();
-				return;
-			}
-//			console.log('!!!!!', Math.random());//tmp debug to fix start / end 2 frame delay
-			let _clen = _path.getCurveLengths();
-			config.duration = Math.round((_clen[_clen.length - 1] / this.cfg.speed) * speed_mult);
-			_player.setPath(_path, config);
-			_player.setRotateToPath(true, config.rotationOffset, config.verticalAdjust);	
-			if(this.cfg.speedUp) this.cfg.speed += this.cfg.speedUp;	
-			if(!this.cfg._buttons_enabled && this.cfg._correct_selected) this.controls_buttons_enable();
-			this.add_to_update_queue('update_section_counter', 5);
-		};
+		config.onComplete = () => {this.path_continue(config, _player);};
 		config.onCompleteScope = this.sc;	
 	
 		_player.start(config);
 		_player.setRotateToPath(true, config.rotationOffset, config.verticalAdjust);	
 		this.cfg._pause_scheduled = true;	
 		return _player;	
+	}
+
+	path_continue(config, player) {
+		let _path = this.sc.registry.get('paths').shift();			
+		if(_path === undefined) {
+			this.gameover();
+			return;
+		}
+//		console.log('!!!!!', Math.random());//tmp debug to fix start / end 2 frame delay
+		let _clen = _path.getCurveLengths();
+		config.duration = Math.round((_clen[_clen.length - 1] / this.cfg.speed) * this.cfg.speedMult);
+		player.setPath(_path, config);
+		player.setRotateToPath(true, config.rotationOffset, config.verticalAdjust);	
+		if(this.cfg.speedUp) this.cfg.speed += this.cfg.speedUp;	
+		if(!this.cfg._buttons_enabled && this.cfg._correct_selected) this.controls_buttons_enable();
+		this.add_to_update_queue('update_section_counter', 5);
 	}
 
 	controls_make_buttons() {
