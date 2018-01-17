@@ -25,7 +25,7 @@ create () {
 	this.registry.set('obstacles', (new Phaser.Structs.Map()));
 	this.registry.get('show_path_last_point', false)
 
-	this.lib.config_preprocess(rwh, _w, _h);
+//	this.lib.config_preprocess(rwh, _w, _h);//tmp to delete
 
 	this.cameras.main.setSize(this.cameras.main.width, this.cfg.heightField);
 	if(this.cameras.cameras.length < 2) this.cameras.add(0, this.cfg.heightField, this.cameras.main.width, this.cfg.heightControls).setBounds(0, this.cfg.heightField, this.cameras.main.width, this.cfg.heightControls);

@@ -11,7 +11,8 @@ class AutopLIB {
 		this.gen_path = this.rwh ? (new AutopGenPathH(sc)) : (new AutopGenPathW(sc));
 	}
 	
-	config_preprocess(rwh, _w, _h) {
+/*	config_preprocess(rwh, _w, _h) { //tmp to delete
+		return;
 		let cfg_w, cfg_h;
 		this.cfg._rwhcfg = {
 			w : _w,
@@ -58,7 +59,7 @@ class AutopLIB {
 		this.cfg.gen_path.min_segment_length = this.cfg.playerWidthHeight[0] + this.cfg.playerWidthHeight[1];
 		this.cfg.gen_path.rwh = rwh;
 		this.cfg.gen_path.screen_length = cfg_w;
-	}
+	} */
 	
 	camera_follow(player) {
 		if(!this.rwh) {
@@ -190,7 +191,7 @@ class AutopLIB {
 		this.sc.registry.get('buttons')[1].button.setVisible(false);//tmp
 	}
 	
-	activate_path_buttons(num) {	
+	activate_path_buttons(num) {
 		let x;		
 		let _tmp = [this.cfg.pathLength,  (1 - this.cfg.heightControlsRate)];
 		if(this.rwh) _tmp.reverse();
@@ -493,7 +494,7 @@ class AutopLIB {
 		return out;
 	}
 
-	draw_obstacles(obs) {	
+	draw_obstacles(obs) {
 		obs.each((_, rects) => {
 			for(let i = 0; i < rects.length; i++) {
 				this.sc.add.image(0, 0, this.cfg.gridCellTextureName).setOrigin(0).setPosition(rects[i].x, rects[i].y);				
@@ -720,3 +721,45 @@ class AutopLIB {
 }
 
 export default AutopLIB
+
+/* //tmp to delete
+create() {
+controls_make() {
+wall_make() {
+grid_cell_make() {
+wall_show(x) {
+player_make() {
+player_body_make() {
+show_path_make() {
+controls_make_buttons() {
+
+camera_follow(player) {
+show_path(path_object) {
+player_update(player) {
+
+multipath_follower(config, texture) {
+path_continue(config, player) {
+activate_path_buttons(num) {
+controls_buttons_enable() {
+controls_set_path(points, button_index, is_correct, path_index) {
+_set_button_bounds(k, i) {
+section_counter_make() {
+update_section_counter() {
+click_just_started() {
+click_path_button(button) {
+controls_on_click(event) {
+add_to_update_queue(method, num_delay_frames, args) {
+
+find_last_paths(pos) {
+generate_new() {
+generate_wall(pobj_correct) {
+generate_new_step3(pobj_correct, prev_obj) {
+generate_new_step4(pobj_correct, prev_obj, obs) {
+generate_new_step4_2(prev_obj, obs) {
+generate_obstacles(path_objects) {
+generate_path(start, obstacles, path_x_length) {
+draw_obstacles(obs) {
+
+pause() {
+gameover() {
+*/
