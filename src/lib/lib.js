@@ -1,5 +1,4 @@
 import AutopRand from '../util/autoprand';
-import AutopPointsPath from './points_path';
 import {AutopGenPathW, AutopGenPathH} from './gen_path';
 
 class AutopLIB {
@@ -10,56 +9,6 @@ class AutopLIB {
 		this.rwh = this.cfg.revertWidthHeight;
 		this.gen_path = this.rwh ? (new AutopGenPathH(sc)) : (new AutopGenPathW(sc));
 	}
-	
-/*	config_preprocess(rwh, _w, _h) { //tmp to delete
-		return;
-		let cfg_w, cfg_h;
-		this.cfg._rwhcfg = {
-			w : _w,
-			h : _h
-		};
-
-		this.cfg._current_camera_offset = 0;
-		this.cfg._current_camera_inc_speed = 0;		
-		
-		this.cfg.heightControls = Math.round(this.sc.game.config.height * this.cfg.heightControlsRate);
-		this.cfg.heightField = this.sc.game.config.height - this.cfg.heightControls;		
-		
-		if(rwh) {
-			cfg_w = this.cfg.heightField;
-			cfg_h = this.sc.game.config[_h];
-		} else {
-			cfg_w = this.sc.game.config[_w];
-			cfg_h = this.cfg.heightField;
-		}	
-		this.cfg._rwhcfg.cfg_w = cfg_w;
-		this.cfg._rwhcfg.cfg_h = cfg_h;
-		
-		this.cfg._cameraOffset = Math.round(cfg_w * (rwh ? (1 - this.cfg.cameraOffset) : this.cfg.cameraOffset));
-
-	
-		this.cfg.grid = (this.cfg.playerWidthHeight[0] + this.cfg.playerWidthHeight[1]);
-		this.cfg.rtreeOffset = Math.round((this.cfg.playerWidthHeight[0] + this.cfg.playerWidthHeight[1]) * this.cfg.rtreeCoeff);
-		this.cfg.speed = Math.round(cfg_w * this.cfg.speedCoeff);
-//		this.cfg.speedUp = Math.round(this.cfg.speed * this.cfg.speedUpCoeff);
-		if(this.cfg.speed_intial === undefined) {
-			this.cfg.speed_initial = this.cfg.speed;
-		} else {
-			this.cfg.speed = this.cfg.speed_initial;
-		}		
-		this.cfg.speedMult = this.cfg.useFrames ? 100 : 1000;
-		this.cfg.playerNumBodyParts = Math.round(cfg_w * this.cfg.playerNumBodyPartsCoeff);
-		this.cfg.gen_path.start_x = rwh ? (this.cfg.heightField - this.cfg.start_x) : this.cfg.start_x;
-		this.cfg.gen_path.min_y = this.cfg.playerWidthHeight[1];
-		this.cfg.gen_path.start_y = Math.round(this.cfg.heightField * 0.5 + this.cfg.gen_path.min_y);		
-		this.cfg.gen_path.max_y = cfg_h - this.cfg.gen_path.min_y;
-		this.cfg.gen_path.scale_y_length = (this.cfg.gen_path.max_y - this.cfg.gen_path.min_y) / (this.cfg.gen_path.scale_y + 1);
-		this.cfg.gen_path.min_path_x_length = Math.round(cfg_w * (0.5 - this.cfg.gen_path.path_x_spread_min));
-		this.cfg.gen_path.max_path_x_length = Math.round(cfg_w * (0.5 + this.cfg.gen_path.path_x_spread_max));
-		this.cfg.gen_path.min_segment_length = this.cfg.playerWidthHeight[0] + this.cfg.playerWidthHeight[1];
-		this.cfg.gen_path.rwh = rwh;
-		this.cfg.gen_path.screen_length = cfg_w;
-	} */
 	
 	camera_follow(player) {
 		if(!this.rwh) {
@@ -365,8 +314,8 @@ class AutopLIB {
 		let _pos = this.find_last_paths(_all_pos[_all_pos.length - 1]);
 		for(let i = 0; i < _pos.length; i++) {
 			let prev_tail = _pos[i].tail;
-			let pobj_correct = [this.generate_path(prev_tail)];	
-			if(AutopRand.chanceOneIn(this.cfg.twoCorrectChance)) pobj_correct.push(this.generate_path(prev_tail, false, pobj_correct[0].path_x_length));
+			let pobj_correct = [this.gen_path.generate_path(prev_tail)];	
+			if(AutopRand.chanceOneIn(this.cfg.twoCorrectChance)) pobj_correct.push(this.gen_path.generate_path(prev_tail, false, pobj_correct[0].path_x_length));
 			this.generate_wall(pobj_correct[0]);
 			this.add_to_update_queue('generate_new_step3', AutopRand.randint(2,6), [pobj_correct, _pos[i]]);
 		}
@@ -383,7 +332,7 @@ class AutopLIB {
 
 	generate_new_step4(pobj_correct, prev_obj, obs) {
 		let prev_tail = prev_obj.tail;
-		let pobj_wrong = this.generate_path(prev_tail, obs);
+		let pobj_wrong = this.gen_path.generate_path(prev_tail, obs);
 		prev_obj.nxt = [...pobj_correct, pobj_wrong];
 		prev_obj.obs = obs;
 		
@@ -398,7 +347,7 @@ class AutopLIB {
 
 	generate_new_step4_2(prev_obj, obs) {
 		let prev_tail = prev_obj.tail;
-		let pobj_wrong = this.generate_path(prev_tail, obs);
+		let pobj_wrong = this.gen_path.generate_path(prev_tail, obs);
 		if(!prev_obj.nxt) prev_obj.nxt = [];
 		prev_obj.nxt.push(pobj_wrong);		
 	}
@@ -503,191 +452,6 @@ class AutopLIB {
 		});					
 	}
 	
-	generate_path(start, obstacles, path_x_length) {
-		let cfg = this.cfg.gen_path;
-		var is_first, path, first_xy, max_x, last_xy, next_y_section, avg_x, softmax_parts, next_x;
-		var new_path_x_length = false;
-		var _start = start === undefined ? false : start;
-		
-		var scale_y_length_r = Math.round(cfg.scale_y_length);
-		var min_segment_length_sq = cfg.min_segment_length * cfg.min_segment_length;
-		
-		var path, prev_tail, sections = [], tail = [];
-		var intersected_wo = false;
-		var points = new AutopPointsPath();		
-		
-		if(!_start) {
-			is_first = true;
-			let __line_length = AutopRand.randint(...cfg.first_line_length);
-			_start = [[cfg.start_x, cfg.start_y], [cfg.start_x + Math.round(__line_length * 0.5), cfg.start_y], [cfg.start_x + __line_length, cfg.start_y]];
-			path = _start;
-			prev_tail = false;
-		} else {
-			is_first = false;
-			path = [];
-			prev_tail = _start;
-		}
-		let num_segments = AutopRand.randint(...cfg.min_max_segments);
-		if(!path_x_length) {
-			new_path_x_length = true;
-			path_x_length = AutopRand.randint(cfg.min_path_x_length, cfg.max_path_x_length);		
-		}
-		
-		if(path.length > 0) { //is_first
-			--num_segments;			
-			last_xy = path[path.length - 1];			
-			first_xy = _start[0];
-		} else {			
-			last_xy = _start[_start.length - 1];
-			first_xy = [last_xy[0], last_xy[1]];
-		}
-		max_x = first_xy[0] + path_x_length;
-		
-		if(cfg.next_x_method === 'softmax') {
-			avg_x = Math.round(path_x_length / num_segments);
-			softmax_parts = AutopRand.softmax(num_segments);
-		}		
-		
-		let current_y_section = Math.floor(last_xy[1] / cfg.scale_y_length);		
-		
-		for(let _i = 0; _i < num_segments; _i++) {
-			sections.push(current_y_section);
-			let section_jump = AutopRand.randint(0, AutopRand.chanceOneIn(cfg.big_jump_probability) ? cfg.scale_y : Math.round(cfg.scale_y * cfg.small_jump_coeff));
-
-			next_y_section = false;
-			if(section_jump > 0) {
-				let _avail_jump_plus = cfg.scale_y - current_y_section;
-				if(current_y_section >= section_jump) {
-					if(_avail_jump_plus >= section_jump && AutopRand.coinflip()) {
-						next_y_section = current_y_section + section_jump;
-					} else {
-						next_y_section = current_y_section - section_jump;
-					}
-				}
-				if(next_y_section === false && _avail_jump_plus >= section_jump) next_y_section = current_y_section + section_jump;				
-				if(next_y_section === false) next_y_section = AutopRand.coinflip() ? 0 : cfg.scale_y;
-			} else {
-				next_y_section = current_y_section;
-			}
-			let next_y = scale_y_length_r * next_y_section + AutopRand.randint(0, scale_y_length_r) + cfg.min_y;
-			
-			if(_i === (num_segments - 1)) {
-				next_x = max_x;
-			} else {
-				let _min_x = 0;
-				let __y_diff = Math.abs(next_y - last_xy[1]);			
-				if(__y_diff < cfg.min_segment_length) _min_x = Math.round(Math.sqrt(min_segment_length_sq  - __y_diff * __y_diff));						
-
-				if(cfg.next_x_method !== 'softmax') avg_x = Math.round(Math.abs(path_x_length - last_xy[0] + first_xy[0]) / (num_segments - _i));
-
-				if(avg_x < _min_x) {
-					next_x = last_xy[0] + _min_x;
-				} else {
-					if(cfg.next_x_method === 'softmax') {
-						next_x = last_xy[0] + path_x_length * softmax_parts[_i];
-					} else if(cfg.next_x_method === 'minmax') {
-						next_x = last_xy[0] + (Math.random() * (cfg.minmax_method_min_max[1] - cfg.minmax_method_min_max[0]) + cfg.minmax_method_min_max[0]) * avg_x;					
-					} else {
-						next_x = last_xy[0] + AutopRand.randint(_min_x, avg_x * (AutopRand.chanceOneIn(cfg.long_short_probability) ? cfg.long_multiplier : 1));
-					}
-				}
-				if(next_x > (max_x - cfg.min_segment_length)) {
-					if((max_x - last_xy[0]) > (cfg.min_segment_length * 2)) {
-						next_x = Math.round(last_xy[0] + (max_x - last_xy[0]) / (num_segments - _i));
-					} else {
-						next_x = max_x;
-					}
-				}
-			}
-			next_x = Math.round(next_x);			
-			next_y = Math.round(next_y);
-			path.push([next_x, next_y]);			
-			last_xy = [next_x, next_y];
-			current_y_section = next_y_section;		
-			if(next_x >= max_x) break;
-		}		
-		
-		if(obstacles) {
-			for(let i = (path.length - 1); i >= 0; i--) {
-				let p = path[i];
-				let _x = Phaser.Math.Snap.Floor(p[0], this.cfg.grid);
-				let _ys = obstacles.get(_x);
-				
-				if(_ys) {			
-					for(let i2 = 0; i2 < _ys.length; i2++) {
-						if(_ys[i2].contains(p[0], p[1])) {
-							intersected_wo = true;
-							break;
-						}
-					}				
-				}
-				if(intersected_wo) break;
-			}			
-			if(!intersected_wo) {				
-				let _min_y = new Phaser.Structs.Map();
-				for(let i = (path.length - 1); i >= 0; i--) {
-					let p = path[i];
-					let _x = Phaser.Math.Snap.Floor(p[0], this.cfg.grid);
-					let _ys = obstacles.get(_x);
-					if(_ys) {						
-						for(let i2 = 0; i2 < _ys.length; i2++) {
-							let _d = Math.abs(p[1] - _ys[i2].y);
-							if(_d <= scale_y_length_r) {
-								if(!_min_y.has(i)) {
-									_min_y.set(i, [i2, _d, _ys[i2].y]);
-								} else if(_d < _min_y.get(i)[1]) {
-									_min_y.get(i)[0] = i2;
-									_min_y.get(i)[1] = _d;
-									_min_y.get(i)[2] = _ys[i2].y;
-								}
-							}
-						}				
-					}
-				}
-				let _min_y_i = _min_y.keys();
-				if(_min_y_i.length > 0) {
-					Phaser.Utils.Array.Shuffle(_min_y_i);
-					let i = _min_y_i[0];
-					path[i][1] = _min_y.get(i)[2] + AutopRand.randint(1, this.cfg.grid);
-					intersected_wo = true;
-				}			
-			}			
-			if(!intersected_wo) return this.generate_path(start, obstacles, (new_path_x_length ? false : path_x_length));
-		}		
-		
-		let _prev_tail = prev_tail === false ? [] : prev_tail;
-		let spline = new Phaser.Curves.Spline(_prev_tail.concat(path));
-		spline.arcLengthDivisions = path_x_length;		
-		let _length = Math.floor(spline.getLength());
-		let spoints = cfg.spaced_points ? spline.getSpacedPoints(_length) : spline.getPoints(_length);
-		
-		let _adding = false;
-		for(let i = 0; i < spoints.length; i++) {
-			let _p = spoints[i];
-			if(_adding) {
-				if(_p.y < 0 || _p.y > this.cfg.heightField) return this.generate_path(start, obstacles, (new_path_x_length ? false : path_x_length));
-				points.addPoint(_p);
-			} else {
-				if(_p.x > first_xy[0]) {
-					_adding = true;	
-					if(_p.y < 0 || _p.y > this.cfg.heightField) return this.generate_path(start, obstacles, (new_path_x_length ? false : path_x_length));
-					points.addPoint(_p);
-				}
-			}
-		}		
-		points.makeRtree(this.cfg.rtreeOffset, this.cfg.grid);
-		tail = [path[path.length - 3], path[path.length - 2], path[path.length - 1]];
-		return {
-			path: path,
-			path_x_length: path_x_length,
-			tail: tail,
-			prev_tail: prev_tail,
-			sections: sections,
-			points: points,
-			is_correct: !obstacles
-		}
-	} 
-
 	pause() {
 		//console.log('pause');//tmp to delete
 		if(!this.cfg.dbg) {
@@ -757,7 +521,7 @@ generate_new_step3(pobj_correct, prev_obj) {
 generate_new_step4(pobj_correct, prev_obj, obs) {
 generate_new_step4_2(prev_obj, obs) {
 generate_obstacles(path_objects) {
-generate_path(start, obstacles, path_x_length) {
+//generate_path(start, obstacles, path_x_length) {
 draw_obstacles(obs) {
 
 pause() {

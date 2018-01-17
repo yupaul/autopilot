@@ -38,7 +38,7 @@ create () {
 	
 	this.lib.create();
 	
-	let pobj = this.lib.generate_path();	
+	let pobj = this.lib.gen_path.generate_path();	
 	this.lib.generate_wall(pobj);
 	
 	let prev_tail = pobj.tail;
@@ -48,12 +48,12 @@ create () {
 	this.lib.draw_obstacles(this.lib.generate_obstacles(pobj));
 	
 	for(let i = 0; i < 3; i++) {				
-		let pobj_correct = this.lib.generate_path(prev_tail);
+		let pobj_correct = this.lib.gen_path.generate_path(prev_tail);
 		this.lib.generate_wall(pobj_correct);		
 		this.lib.wall_show(pobj_correct);
 		let obs = this.lib.generate_obstacles(pobj_correct);
 		this.lib.draw_obstacles(obs);
-		let pobj_wrong = this.lib.generate_path(prev_tail, obs);
+		let pobj_wrong = this.lib.gen_path.generate_path(prev_tail, obs);
 		this.registry.get('obstacles').merge(obs, true);
 		prev_tail = pobj_correct.tail;
 		this.registry.get('path_objects').push([pobj_correct, pobj_wrong]);		

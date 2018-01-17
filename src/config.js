@@ -58,16 +58,18 @@ function config() {
 			gen_path: {
 				path_x_spread_min: 0.1,
 				path_x_spread_max: 0.1,
-				scale_y: 6,
-				long_short_probability: 3,			
-				long_multiplier: 2,
+				scale_y: 6,				
 				big_jump_probability: 7,
 				small_jump_coeff: 0.35,
 				min_max_segments: [4, 6],
 				first_line_length: [60, 120],
-				next_x_method: 'softmax', //'softmax', 'minmax', 'longshort'
-				minmax_method_min_max: [0.5, 1.5],
-				spaced_points: true
+				spaced_points: true,
+				minipath_offset: 3,
+				
+				next_x_method: 'minmax', //'softmax', 'minmax', 'longshort'
+				long_short_probability: 3, //longshort
+				long_multiplier: 2, //longshort				
+				minmax_method_min_max: [0.4, 1.7], //minmax
 			},
 			controls: {
 				separator_line_style: [3, 0xffffff, 1], //[3, 0xff0000, 1],
