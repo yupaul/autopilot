@@ -4,6 +4,10 @@ let AutopRand = {
 		return (this.randint(0, 1) > 0);
 	},
 	
+	unfair: function(threshold) {
+		return (Math.random() < threshold);
+	},
+	
 	randint: function(min, max) {
 		let range = max - min + 1;
 		return (((Math.random() * range) | 0) + min);

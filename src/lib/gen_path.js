@@ -6,8 +6,7 @@ class AutopGenPath {
 	constructor(sc) {
 		this.sc = sc;		
 		this.cfg = this.sc.cfg;
-		this.setConfig();
-		
+		this.setConfig();		
 	}
 	
 	setConfig(config) {		
@@ -26,45 +25,64 @@ export class AutopGenPathW extends AutopGenPath {
 		super(sc);
 	}
 	
-	generate_path(start, obstacles, path_x_length, config) {
+	_gp_prepare_random() {
+		
+	}
+
+	_gp_prepare_same() {
+		
+	}
+	
+	_gp_prepare_similar() {
+		
+	}	
+	
+	generate_path(start, obstacles, path_x_length, config, similar) {
+		//path prev_tail first_x sections
+		//obstacles start new_path_x_length path_x_length
+		
+		var path, first_x, max_x, last_xy, next_y_section, avg_x, softmax_parts, next_x;		
+		
 		if(config) this.setConfig(config);
-		let cfg = this.generate_path_config;
+		let cfg = this.generate_path_config;			
 		
-		var is_first, path, first_xy, max_x, last_xy, next_y_section, avg_x, softmax_parts, next_x;
-		var new_path_x_length = false;
-		var _start = start === undefined ? false : start;
+		var _start = start === undefined ? false : start;	
+		var is_first = !_start;		
 		
-		var scale_y_length_r = Math.round(cfg.scale_y_length);
-		var min_segment_length_sq = cfg.min_segment_length * cfg.min_segment_length;
+		if(!is_first) {		
+			if(!similar || !Phaser.Utils.Objects.IsPlainObject(similar) || !similar.hasOwnProperty('value') || similar.value === 0.5) similar = false;		
+		}
+
+		var new_path_x_length = !path_x_length;
+		if(new_path_x_length) {			
+			path_x_length = AutopRand.randint(cfg.min_path_x_length, cfg.max_path_x_length);		
+		}		
 		
-		var path, prev_tail, sections = [], tail = [];				
+		var path, prev_tail, sections = [];
 		
-		if(!_start) {
-			is_first = true;
+		if(is_first) {			
 			let __line_length = AutopRand.randint(...cfg.first_line_length);
 			_start = [[cfg.start_x, cfg.start_y], [cfg.start_x + Math.round(__line_length * 0.5), cfg.start_y], [cfg.start_x + __line_length, cfg.start_y]];
 			path = _start;
 			prev_tail = false;
-		} else {
-			is_first = false;
+		} else {			
 			path = [];
 			prev_tail = _start;
-		}
+		}		
+		
 		let num_segments = AutopRand.randint(...cfg.min_max_segments);
-		if(!path_x_length) {
-			new_path_x_length = true;
-			path_x_length = AutopRand.randint(cfg.min_path_x_length, cfg.max_path_x_length);		
-		}
+
 		
 		if(path.length > 0) { //is_first
 			--num_segments;			
 			last_xy = path[path.length - 1];			
-			first_xy = _start[0];
+			first_x = _start[0][0];
 		} else {			
 			last_xy = _start[_start.length - 1];
-			first_xy = [last_xy[0], last_xy[1]];
+			first_x = last_xy[0];
 		}
-		max_x = first_xy[0] + path_x_length;
+		
+		max_x = first_x + path_x_length;
 		
 		if(cfg.next_x_method === 'softmax') {
 			avg_x = Math.round(path_x_length / num_segments);
@@ -92,16 +110,16 @@ export class AutopGenPathW extends AutopGenPath {
 			} else {
 				next_y_section = current_y_section;
 			}
-			let next_y = scale_y_length_r * next_y_section + AutopRand.randint(0, scale_y_length_r) + cfg.min_y;
+			let next_y = cfg.scale_y_length_r * next_y_section + AutopRand.randint(0, cfg.scale_y_length_r) + cfg.min_y;
 			
 			if(_i === (num_segments - 1)) {
 				next_x = max_x;
 			} else {
 				let _min_x = 0;
 				let __y_diff = Math.abs(next_y - last_xy[1]);			
-				if(__y_diff < cfg.min_segment_length) _min_x = Math.round(Math.sqrt(min_segment_length_sq  - __y_diff * __y_diff));						
+				if(__y_diff < cfg.min_segment_length) _min_x = Math.round(Math.sqrt(cfg.min_segment_length_sq  - __y_diff * __y_diff));						
 
-				if(cfg.next_x_method !== 'softmax') avg_x = Math.round(Math.abs(path_x_length - last_xy[0] + first_xy[0]) / (num_segments - _i));
+				if(cfg.next_x_method !== 'softmax') avg_x = Math.round(Math.abs(path_x_length - last_xy[0] + first_x) / (num_segments - _i));
 
 				if(avg_x < _min_x) {
 					next_x = last_xy[0] + _min_x;
@@ -128,25 +146,17 @@ export class AutopGenPathW extends AutopGenPath {
 			last_xy = [next_x, next_y];
 			current_y_section = next_y_section;		
 			if(next_x >= max_x) break;
-		}		
+		}
 		
-		if(obstacles && !this._intersect_obstacles(path, obstacles, scale_y_length_r)) return this.generate_path(start, obstacles, (new_path_x_length ? false : path_x_length));
+		if(obstacles && !this._gp_intersect_obstacles(path, obstacles)) return this.generate_path(start, obstacles, (new_path_x_length ? false : path_x_length));
 		
-		let _prev_tail = prev_tail === false ? [] : prev_tail;
-		let spline = new Phaser.Curves.Spline(_prev_tail.concat(path));
-		spline.arcLengthDivisions = path_x_length;		
-		let _length = Math.floor(spline.getLength());
-		let spoints = cfg.spaced_points ? spline.getSpacedPoints(_length) : spline.getPoints(_length);
+		let points = this._gp_add_points(path, prev_tail, first_x, path_x_length);
+		if(!points) return this.generate_path(start, obstacles, (new_path_x_length ? false : path_x_length));		
 		
-		let points = this._add_points(spoints, first_xy[0]);
-		if(!points) return this.generate_path(start, obstacles, (new_path_x_length ? false : path_x_length));
-		
-		points.makeRtree(this.cfg.rtreeOffset, this.cfg.grid);
-		tail = [path[path.length - 3], path[path.length - 2], path[path.length - 1]];
 		return {
 			path: path,
 			path_x_length: path_x_length,
-			tail: tail,
+			tail: [path[path.length - 3], path[path.length - 2], path[path.length - 1]],
 			prev_tail: prev_tail,
 			sections: sections,
 			points: points,
@@ -154,7 +164,13 @@ export class AutopGenPathW extends AutopGenPath {
 		}
 	} 	
 	
-	_add_points(spoints, first_x) {
+	_gp_add_points(path, prev_tail, first_x, path_x_length) {
+		let _prev_tail = prev_tail === false ? [] : prev_tail;
+		let spline = new Phaser.Curves.Spline(_prev_tail.concat(path));
+		spline.arcLengthDivisions = path_x_length;		
+		let _length = Math.floor(spline.getLength());
+		let spoints = this.generate_path_config.spaced_points ? spline.getSpacedPoints(_length) : spline.getPoints(_length);
+		
 		let points = new AutopPointsPath();		
 		let _adding = false;
 		for(let i = 0; i < spoints.length; i++) {
@@ -170,10 +186,11 @@ export class AutopGenPathW extends AutopGenPath {
 				}
 			}
 		}			
+		points.makeRtree(this.cfg.rtreeOffset, this.cfg.grid);
 		return points;
 	}
 	
-	_intersect_obstacles(path, obstacles, scale_y_length_r) {
+	_gp_intersect_obstacles(path, obstacles) {
 		let intersected_wo = false;
 		for(let i = (path.length - 1); i >= 0; i--) {
 			let p = path[i];
@@ -199,7 +216,7 @@ export class AutopGenPathW extends AutopGenPath {
 				if(_ys) {						
 					for(let i2 = 0; i2 < _ys.length; i2++) {
 						let _d = Math.abs(p[1] - _ys[i2].y);
-						if(_d <= scale_y_length_r) {
+						if(_d <= this.generate_path_config.scale_y_length_r) {
 							if(!_min_y.has(i)) {
 								_min_y.set(i, [i2, _d, _ys[i2].y]);
 							} else if(_d < _min_y.get(i)[1]) {

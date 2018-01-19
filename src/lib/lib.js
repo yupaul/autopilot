@@ -25,6 +25,7 @@ class AutopLIB {
 	}
 	
 	create() {
+		this.cfg.grid = AutopRand.randint(Math.round((this.cfg.playerWidthHeight[0] + this.cfg.playerWidthHeight[1]) * 0.25), this.cfg.playerWidthHeight[0] + this.cfg.playerWidthHeight[1]);//tmp
 		this.show_path_make();
 		this.controls_make();
 		this.controls_make_buttons();
@@ -187,11 +188,13 @@ class AutopLIB {
 	}
 	
 	grid_cell_make() {
+		if(this.sc.sys.textures.exists(this.cfg.gridCellTextureName)) delete this.sc.sys.textures.list[this.cfg.gridCellTextureName];//tmp
 		var grs_rect = this.sc.make.graphics();
-		grs_rect.fillStyle(this.cfg.gridCellFillStyle);
+		//grs_rect.fillStyle(this.cfg.gridCellFillStyle);//tmp
+		grs_rect.fillStyle(AutopRand.randint(0, 0xffffff));//tmp
 		grs_rect.fillRect(0, 0, this.cfg.grid, this.cfg.grid);
 		if(this.cfg.gridCellLineStyle) {
-			grs_rect.lineStyle(...this.cfg.gridCellLineStyle);1, 0xffffff, 1		
+			grs_rect.lineStyle(...this.cfg.gridCellLineStyle);//1, 0xffffff, 1		
 			grs_rect.strokeRect(0, 0, this.cfg.grid, this.cfg.grid);
 		}
 		grs_rect.generateTexture(this.cfg.gridCellTextureName, this.cfg.grid, this.cfg.grid); 
@@ -307,6 +310,10 @@ class AutopLIB {
 			}
 		}
 		return out;
+	}	
+	
+	generate_wall(pobj_correct) {
+		pobj_correct.wall_coords = Math.round(pobj_correct.points.getEndPoint().x);
 	}
 	
 	generate_new() {
@@ -317,20 +324,16 @@ class AutopLIB {
 			let pobj_correct = [this.gen_path.generate_path(prev_tail)];	
 			if(AutopRand.chanceOneIn(this.cfg.twoCorrectChance)) pobj_correct.push(this.gen_path.generate_path(prev_tail, false, pobj_correct[0].path_x_length));
 			this.generate_wall(pobj_correct[0]);
-			this.add_to_update_queue('generate_new_step3', AutopRand.randint(2,6), [pobj_correct, _pos[i]]);
+			this.add_to_update_queue('generate_new_step2', AutopRand.randint(2,6), [pobj_correct, _pos[i]]);
 		}
 	}
 	
-	generate_wall(pobj_correct) {
-		pobj_correct.wall_coords = Math.round(pobj_correct.points.getEndPoint().x);
-	}
-	
-	generate_new_step3(pobj_correct, prev_obj) {
+	generate_new_step2(pobj_correct, prev_obj) {
 		let obs = this.generate_obstacles(pobj_correct);
-		this.add_to_update_queue('generate_new_step4', AutopRand.randint(2,6), [pobj_correct, prev_obj, obs]);
+		this.add_to_update_queue('generate_new_step3', AutopRand.randint(2,6), [pobj_correct, prev_obj, obs]);
 	}
 
-	generate_new_step4(pobj_correct, prev_obj, obs) {
+	generate_new_step3(pobj_correct, prev_obj, obs) {
 		let prev_tail = prev_obj.tail;
 		let pobj_wrong = this.gen_path.generate_path(prev_tail, obs);
 		prev_obj.nxt = [...pobj_correct, pobj_wrong];
@@ -340,12 +343,12 @@ class AutopLIB {
 			let _to_gen = this.cfg.maxNumPaths - pobj_correct.length - 1;
 			if(_to_gen > 1) _to_gen = AutopRand.randint(1, _to_gen);
 			for(let i = 0; i < _to_gen; i++) {
-				this.add_to_update_queue('generate_new_step4_2', AutopRand.randint(2,6), [prev_obj, obs]); //tmp
+				this.add_to_update_queue('generate_new_step4', AutopRand.randint(2,6), [prev_obj, obs]); //tmp
 			}
 		}
 	}
 
-	generate_new_step4_2(prev_obj, obs) {
+	generate_new_step4(prev_obj, obs) {
 		let prev_tail = prev_obj.tail;
 		let pobj_wrong = this.gen_path.generate_path(prev_tail, obs);
 		if(!prev_obj.nxt) prev_obj.nxt = [];
@@ -477,8 +480,7 @@ class AutopLIB {
 		this.sc.time.addEvent({delay: Math.round(this.cfg.gameOverFade * 0.9), callback: function() {	                         				
 			_this.sc.scene.stop('PlayMain');
 			_this.cfg.speed = _this.cfg.speed_initial;
-			_this.sc.scene.start('Menu');
-		
+			_this.sc.scene.start('Menu');		
 		}});
 	}
 	
@@ -491,38 +493,37 @@ create() {
 controls_make() {
 wall_make() {
 grid_cell_make() {
-wall_show(x) {
 player_make() {
 player_body_make() {
 show_path_make() {
 controls_make_buttons() {
+section_counter_make() {
 
 camera_follow(player) {
-show_path(path_object) {
 player_update(player) {
+add_to_update_queue(method, num_delay_frames, args) {
 
 multipath_follower(config, texture) {
 path_continue(config, player) {
+	
 activate_path_buttons(num) {
 controls_buttons_enable() {
 controls_set_path(points, button_index, is_correct, path_index) {
 _set_button_bounds(k, i) {
-section_counter_make() {
 update_section_counter() {
 click_just_started() {
 click_path_button(button) {
+	show_path(path_object) {
+	draw_obstacles(obs) {	
+	wall_show(x) {
 controls_on_click(event) {
-add_to_update_queue(method, num_delay_frames, args) {
 
 find_last_paths(pos) {
 generate_new() {
-generate_wall(pobj_correct) {
 generate_new_step3(pobj_correct, prev_obj) {
 generate_new_step4(pobj_correct, prev_obj, obs) {
 generate_new_step4_2(prev_obj, obs) {
 generate_obstacles(path_objects) {
-//generate_path(start, obstacles, path_x_length) {
-draw_obstacles(obs) {
 
 pause() {
 gameover() {
