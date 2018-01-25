@@ -135,7 +135,7 @@ function config() {
 	cstmg.start_y = Math.round(cstm.heightField * 0.5 + cstmg.min_y);		
 	cstmg.max_y = cfg_h - cstmg.min_y;
 	cstmg.scale_y_length = (cstmg.max_y - cstmg.min_y) / (cstmg.scale_y + 1);
-	cstmg.scale_y_length_r = Math.round(cstmg.scale_y_length);
+	cstmg.scale_y_length_r = Math.round(cstmg.scale_y_length);	
 	cstmg.min_path_x_length = Math.round(cfg_w * (0.5 - cstmg.path_x_spread_min));
 	cstmg.max_path_x_length = Math.round(cfg_w * (0.5 + cstmg.path_x_spread_max));
 	cstmg.min_segment_length = cstm.playerWidthHeight[0] + cstm.playerWidthHeight[1];

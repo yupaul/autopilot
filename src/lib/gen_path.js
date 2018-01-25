@@ -30,9 +30,8 @@ export class AutopGenPathW extends AutopGenPath {
 		let cfg = this.generate_path_config;
 		let sections = [];		
 		let last_xy = is_first ? path[path.length - 1] : start[start.length - 1];
-
-		var new_path_x_length = !path_x_length;
-		if(new_path_x_length) {			
+		
+		if(!path_x_length) {			
 			path_x_length = AutopRand.randint(cfg.min_path_x_length, cfg.max_path_x_length);		
 		}			
 				
@@ -112,21 +111,59 @@ export class AutopGenPathW extends AutopGenPath {
 		}
 	}
 
-	_gp_prepare_same(pathobj) {
+	_gp_prepare_same(pathobj) {		
 		return {
+			path_x_length: pathobj.path_x_length,
 			path: pathobj.path.concat([]),
-			sections: pathobj.sections.concat([])
+			sections: pathobj.sections.concat([])			
 		}	
 	}
 	
 	_gp_prepare_similar(start, pathobj, sim_degree) {		
+		let next_y_section;
 		let path = [];
 		let prev_tail = pathobj.prev_tail;
+		let path_x_length = pathobj.path_x_length;
 		let first_x = start[start.length - 1][0];
 		let last_xy = start[start.length - 1];
-		//path_x_length
+		let cfg = this.generate_path_config;
+		let sections = [];				
+		
+		let num_segments = pathobj.sections.length;
+		let max_x = first_x + path_x_length;		
+		let current_y_section = Math.floor(last_xy[1] / cfg.scale_y_length);		
+		
+		let x_sub = pathobj.path[0][0];
+		let xs = pathobj.path.map((__x) => {return (__x[0] - first_x);});
+		//Phaser.Utils.Array.Shuffle(xs);//tmp
+
+		for(let _i = 0; _i < num_segments; _i++) {
+			sections.push(current_y_section);
+			if((_i + 1) < num_segments) {
+				let _next_section_o = pathobj.sections[_i + 1];				
+				if(_next_section_o == current_y_section) {
+					let _range = [];
+					for(let _i2 = 1; _i2 <= cfg.scale_y; _i2++) {
+						if(_i2 !== current_y_section) _range.push(_i2);
+					}
+					Phaser.Utils.Array.Shuffle(_range);
+					next_y_section = _range[0];
+				} else {					
+					next_y_section = Math.min(Math.max(current_y_section - _next_section_o, 1), cfg.scale_y);
+				}
+				
+			}
+			let next_y = Math.round(cfg.scale_y_length_r * next_y_section + AutopRand.randint(0, cfg.scale_y_length_r) + cfg.min_y);						
+			let next_x = Math.round(last_xy[0] + xs[_i]);			
+			
+			path.push([next_x, next_y]);			
+			last_xy = [next_x, next_y];
+			current_y_section = next_y_section;		
+			if(next_x >= max_x) break;
+		}				
 		
 		return {
+			path_x_length: path_x_length,
 			path: path,
 			sections: sections
 		}		
@@ -164,7 +201,7 @@ export class AutopGenPathW extends AutopGenPath {
 		if(similar) {
 			if(similar.value >= 1) {
 				_pathobj = this._gp_prepare_same(similar.path);
-			} else {
+			} else {				
 				_pathobj = this._gp_prepare_similar(_start, similar.path, similar.value);
 			}
 		} else {
@@ -174,10 +211,10 @@ export class AutopGenPathW extends AutopGenPath {
 		let sections = _pathobj.sections;
 		if(_pathobj.hasOwnProperty('path_x_length')) path_x_length = _pathobj.path_x_length;		
 		
-		if(obstacles && !this._gp_intersect_obstacles(path, obstacles)) return this.generate_path(start, obstacles, (new_path_x_length ? false : path_x_length), false, similar);
+		if(obstacles && !this._gp_intersect_obstacles(path, obstacles)) return this.generate_path(start, obstacles, (new_path_x_length ? false : path_x_length))
 		
 		let points = this._gp_add_points(path, prev_tail, first_x, path_x_length);
-		if(!points) return this.generate_path(start, obstacles, (new_path_x_length ? false : path_x_length), false, similar);		
+		if(!points) return this.generate_path(start, obstacles, (new_path_x_length ? false : path_x_length));
 		
 		return {
 			path: path,
@@ -232,17 +269,18 @@ export class AutopGenPathW extends AutopGenPath {
 				}				
 			}
 			if(intersected_wo) break;
-		}			
-		if(!intersected_wo) {				
+		}		
+	if(!intersected_wo) {				
+		for(let _m = 1; _m <= this.generate_path_config.scale_y; _m++) {
 			let _min_y = new Phaser.Structs.Map();
 			for(let i = (path.length - 1); i >= 0; i--) {
 				let p = path[i];
 				let _x = Phaser.Math.Snap.Floor(p[0], this.cfg.grid);
-				let _ys = obstacles.get(_x);
+				let _ys = obstacles.get(_x);				
 				if(_ys) {						
 					for(let i2 = 0; i2 < _ys.length; i2++) {
 						let _d = Math.abs(p[1] - _ys[i2].y);
-						if(_d <= this.generate_path_config.scale_y_length_r) {
+						if(_d <= this.generate_path_config.scale_y_length_r * _m) {
 							if(!_min_y.has(i)) {
 								_min_y.set(i, [i2, _d, _ys[i2].y]);
 							} else if(_d < _min_y.get(i)[1]) {
@@ -253,15 +291,17 @@ export class AutopGenPathW extends AutopGenPath {
 						}
 					}				
 				}
-			}
-			let _min_y_i = _min_y.keys();
+			}			
+			let _min_y_i = _min_y.keys();			
 			if(_min_y_i.length > 0) {
 				Phaser.Utils.Array.Shuffle(_min_y_i);
 				let i = _min_y_i[0];
 				path[i][1] = _min_y.get(i)[2] + AutopRand.randint(1, this.cfg.grid);
 				intersected_wo = true;
+				break;
 			}			
 		}			
+	}
 		return intersected_wo;
 	}
 

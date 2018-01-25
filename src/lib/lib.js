@@ -335,7 +335,7 @@ class AutopLIB {
 
 	generate_new_step3(pobj_correct, prev_obj, obs) {
 		let prev_tail = prev_obj.tail;
-		let pobj_wrong = this.gen_path.generate_path(prev_tail, obs);
+		let pobj_wrong = this.gen_path.generate_path(prev_tail, obs, false, false, {path: pobj_correct[0], value: 0});//tmp
 		prev_obj.nxt = [...pobj_correct, pobj_wrong];
 		prev_obj.obs = obs;
 		
@@ -343,14 +343,14 @@ class AutopLIB {
 			let _to_gen = this.cfg.maxNumPaths - pobj_correct.length - 1;
 			if(_to_gen > 1) _to_gen = AutopRand.randint(1, _to_gen);
 			for(let i = 0; i < _to_gen; i++) {
-				this.add_to_update_queue('generate_new_step4', AutopRand.randint(2,6), [prev_obj, obs]); //tmp
+				this.add_to_update_queue('generate_new_step4', AutopRand.randint(2,6), [prev_obj, obs, pobj_correct]); //tmp
 			}
 		}
 	}
 
-	generate_new_step4(prev_obj, obs) {
+	generate_new_step4(prev_obj, obs, pobj_correct) {
 		let prev_tail = prev_obj.tail;
-		let pobj_wrong = this.gen_path.generate_path(prev_tail, obs);
+		let pobj_wrong = this.gen_path.generate_path(prev_tail, obs, false, false, {path: (pobj_correct.length > 1 ? pobj_correct[1] : pobj_correct[0]), value: 1});//tmp
 		if(!prev_obj.nxt) prev_obj.nxt = [];
 		prev_obj.nxt.push(pobj_wrong);		
 	}

@@ -53,7 +53,7 @@ create () {
 		this.lib.wall_show(pobj_correct);
 		let obs = this.lib.generate_obstacles(pobj_correct);
 		this.lib.draw_obstacles(obs);
-		let pobj_wrong = this.lib.gen_path.generate_path(prev_tail, obs);
+		let pobj_wrong = this.lib.gen_path.generate_path(prev_tail, obs, false, false, {path: pobj_correct, value: 0});//tmp
 		this.registry.get('obstacles').merge(obs, true);
 		prev_tail = pobj_correct.tail;
 		this.registry.get('path_objects').push([pobj_correct, pobj_wrong]);		
