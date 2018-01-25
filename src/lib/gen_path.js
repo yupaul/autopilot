@@ -25,62 +25,19 @@ export class AutopGenPathW extends AutopGenPath {
 		super(sc);
 	}
 	
-	_gp_prepare_random() {
-		
-	}
-
-	_gp_prepare_same() {
-		
-	}
-	
-	_gp_prepare_similar() {
-		
-	}	
-	
-	generate_path(start, obstacles, path_x_length, config, similar) {
-		//path prev_tail first_x sections
-		//obstacles start new_path_x_length path_x_length
-		
-		var path, first_x, max_x, last_xy, next_y_section, avg_x, softmax_parts, next_x;		
-		
-		if(config) this.setConfig(config);
-		let cfg = this.generate_path_config;			
-		
-		var _start = start === undefined ? false : start;	
-		var is_first = !_start;		
-		
-		if(!is_first) {		
-			if(!similar || !Phaser.Utils.Objects.IsPlainObject(similar) || !similar.hasOwnProperty('value') || similar.value === 0.5) similar = false;		
-		}
+	_gp_prepare_random(start, path, prev_tail, first_x, path_x_length, is_first) {
+		var max_x, next_y_section, avg_x, softmax_parts, next_x;			
+		let cfg = this.generate_path_config;
+		let sections = [];		
+		let last_xy = is_first ? path[path.length - 1] : start[start.length - 1];
 
 		var new_path_x_length = !path_x_length;
 		if(new_path_x_length) {			
 			path_x_length = AutopRand.randint(cfg.min_path_x_length, cfg.max_path_x_length);		
-		}		
-		
-		var path, prev_tail, sections = [];
-		
-		if(is_first) {			
-			let __line_length = AutopRand.randint(...cfg.first_line_length);
-			_start = [[cfg.start_x, cfg.start_y], [cfg.start_x + Math.round(__line_length * 0.5), cfg.start_y], [cfg.start_x + __line_length, cfg.start_y]];
-			path = _start;
-			prev_tail = false;
-		} else {			
-			path = [];
-			prev_tail = _start;
-		}		
-		
-		let num_segments = AutopRand.randint(...cfg.min_max_segments);
-
-		
-		if(path.length > 0) { //is_first
-			--num_segments;			
-			last_xy = path[path.length - 1];			
-			first_x = _start[0][0];
-		} else {			
-			last_xy = _start[_start.length - 1];
-			first_x = last_xy[0];
-		}
+		}			
+				
+		let num_segments = AutopRand.randint(...cfg.min_max_segments);		
+		if(is_first) --num_segments;			
 		
 		max_x = first_x + path_x_length;
 		
@@ -146,12 +103,81 @@ export class AutopGenPathW extends AutopGenPath {
 			last_xy = [next_x, next_y];
 			current_y_section = next_y_section;		
 			if(next_x >= max_x) break;
+		}		
+	
+		return {
+			path_x_length: path_x_length,
+			path: path,
+			sections: sections
 		}
+	}
+
+	_gp_prepare_same(pathobj) {
+		return {
+			path: pathobj.path.concat([]),
+			sections: pathobj.sections.concat([])
+		}	
+	}
+	
+	_gp_prepare_similar(start, pathobj, sim_degree) {		
+		let path = [];
+		let prev_tail = pathobj.prev_tail;
+		let first_x = start[start.length - 1][0];
+		let last_xy = start[start.length - 1];
+		//path_x_length
 		
-		if(obstacles && !this._gp_intersect_obstacles(path, obstacles)) return this.generate_path(start, obstacles, (new_path_x_length ? false : path_x_length));
+		return {
+			path: path,
+			sections: sections
+		}		
+	}	
+	
+	generate_path(start, obstacles, path_x_length, config, similar) {
+		//path prev_tail first_x sections
+		//obstacles start new_path_x_length path_x_length
+		//args: _start path prev_tail first_x path_x_length
+		//return path, sections
+		
+		var path, prev_tail, first_x, _pathobj;		
+		
+		if(config) this.setConfig(config);
+		let cfg = this.generate_path_config;			
+		
+		var _start = start === undefined ? false : start;	
+		var is_first = !_start;		
+		var new_path_x_length = !path_x_length;
+		
+		if(!is_first) {		
+			if(!similar || !Phaser.Utils.Objects.IsPlainObject(similar) || !similar.hasOwnProperty('value') || similar.value === 0.5) similar = false;	
+			path = [];
+			prev_tail = _start;						
+			first_x = _start[_start.length - 1][0];			
+		} else {
+			similar = false;
+			let __line_length = AutopRand.randint(...cfg.first_line_length);
+			_start = [[cfg.start_x, cfg.start_y], [cfg.start_x + Math.round(__line_length * 0.5), cfg.start_y], [cfg.start_x + __line_length, cfg.start_y]];
+			path = _start;
+			prev_tail = false;			
+			first_x = _start[0][0];			
+		}		
+		
+		if(similar) {
+			if(similar.value >= 1) {
+				_pathobj = this._gp_prepare_same(similar.path);
+			} else {
+				_pathobj = this._gp_prepare_similar(_start, similar.path, similar.value);
+			}
+		} else {
+			_pathobj = this._gp_prepare_random(_start, path, prev_tail, first_x, path_x_length, is_first);
+		}
+		path = _pathobj.path;
+		let sections = _pathobj.sections;
+		if(_pathobj.hasOwnProperty('path_x_length')) path_x_length = _pathobj.path_x_length;		
+		
+		if(obstacles && !this._gp_intersect_obstacles(path, obstacles)) return this.generate_path(start, obstacles, (new_path_x_length ? false : path_x_length), false, similar);
 		
 		let points = this._gp_add_points(path, prev_tail, first_x, path_x_length);
-		if(!points) return this.generate_path(start, obstacles, (new_path_x_length ? false : path_x_length));		
+		if(!points) return this.generate_path(start, obstacles, (new_path_x_length ? false : path_x_length), false, similar);		
 		
 		return {
 			path: path,
