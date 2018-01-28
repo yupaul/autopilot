@@ -120,7 +120,8 @@ class AutopLIB {
 		config.duration = Math.round((_clen[_clen.length - 1] / this.cfg.speed) * this.cfg.speedMult);
 		player.setPath(_path, config);
 		player.setRotateToPath(true, config.rotationOffset, config.verticalAdjust);	
-		if(this.cfg.speedUp) this.cfg.speed += this.cfg.speedUp;	
+		//if(this.cfg.speedUp) this.cfg.speed += this.cfg.speedUp;	
+		this.cfg.configurator.update();
 		if(!this.cfg._buttons_enabled && this.cfg._correct_selected) this.controls_buttons_enable();
 		this.add_to_update_queue('update_section_counter', 5);
 	}
