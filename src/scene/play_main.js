@@ -1,14 +1,19 @@
 import AutopLIB from '../lib/lib';
-import AutopCFG from '../config';
 import PlayBase from './play_base';
 
 class PlayMain extends PlayBase {
-	
-	constructor () {
-		super({key: 'PlayMain'}, AutopCFG.custom, AutopLIB);
-	}
 
+  constructor () {
+    super({
+      key: 'PlayMain'
+    })
+  }
+  
 	preload () {
+		this.c = this.registry.get('c');
+		this.cfg = this.c.get_play();
+	  	this.lib = new AutopLIB(this);
+	
 		this.load.image('pause', './assets/images/pause.png');
 	}
 

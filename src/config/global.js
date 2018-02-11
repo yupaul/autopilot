@@ -1,15 +1,6 @@
-import PlayMain from './scene/play_main';
-import Menu from './scene/menu';
-import AutopConfigurator from './lib/configurator';
 
-let _config = {
-	type: Phaser.AUTO,
-	width: window.innerWidth, //1200
-	height: window.innerHeight, //600
-	backgroundColor: '#000000',//'#2d2d2d', '#ffffff'
-	parent: 'game_div',
-	scene: [Menu, PlayMain],	//other
-	custom: {
+export let _config_global = {
+		theme_name: 'g',
 		levels : [
 			{},
 			{},
@@ -38,8 +29,6 @@ let _config = {
 		gridCellLineStyle: false, //[1, 0x627261, 1] //tmp
 		gridCellFillStyle: 0xffffff, // 0x007090
 		gridCellTextureName: 'grid_cell',
-		gameOverStyle: {color: '#ffffff', fill: '#ffffff', fontSize: '60px Tahoma'},
-		gameOverTest: 'Game Over',
 		sectionCounterStyle: {color: '#cd3221', fill: '#cd3221', fontSize: '40px Tahoma'},
 		sectionCounterName: 'section_counter',
 		
@@ -83,19 +72,13 @@ let _config = {
 			pause_button_x_position: 0.2
 		},
 		menu: {
+			gameOverStyle: {color: '#ffffff', fill: '#ffffff', fontSize: '60px Tahoma'},
+			gameOverText: 'Game Over',			
 			border_style: [5, 0xffffff, 1],
 			bg_style: 0x000000,
 			bg_proportion: 0.96,
 			play_button_style: 0xffffff,
 			play_button_half_size: 0.2
 		}			
-	}		
+			
 };
-//////////////////////////////////////////////////
-
-let _configurator = new AutopConfigurator(_config);
-
-//let AutopCFG = config();
-let AutopCFG = _configurator.config;
-
-export default AutopCFG

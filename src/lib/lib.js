@@ -121,7 +121,7 @@ class AutopLIB {
 		player.setPath(_path, config);
 		player.setRotateToPath(true, config.rotationOffset, config.verticalAdjust);	
 		//if(this.cfg.speedUp) this.cfg.speed += this.cfg.speedUp;	
-		this.cfg.configurator.update();
+		this.sc.c.update();
 		if(!this.cfg._buttons_enabled && this.cfg._correct_selected) this.controls_buttons_enable();
 		this.add_to_update_queue('update_section_counter', 5);
 	}

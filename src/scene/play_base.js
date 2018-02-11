@@ -1,9 +1,10 @@
 class PlayBase extends Phaser.Scene {
 	
-  constructor (scene_cfg, cfg, Lib) {
+  constructor (scene_cfg) {
 	super(scene_cfg);
-	this.cfg = cfg;
-  	this.lib = new Lib(this);
+	this.c;
+	this.cfg;
+	this.lib;
   }
 
 }

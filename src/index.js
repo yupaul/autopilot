@@ -1,7 +1,15 @@
 import 'phaser';
-import AutopCFG from './config';
+import Configurator from './config/configurator';
 
 ///////////////////////////////////
 
-var game = new Phaser.Game(AutopCFG);
+class AutopGame extends Phaser.Game {
+
+	constructor(configurator) {
+	 	super(configurator.get_game());
+		this.registry.set('c', configurator);
+	}
+}
+
+var game = new AutopGame(Configurator);
 //game.scene.scenes[0].lib

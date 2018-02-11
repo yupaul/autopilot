@@ -1,4 +1,3 @@
-import AutopCFG from '../config';
 
 class Menu extends Phaser.Scene {
 	
@@ -6,33 +5,34 @@ class Menu extends Phaser.Scene {
     super({
       key: 'Menu'
     })
-    this.cfg = AutopCFG.custom;
+    this.cfg;
+    this.c;
     this.game_started = false;
   }
 
 preload () {
-	
-
+	this.c = this.registry.get('c');
+	this.cfg = this.c.get_menu();
 }
 
 create() {
-	let _hsize = this.cfg.menu.play_button_half_size;
+	let _hsize = this.cfg.play_button_half_size;
 
 	let w = this.game.config.width;
 	let h = this.game.config.height;
 	let gr = this.add.graphics();
-	gr.lineStyle(...this.cfg.menu.border_style);
-	gr.fillStyle(this.cfg.menu.bg_style);
-	let _offset = (1 - this.cfg.menu.bg_proportion) * 0.5;
-	let coords = [Math.round(w * _offset), Math.round(h * _offset), Math.round(w * this.cfg.menu.bg_proportion), Math.round(h * this.cfg.menu.bg_proportion)];
+	gr.lineStyle(...this.cfg.border_style);
+	gr.fillStyle(this.cfg.bg_style);
+	let _offset = (1 - this.cfg.bg_proportion) * 0.5;
+	let coords = [Math.round(w * _offset), Math.round(h * _offset), Math.round(w * this.cfg.bg_proportion), Math.round(h * this.cfg.bg_proportion)];
 	gr.fillRect(...coords).strokeRect(...coords);
 
 	let _play_button = this.add.graphics();
 	let _play_button_coords = [Math.round((0.5 - _hsize) * w),Math.round((0.5 - _hsize) * h),Math.round((0.5 - _hsize) * w),Math.round((0.5 + _hsize) * h),Math.round((0.5 + _hsize) * w),Math.round(h * 0.5)];
 	let play_triangle = new Phaser.Geom.Triangle(..._play_button_coords);
-	_play_button.fillStyle(this.cfg.menu.play_button_style).fillTriangle(..._play_button_coords);
+	_play_button.fillStyle(this.cfg.play_button_style).fillTriangle(..._play_button_coords);
 
-	let game_over_text = this.add.text(Math.round((0.5 + _hsize) * w * 0.5), Math.round((0.5 - _hsize) * h * 0.5), this.cfg.gameOverTest, this.cfg.gameOverStyle);
+	let game_over_text = this.add.text(Math.round((0.5 + _hsize) * w * 0.5), Math.round((0.5 - _hsize) * h * 0.5), this.cfg.gameOverText, this.cfg.gameOverStyle);
 	if(!this.game.registry.get('_do_gameover')) {
 		game_over_text.visible = 0;
 	} else {
@@ -49,10 +49,10 @@ create() {
 //		this.scene.sendToBack();
 		if(Phaser.Geom.Triangle.Contains(play_triangle, event.x, event.y)) {
 			game_over_text.visible = 0;
-			if(!this.game_started) {
+			if(!this.game_started) {				
 				this.scene.start('PlayMain');
 				this.game_started = true;		
-			} else {
+			} else {				
 				this.scene.wake('PlayMain');
 			}		
 			this.scene.stop();
