@@ -81,7 +81,7 @@ class AutopConfigurator {
 	}
 	
 	update(scene) {
-		
+		if(this.theme.update && typeof this.theme.create === 'function') this.theme.create(scene);		
 	}
 	
 	update_section(scene) {

@@ -32,7 +32,7 @@ create () {
 
 //	this.lib.config_preprocess(rwh, _w, _h);//tmp to delete
 
-	this.cameras.main.setSize(this.cameras.main.width, this.cfg.heightField);
+	//this.cameras.main.setSize(this.cameras.main.width, this.cfg.heightField);	
 	if(this.cameras.cameras.length < 2) this.cameras.add(0, this.cfg.heightField, this.cameras.main.width, this.cfg.heightControls).setBounds(0, this.cfg.heightField, this.cameras.main.width, this.cfg.heightControls);
 	for (let _i in this.cameras.cameras) {
 		this.cameras.cameras[_i].setScroll(0, 0);
@@ -87,6 +87,7 @@ create () {
 }
 
 update() {	
+	//this.c.update(this);
 	if(!this.registry.has('player')) return;
 	let player = this.registry.get('player');
 //	console.log(player.pathTween.getValue(), Math.round(player.x * 100) / 100, Math.round(player.y * 100) / 100);//tmp debug to fix start / end 2 frame delay

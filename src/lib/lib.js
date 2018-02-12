@@ -14,7 +14,13 @@ class AutopLIB {
 		if(!this.rwh) {
 			if(player.x > this.cfg._cameraOffset) {
 				let _p = Math.round(player.x) - this.cfg._cameraOffset;
-				if(_p > this.sc.cameras.main.scrollX) this.sc.cameras.main.setScroll(_p, 0);
+				if(_p > this.sc.cameras.main.scrollX) {
+					this.sc.cameras.main.setScroll(_p, 0);
+					if(this.sc.registry.get('bg')) {
+						this.sc.registry.get('bg').tilePositionX = this.sc.cameras.main.scrollX;
+						this.sc.registry.get('bg').x = this.sc.cameras.main.scrollX;
+					}						
+				}
 			}
 		} else {
 			if(player.y < this.cfg._cameraOffset) {
@@ -304,6 +310,7 @@ class AutopLIB {
 		if(btn.path !== undefined && btn.path instanceof Phaser.GameObjects.Image && btn.path.active) btn.path.destroy();		
 		minipath.lineStyle(...this.cfg.controls.button_path_style);	
 		btn.path = this.gen_path.minipath(minipath, points, btn, texture_name);
+		this.sc.cameras.main.ignore(btn.path);
 		btn.path_index = path_index;
 		btn.is_correct = is_correct;
 		if(this.cfg.dbg) btn.button.setAlpha(is_correct ? 1 : 0.25);//tmp
