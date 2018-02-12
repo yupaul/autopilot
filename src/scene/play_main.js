@@ -13,8 +13,8 @@ class PlayMain extends PlayBase {
 		this.c = this.registry.get('c');
 		this.cfg = this.c.get_play();
 	  	this.lib = new AutopLIB(this);
-	
-		this.load.image('pause', './assets/images/pause.png');
+		this.c.preload(this);
+		
 	}
 
 create () {		
@@ -41,7 +41,8 @@ create () {
 		}
 	}
 	
-	this.lib.create();
+	//this.lib.create();
+	this.c.create(this);
 	
 	let pobj = this.lib.gen_path.generate_path();	
 	this.lib.generate_wall(pobj);

@@ -56,7 +56,7 @@ class AutopConfigurator {
 		cstm.speedMult = cstm.useFrames ? 100 : 1000;
 
 		//if(this.config.f.init && typeof this.config.f.init === 'function') this.config.f.init(this.cfg);//tmp
-		this._theme_boot(cstm);//tmp
+		if(this.theme.boot && typeof this.theme.boot === 'function') this.theme.boot(cstm);
 		
 		//cstm.speedUp = Math.round(cstm.speed * cstm.speedUpCoeff);
 		if(cstm.speed_intial === undefined) {
@@ -70,31 +70,21 @@ class AutopConfigurator {
 		this.config_boot = Immutable.Map(cstm);
 		this.config_boot_menu = Immutable.Map(cstm.menu);
 	}
-	
-	_theme_boot(cstm) {
-		let cstmg = cstm.gen_path;		
-		let rwh = cstm.revertWidthHeight;
-		let cfg_w = cstm._rwhcfg.cfg_w;
-		let cfg_h = cstm._rwhcfg.cfg_h;		
-	
-		cstm.grid = cstm.playerWidthHeight[0] + cstm.playerWidthHeight[1];	
-		cstm.rtreeOffset = Math.round((cstm.playerWidthHeight[0] + cstm.playerWidthHeight[1]) * cstm.rtreeCoeff);
-		cstm.speed = Math.round(cfg_w * cstm.speedCoeff);
-		cstm.playerNumBodyParts = Math.round(cfg_w * cstm.playerNumBodyPartsCoeff);
-		cstmg.start_x = rwh ? (cstm.heightField - cstm.start_x) : cstm.start_x;
-		cstmg.min_y = cstm.playerWidthHeight[1];
-		cstmg.start_y = Math.round(cstm.heightField * 0.5 + cstmg.min_y);		
-		cstmg.max_y = cfg_h - cstmg.min_y;
-		cstmg.scale_y_length = (cstmg.max_y - cstmg.min_y) / (cstmg.scale_y + 1);
-		cstmg.scale_y_length_r = Math.round(cstmg.scale_y_length);	
-		cstmg.min_path_x_length = Math.round(cfg_w * (0.5 - cstmg.path_x_spread_min));
-		cstmg.max_path_x_length = Math.round(cfg_w * (0.5 + cstmg.path_x_spread_max));
-		cstmg.min_segment_length = cstm.playerWidthHeight[0] + cstm.playerWidthHeight[1];
-		cstmg.min_segment_length_sq = cstmg.min_segment_length * cstmg.min_segment_length;
-	}		
 
+	preload(scene) {
+		if(this.theme.preload && typeof this.theme.preload === 'function') this.theme.preload(scene);
+	}
 	
-	update() {
+	create(scene) {
+		if(this.theme.create && typeof this.theme.create === 'function') this.theme.create(scene);
+		
+	}
+	
+	update(scene) {
+		
+	}
+	
+	update_section(scene) {
 		//update _position
 		if(this.config.levels[this.config._position.l].num_sections && this.config._position.p === this.config.levels[this.config._position.l].num_sections) {
 			this.config._position.p = 0;
