@@ -39,12 +39,13 @@ class AutopCreator {
 	controls() {
 		this.sc.registry.set('button_pause', {button: this.sc.add.image(Math.round(this.sc.game.config.width * this.cfg.controls.pause_button_x_position), Math.round(this.sc.game.config.height - this.cfg.heightControls * 0.5), 'pause').setInteractive()});		
 		this.sc.lib._set_button_bounds('button_pause');
-		var gr_separator_line = this.sc.add.graphics();		
+		this.sc.cameras.main.ignore(this.sc.registry.get('button_pause').button);
+		/*var gr_separator_line = this.sc.add.graphics();		
 		gr_separator_line.lineStyle(...this.cfg.controls.separator_line_style);	
 		let _l = new Phaser.Curves.Line([0, this.cfg.heightField + 1, this.sc.game.config.width + 1, this.cfg.heightField + 1]);
-		_l.draw(gr_separator_line, this.sc.game.config.width + 1);		
+		_l.draw(gr_separator_line, this.sc.game.config.width + 1);
 		
-		this.sc.cameras.main.ignore([this.sc.registry.get('button_pause').button, gr_separator_line]);
+		this.sc.cameras.main.ignore([this.sc.registry.get('button_pause').button, gr_separator_line]);*/
 	}	
 
 	controls_buttons() {
@@ -67,12 +68,12 @@ class AutopCreator {
 	}
 	
 	player() {
-		var _player_graphics = this.sc.make.graphics();
-		_player_graphics.fillStyle(this.cfg.playerFillStyle).fillTriangle(...this.cfg.playerTrianglePoints).generateTexture('player', ...this.cfg.playerWidthHeight);
+//		var _player_graphics = this.sc.make.graphics();
+//		_player_graphics.fillStyle(this.cfg.playerFillStyle).fillTriangle(...this.cfg.playerTrianglePoints).generateTexture('player', ...this.cfg.playerWidthHeight);
 	}
 	
 	player_body() {
-		var gr = this.sc.make.graphics();
+/*		var gr = this.sc.make.graphics();
 		let radius = Math.round(this.cfg.playerWidthHeight[0] * 0.5);
 		gr.fillStyle(this.cfg.playerFillStyle).fillCircle(0, 0, radius).generateTexture('player_body', radius, radius);
 		let g = this.sc.add.group({key: 'player_body', frameQuantity: this.cfg.playerNumBodyParts });
@@ -81,7 +82,7 @@ class AutopCreator {
 			//g.getChildren()[i].setAlpha(Phaser.Math.Easing.Stepped(i / g.getChildren().length, this.cfg.playerBodyEaSteps)); 
 			g.getChildren()[i].setAlpha(Phaser.Math.Easing.Sine.Out(i / g.getChildren().length) * 0.75);
 		}
-		this.sc.registry.set('player_body_group', g);
+		this.sc.registry.set('player_body_group', g);*/
 	}	
 
 	grid_cell() {

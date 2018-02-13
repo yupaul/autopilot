@@ -46,8 +46,10 @@ class AutopLIB {
 		if(!this.sc.registry.has('player_xy')) {
 			this.sc.registry.set('player_xy', [player.x, player.y]);
 		} else if(player.x !== this.sc.registry.get('player_xy')[0] || player.y !== this.sc.registry.get('player_xy')[1]) {		
-			if(!this.sc.registry.get('player_body_group').visible) this.sc.registry.get('player_body_group').visible = 1;
-			Phaser.Actions.ShiftPosition(this.sc.registry.get('player_body_group').getChildren(), ...this.sc.registry.get('player_xy'));
+			if(this.sc.registry.get('player_body_group')) {
+				if(!this.sc.registry.get('player_body_group').visible) this.sc.registry.get('player_body_group').visible = 1;
+				Phaser.Actions.ShiftPosition(this.sc.registry.get('player_body_group').getChildren(), ...this.sc.registry.get('player_xy'));
+			}
 			this.sc.registry.get('player_xy')[0] = player.x;
 			this.sc.registry.get('player_xy')[1] = player.y;
 		}

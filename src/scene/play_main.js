@@ -87,7 +87,7 @@ create () {
 }
 
 update() {	
-	//this.c.update(this);
+	this.c.update(this);
 	if(!this.registry.has('player')) return;
 	let player = this.registry.get('player');
 //	console.log(player.pathTween.getValue(), Math.round(player.x * 100) / 100, Math.round(player.y * 100) / 100);//tmp debug to fix start / end 2 frame delay

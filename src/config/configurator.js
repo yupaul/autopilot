@@ -19,6 +19,7 @@ class AutopConfigurator {
 		this.set_global(config_global);
 		this.set_game(config_game, scenes);				
 		this.theme = require('../theme/'+this._config_global.theme_name);		
+		this.has_theme_update = this.theme.update && typeof this.theme.create === 'function';
 		this.boot();		
 	}	
 	
@@ -81,8 +82,8 @@ class AutopConfigurator {
 	}
 	
 	update(scene) {
-		if(this.theme.update && typeof this.theme.create === 'function') this.theme.create(scene);		
-	}
+		 if(this.has_theme_update) this.theme.update(scene);
+	}	
 	
 	update_section(scene) {
 		//update _position

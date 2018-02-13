@@ -8,7 +8,9 @@ let theme = {
 		let rwh = config.revertWidthHeight;
 		let cfg_w = config._rwhcfg.cfg_w;
 		let cfg_h = config._rwhcfg.cfg_h;		
-	
+		
+		config.playerWidthHeight = [70, 70];
+		config.rtreeCoeff = 0.5;
 		config.grid = config.playerWidthHeight[0] + config.playerWidthHeight[1];	
 		config.rtreeOffset = Math.round((config.playerWidthHeight[0] + config.playerWidthHeight[1]) * config.rtreeCoeff);
 		config.speed = Math.round(cfg_w * config.speedCoeff);
@@ -26,9 +28,10 @@ let theme = {
 	},
 	
 	preload: function(scene) {
-		scene.cfg.grid = AutopRand.randint(Math.round((scene.cfg.playerWidthHeight[0] + scene.cfg.playerWidthHeight[1]) * 0.25), scene.cfg.playerWidthHeight[0] + scene.cfg.playerWidthHeight[1]);
+		scene.cfg.grid = AutopRand.randint(Math.round((scene.cfg.playerWidthHeight[0] + scene.cfg.playerWidthHeight[1]) * 0.25), (scene.cfg.playerWidthHeight[0] + scene.cfg.playerWidthHeight[1]) * 0.5);
 		scene.load.image('pause', './assets/'+this.theme_name+'/images/pause.png');
 		scene.load.image('bg_dark', './assets/'+this.theme_name+'/images/bg_dark2.png');
+		scene.load.image('player', './assets/'+this.theme_name+'/images/player.png');
 	},
 	
 	create: function(scene) {
@@ -37,7 +40,7 @@ let theme = {
 	},
 	
 	update: function(scene) {
-
+		
 	},
 
 	test: function() {
