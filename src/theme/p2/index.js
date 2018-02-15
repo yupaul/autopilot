@@ -3,7 +3,7 @@ import AutopCreator from './creator';
 import _config from './config';
 
 let theme = {
-	theme_name: 'p', 
+	theme_name: 'p2', 
 	boot: function(config) {		
 		let cstmg = config.gen_path;		
 		let rwh = config.revertWidthHeight;
@@ -28,10 +28,10 @@ let theme = {
 	},
 	
 	preload: function(scene) {
-		scene.cfg.grid = AutopRand.randint(Math.round((scene.cfg.playerWidthHeight[0] + scene.cfg.playerWidthHeight[1]) * 0.25), (scene.cfg.playerWidthHeight[0] + scene.cfg.playerWidthHeight[1]) * 0.5);
+		scene.cfg.grid = AutopRand.randint(Math.round((scene.cfg.playerWidthHeight[0] + scene.cfg.playerWidthHeight[1]) * 0.25), scene.cfg.playerWidthHeight[0] + scene.cfg.playerWidthHeight[1]);
 		scene.load.image('pause', './assets/'+this.theme_name+'/images/pause.png');
 		scene.load.image('bg_dark', './assets/'+this.theme_name+'/images/bg_dark2.png');
-		scene.load.image('player', './assets/'+this.theme_name+'/images/player.png');
+		scene.load.image('player', './assets/'+this.theme_name+'/images/player2.png');
 		scene.load.image('player_body_particle', './assets/'+this.theme_name+'/images/pbp1.png');
 	},
 	
@@ -44,12 +44,22 @@ let theme = {
 		
 	},
 	
+	player_afterCreate: function(player) {		
+		player.setBlendMode('SCREEN');
+	},
+	
 	player_update: function(scene) {
 		if(!scene.registry.get('player_body_group').visible) {
+			scene.registry.get('player').setBlendMode('SCREEN');
 			scene.registry.get('player_body_group').visible = 1;
-			scene.registry.get('player_body_group').startFollow(scene.registry.get('player'));
+			//scene.registry.get('player_body_group').startFollow(scene.registry.get('player'));
 		}
-		//scene.registry.get('player_body_group').setPosition(...scene.registry.get('player_xy'));		
+		
+		if(AutopRand.chanceOneIn(2)) {
+			let r = [AutopRand.randint(0, 50), AutopRand.randint(0, 60)];
+			let xy = scene.registry.get('player_xy');
+			scene.registry.get('player_body_group').setPosition(xy[0] + r[0] - 25, xy[1] + r[1] - 30).setGravityY((r[1] - 30) * 2).setGravityX(-AutopRand.randint(20, 80));
+		}
 	},	
 
 	test: function() {

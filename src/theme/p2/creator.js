@@ -72,10 +72,11 @@ class AutopCreator {
 //		_player_graphics.fillStyle(this.cfg.playerFillStyle).fillTriangle(...this.cfg.playerTrianglePoints).generateTexture('player', ...this.cfg.playerWidthHeight);
 	}
 	
-	player_body() {		
+	player_body() {	
 		var p = this.sc.add.particles('player_body_particle').createEmitter(this.cfg.player_body_emitter.emitter);
-		this.cfg.player_body_emitter.zone.source = new Phaser.Geom.Circle(0, 0, Math.round(this.cfg.playerWidthHeight[0] * 0.2));
-		p.setEmitZone(this.cfg.player_body_emitter.zone);
+		//this.cfg.player_body_emitter.zone.source = new Phaser.Geom.Circle(0, 0, Math.round(this.cfg.playerWidthHeight[0] * 0.5));
+		this.cfg.player_body_emitter.zone.source = new Phaser.Geom.Triangle(-100, -50, 0, 0, -100, 50);
+		//p.setEmitZone(this.cfg.player_body_emitter.zone);
 		//p.setFrequency(0.1);
 		//p.reserve(10);
 		p.visible = 0;

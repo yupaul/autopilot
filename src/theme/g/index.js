@@ -35,6 +35,11 @@ let theme = {
 		cr.create();
 	},
 
+	player_update: function(scene) {
+		if(!scene.registry.get('player_body_group').visible) scene.registry.get('player_body_group').visible = 1;
+		Phaser.Actions.ShiftPosition(scene.registry.get('player_body_group').getChildren(), ...scene.registry.get('player_xy'));		
+	},
+	
 	test: function() {
 		console.log('test');
 	}
