@@ -10,7 +10,10 @@ let theme = {
 		let cfg_w = config._rwhcfg.cfg_w;
 		let cfg_h = config._rwhcfg.cfg_h;		
 		
-		Phaser.Utils.Objects.Extend(config, _config);
+		
+		_config.player_body_emitter.follow.position_range_half = [Math.round(_config.player_body_emitter.follow.position_range[0] * 0.5), Math.round(_config.player_body_emitter.follow.position_range[1] * 0.5)];
+		Phaser.Utils.Objects.Extend(config, _config);		
+		
 		config.grid = config.playerWidthHeight[0] + config.playerWidthHeight[1];	
 		config.rtreeOffset = Math.round((config.playerWidthHeight[0] + config.playerWidthHeight[1]) * config.rtreeCoeff);
 		config.speed = Math.round(cfg_w * config.speedCoeff);
@@ -28,11 +31,14 @@ let theme = {
 	},
 	
 	preload: function(scene) {
-		scene.cfg.grid = AutopRand.randint(Math.round((scene.cfg.playerWidthHeight[0] + scene.cfg.playerWidthHeight[1]) * 0.25), scene.cfg.playerWidthHeight[0] + scene.cfg.playerWidthHeight[1]);
+		scene.cfg.grid = AutopRand.randint(Math.round((scene.cfg.playerWidthHeight[0] + scene.cfg.playerWidthHeight[1]) * 0.25), Math.round((scene.cfg.playerWidthHeight[0] + scene.cfg.playerWidthHeight[1]) * 0.8));
 		scene.load.image('pause', './assets/'+this.theme_name+'/images/pause.png');
 		scene.load.image('bg_dark', './assets/'+this.theme_name+'/images/bg_dark2.png');
 		scene.load.image('player', './assets/'+this.theme_name+'/images/player2.png');
 		scene.load.image('player_body_particle', './assets/'+this.theme_name+'/images/pbp1.png');
+		for(let i = 1; i <= scene.cfg.numObsImages; i++) {
+			scene.load.image('o'+i, './assets/'+this.theme_name+'/images/o/'+i+'.png');
+		}
 	},
 	
 	create: function(scene) {
@@ -52,13 +58,15 @@ let theme = {
 		if(!scene.registry.get('player_body_group').visible) {
 			scene.registry.get('player').setBlendMode('SCREEN');
 			scene.registry.get('player_body_group').visible = 1;
+			scene.registry.get('player_body_group').manager.setDepth(scene.registry.get('player').depth - 1);
 			//scene.registry.get('player_body_group').startFollow(scene.registry.get('player'));
 		}
 		
-		if(AutopRand.chanceOneIn(2)) {
-			let r = [AutopRand.randint(0, 50), AutopRand.randint(0, 60)];
+		let _cfg = scene.cfg.player_body_emitter.follow;
+		if(AutopRand.chanceOneIn(_cfg.chance)) {			
+			let r = [AutopRand.randint(0, _cfg.position_range[0]), AutopRand.randint(0, _cfg.position_range[1])];
 			let xy = scene.registry.get('player_xy');
-			scene.registry.get('player_body_group').setPosition(xy[0] + r[0] - 25, xy[1] + r[1] - 30).setGravityY((r[1] - 30) * 2).setGravityX(-AutopRand.randint(20, 80));
+			scene.registry.get('player_body_group').setPosition(xy[0] + r[0] - _cfg.position_range_half[0], xy[1] + r[1] - _cfg.position_range_half[1]).setGravityY((r[1] - _cfg.position_range_half[1]) * _cfg.gravity_y_multiplier).setGravityX(-AutopRand.randint(..._cfg.gravity_x_range));
 		}
 	},	
 

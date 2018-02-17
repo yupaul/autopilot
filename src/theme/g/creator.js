@@ -31,19 +31,19 @@ class AutopCreator {
 	}
 	
 	controls() {
-		this.sc.registry.set('button_pause', {button: this.sc.add.image(Math.round(this.sc.game.config.width * this.cfg.controls.pause_button_x_position), Math.round(this.sc.game.config.height - this.cfg.heightControls * 0.5), 'pause').setInteractive()});
+		this.sc.registry.set('button_pause', {button: this.sc.add.image(Math.round(this.sc.sys.game.config.width * this.cfg.controls.pause_button_x_position), Math.round(this.sc.sys.game.config.height - this.cfg.heightControls * 0.5), 'pause').setInteractive()});
 		this.sc.lib._set_button_bounds('button_pause');
 		var gr_separator_line = this.sc.add.graphics();
 		gr_separator_line.lineStyle(...this.cfg.controls.separator_line_style);	
-		let _l = new Phaser.Curves.Line([0, this.cfg.heightField + 1, this.sc.game.config.width + 1, this.cfg.heightField + 1]);
-		_l.draw(gr_separator_line, this.sc.game.config.width + 1);		
+		let _l = new Phaser.Curves.Line([0, this.cfg.heightField + 1, this.sc.sys.game.config.width + 1, this.cfg.heightField + 1]);
+		_l.draw(gr_separator_line, this.sc.sys.game.config.width + 1);		
 	}	
 
 	controls_buttons() {
 		let _tmp = [this.cfg.pathLength,  (1 - this.cfg.heightControlsRate)];
 		if(this.rwh) _tmp.reverse();
-		let button_width = Math.round(this.sc.game.config.width * _tmp[0] * this.cfg.heightControlsRate * this.cfg.controls.button_height);
-		let button_height = Math.round(this.sc.game.config.height * _tmp[1] * this.cfg.heightControlsRate * this.cfg.controls.button_height);	
+		let button_width = Math.round(this.sc.sys.game.config.width * _tmp[0] * this.cfg.heightControlsRate * this.cfg.controls.button_height);
+		let button_height = Math.round(this.sc.sys.game.config.height * _tmp[1] * this.cfg.heightControlsRate * this.cfg.controls.button_height);	
 		
 		var grs_rect = this.sc.make.graphics();
 		grs_rect.lineStyle(...this.cfg.controls.button_bounds_style);

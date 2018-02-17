@@ -78,7 +78,7 @@ create () {
 		}, 'player'));
 	this.registry.get('player').setDepth(-100);
 	
-	this.input.events.on('POINTER_DOWN_EVENT', (event) => {
+	this.input.on('pointerdown', (event) => {
 		this.lib.controls_on_click(event);
 	});
 	this.cfg._just_started = true;

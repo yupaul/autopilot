@@ -1,5 +1,6 @@
 import AutopRand from '../util/autoprand';
 import {AutopGenPathW, AutopGenPathH} from './gen_path';
+import AutopGenObs from './gen_obs';
 
 class AutopLIB {
 	
@@ -8,6 +9,7 @@ class AutopLIB {
 		this.cfg = this.sc.cfg;
 		this.rwh = this.cfg.revertWidthHeight;
 		this.gen_path = this.rwh ? (new AutopGenPathH(sc)) : (new AutopGenPathW(sc));
+		this.gen_obs = new AutopGenObs(this.cfg);
 	}
 	
 	camera_follow(player) {
@@ -117,13 +119,13 @@ class AutopLIB {
 		let x;		
 		let _tmp = [this.cfg.pathLength,  (1 - this.cfg.heightControlsRate)];
 		if(this.rwh) _tmp.reverse();
-		let button_width = Math.round(this.sc.game.config.width * _tmp[0] * this.cfg.heightControlsRate * this.cfg.controls.button_height);
+		let button_width = Math.round(this.sc.sys.game.config.width * _tmp[0] * this.cfg.heightControlsRate * this.cfg.controls.button_height);
 		if((num % 2) === 0) {
-			x = Math.round((this.sc.game.config.width - this.cfg.controls.button_gap * num - button_width * (num - 1)) * 0.5);
+			x = Math.round((this.sc.sys.game.config.width - this.cfg.controls.button_gap * num - button_width * (num - 1)) * 0.5);
 		} else {
-			x = Math.round((this.sc.game.config.width - this.cfg.controls.button_gap * (num - 1) - button_width * num) * 0.5);
+			x = Math.round((this.sc.sys.game.config.width - this.cfg.controls.button_gap * (num - 1) - button_width * num) * 0.5);
 		}
-		let y = Math.round(this.sc.game.config.height - this.cfg.heightControls * 0.5);
+		let y = Math.round(this.sc.sys.game.config.height - this.cfg.heightControls * 0.5);
 		for(let i = 0; i < this.sc.registry.get('buttons').length; i++) {
 			if(i >= num) {
 				if(this.sc.registry.get('buttons')[i].path && this.sc.registry.get('buttons')[i].path.destroy) {
@@ -317,54 +319,7 @@ class AutopLIB {
 	}
 	
 	generate_obstacles(path_objects) {
-		if(!(path_objects instanceof Array)) path_objects = [path_objects];
-		let out = new Phaser.Structs.Map();
-		let _pcoords = [];
-		path_objects.forEach((po) => {_pcoords.push(po.points.grid.values());});
-		let polen = path_objects.length;
-
-		let _added = 0;
-		let min_x = parseInt(_pcoords[0][0].split('_')[0]) + this.cfg.grid;
-		let max_x = parseInt(_pcoords[0][_pcoords[0].length - 1].split('_')[0]);
-		let min_y = 0;
-		let max_y = Phaser.Math.Snap.Floor(this.cfg.heightField, this.cfg.grid);
-		let prev_collided = 0;
-		for(let x = min_x; x < (max_x - this.cfg.grid); x += this.cfg.grid) {
-			for(let y = min_y; y < max_y; y += this.cfg.grid) {
-				let __collided = false;
-				for(let i = 0; i < polen; i++ ) {
-					if(_pcoords[i].indexOf([x, y].join('_')) != -1) {
-						__collided = true;
-						break;
-					}
-				}
-				if(!__collided) {
-					for(let i = 0; i < polen; i++ ) {
-						if(path_objects[i].points.rtree.collides({minX: x, maxX: x + this.cfg.grid, minY: y, maxY: y + this.cfg.grid})) {
-							__collided = true;
-							break;
-						}
-					}
-				}
-				if(__collided) {
-					prev_collided = 0;
-					continue;
-				}
-				if(prev_collided < 4) prev_collided++;
-				if(prev_collided < 2 || AutopRand.chanceOneIn(prev_collided * 3)) {
-					let rect = new Phaser.Geom.Rectangle(x, y, this.cfg.grid, this.cfg.grid);
-					_added++;
-					if(!out.has(x)) {
-						out.set(x, [rect]);
-					} else {
-						out.get(x).push(rect);
-					}
-				}
-			}
-		}
-		//console.log(_added);//tmp to delete
-		if(!_added) return false;
-		return out;
+		return this.gen_obs.generate(path_objects);
 	}
 
 	draw_obstacles(obs) {
@@ -395,7 +350,7 @@ class AutopLIB {
 	
 	gameover() {
 		if(!this.cfg.gameOver) return;
-		this.sc.game.registry.set('_do_gameover', true);
+		this.sc.sys.game.registry.set('_do_gameover', true);
 		this.sc.cameras.cameras.forEach((c) => {c.fade(this.cfg.gameOverFade);});
 		var _this = this;
 		this.sc.time.addEvent({delay: Math.round(this.cfg.gameOverFade * 0.9), callback: function() {	                         				

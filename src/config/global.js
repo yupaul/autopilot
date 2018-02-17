@@ -62,6 +62,12 @@ export let _config_global = {
 			long_multiplier: 2, //longshort				
 			minmax_method_min_max: [0.4, 1.7], //minmax
 		},
+		gen_obs: {
+			type: 'square',
+			include_all: true,
+			prev_collide_limit: 4,
+			chance_multiplier: 3
+		},
 		controls: {
 			separator_line_style: [3, 0xffffff, 1], //[3, 0xff0000, 1],
 			button_bounds_style: [4, 0xffffff, 1], //[4, 0x890021, 1],

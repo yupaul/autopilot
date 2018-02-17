@@ -1,9 +1,26 @@
 
 let _config = {	
 	playerWidthHeight: [34, 34],
-	rtreeCoeff: 1.2,
+	rtreeCoeff: 0.9,
 	showPaths: false,
+	numObsImages: 12,
+	//tmp start
+		gen_obs: {		
+		type: 'square',
+		include_all: false,
+		prev_collide_limit: 4,
+		chance_multiplier: 3		
+	},/*
+	gen_obs: {
+		type: 'img'
+	},	*/ //tmp end
 	player_body_emitter: {
+		follow: {
+			chance: 2,
+			position_range : [50, 60],
+			gravity_y_multiplier: 2,
+			gravity_x_range: [20, 80],
+		},
 		emitter: {
 			x: 0,
 			y: {min: -100, max: 100},
@@ -21,12 +38,13 @@ let _config = {
 			delay: 100,			
 			quantity: 2		
 		},
+		/* //tmp
 		zone: {
 			//source: new Phaser.Geom.Circle(0, 0, 10),
 			type: 'edge',
 			quantity: 6,
 			yoyo: false
-		}
+		}*/
 	}
 	
 	
