@@ -31,7 +31,7 @@ let theme = {
 	},
 	
 	preload: function(scene) {
-		scene.cfg.grid = AutopRand.randint(Math.round((scene.cfg.playerWidthHeight[0] + scene.cfg.playerWidthHeight[1]) * 0.25), Math.round((scene.cfg.playerWidthHeight[0] + scene.cfg.playerWidthHeight[1]) * 0.8));
+		scene.cfg.grid = AutopRand.randint(Math.round((scene.cfg.playerWidthHeight[0] + scene.cfg.playerWidthHeight[1]) * 0.5), Math.round((scene.cfg.playerWidthHeight[0] + scene.cfg.playerWidthHeight[1]) * 1));
 		scene.load.image('pause', './assets/'+this.theme_name+'/images/pause.png');
 		scene.load.image('bg_dark', './assets/'+this.theme_name+'/images/bg_dark2.png');
 		scene.load.image('player', './assets/'+this.theme_name+'/images/player2.png');

@@ -1,18 +1,19 @@
 
 let _config = {	
 	playerWidthHeight: [34, 34],
-	rtreeCoeff: 0.9,
-	showPaths: false,
+	rtreeCoeff: 0.5,
+	showPaths: false,	
 	numObsImages: 12,
 	//tmp start
-		gen_obs: {		
+	gen_obs: {		
 		type: 'square',
-		include_all: false,
-		prev_collide_limit: 4,
-		chance_multiplier: 3		
+		include_all: false,		
+		chance_multiplier: 10,
+		use_combined_cells: true
 	},/*
 	gen_obs: {
-		type: 'img'
+		type: 'img',
+		use_combined_cells: true
 	},	*/ //tmp end
 	player_body_emitter: {
 		follow: {
@@ -31,7 +32,7 @@ let _config = {
 			speed: { min: -4, max: -8 },
 			alpha: { start: 0.4, end: 0, ease: 'Quartic.easeOut' },
 			frequency: 20,
-			lifespan: 2000,	
+			lifespan: 2250,	
 			//acceleration: 100,
 			//radial: true,
 			angle: {min: -150, max: -30},

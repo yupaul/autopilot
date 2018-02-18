@@ -2,9 +2,9 @@
 let _config = {	
 	gen_obs: {		
 		type: 'square',
-		include_all: true,
-		prev_collide_limit: 4,
-		chance_multiplier: 3		
+		include_all: false,		
+		chance_multiplier: 10,
+		use_combined_cells: false	
 	}
 };
 

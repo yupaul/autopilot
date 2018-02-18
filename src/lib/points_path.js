@@ -39,8 +39,7 @@ class AutopPointsPath {
 			}
 			let offset2 = offset * 2;
 			let _d = 0;
-			let offsets = {minX: offset, minY: offset,
-			maxX: offset, maxY: offset};
+			let offsets = {minX: offset, minY: offset, maxX: offset, maxY: offset};
 			if(i > 0) {				
 				['x', 'y'].forEach((xy) => {
 					_d = Math.abs(this.points[i][xy] - this.points[i - 1][xy]);
