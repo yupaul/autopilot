@@ -14,7 +14,7 @@ class AutopCreator {
 		this.controls_buttons();
 		this.player();
 		this.player_body();
-		this.grid_cell();
+		this.obstacles();
 		this.wall();		
 		this.section_counter();		
 	}
@@ -73,17 +73,27 @@ class AutopCreator {
 		this.sc.registry.set('player_body_group', g);
 	}	
 
-	grid_cell() {
-		if(this.sc.sys.textures.exists(this.cfg.gridCellTextureName)) delete this.sc.sys.textures.list[this.cfg.gridCellTextureName];//tmp
-		var grs_rect = this.sc.make.graphics();
-		//grs_rect.fillStyle(this.cfg.gridCellFillStyle);//tmp
-		grs_rect.fillStyle(AutopRand.randint(0, 0xffffff));//tmp
-		grs_rect.fillRect(0, 0, this.cfg.grid, this.cfg.grid);
-		if(this.cfg.gridCellLineStyle) {
-			grs_rect.lineStyle(...this.cfg.gridCellLineStyle);//1, 0xffffff, 1		
-			grs_rect.strokeRect(0, 0, this.cfg.grid, this.cfg.grid);
+	obstacles() {		
+		var ots = {};
+		for(let i = 0; i < this.cfg.gridCellScales.length; i++) {			
+			let n = this.cfg.gridCellScales[i];			
+			if(this.sc.textures.exists(this.cfg.gridCellTextureName+n)) {
+				this.sc.textures.get(this.cfg.gridCellTextureName+n).destroy();
+				if(this.sc.textures.list.hasOwnProperty(this.cfg.gridCellTextureName+n)) delete this.sc.textures.list[this.cfg.gridCellTextureName+n];
+			}
+			let grs_rect = this.sc.make.graphics();
+			//grs_rect.fillStyle(this.cfg.gridCellFillStyle);//tmp
+			grs_rect.fillStyle(AutopRand.randint(0, 0xffffff));//tmp
+			grs_rect.fillRect(0, 0, this.cfg.grid * n, this.cfg.grid * n);
+			if(this.cfg.gridCellLineStyle) {
+				grs_rect.lineStyle(...this.cfg.gridCellLineStyle);//1, 0xffffff, 1		
+				grs_rect.strokeRect(0, 0, this.cfg.grid * n, this.cfg.grid * n);
+			}
+			grs_rect.generateTexture(this.cfg.gridCellTextureName+n, this.cfg.grid * n, this.cfg.grid * n); 
+			this.sc.textures.get(this.cfg.gridCellTextureName+n).customData.shape_data = [0, 0, this.cfg.grid * n, this.cfg.grid * n];
+			ots['x'+n] = this.cfg.gridCellTextureName+n;
 		}
-		grs_rect.generateTexture(this.cfg.gridCellTextureName, this.cfg.grid, this.cfg.grid); 
+		this.sc.registry.set('obstacle_textures', ots);
 	}
 
 	wall() {

@@ -3,7 +3,7 @@ class AutopSet extends Phaser.Structs.Set {
     
 	intersects(set)  {
 		for(let i = 0; i < this.entries.length; i++) {
-            if (set.contains(entries[i])) return true;
+            if (set.contains(this.entries[i])) return true;
         }
         return false;
     }
@@ -15,7 +15,22 @@ class AutopSet extends Phaser.Structs.Set {
 		return true;
 	}
 	
-    union (set)
+    intersect(set)
+    {
+        var newSet = new AutopSet();
+
+        this.entries.forEach(function (value)
+        {
+            if (set.contains(value))
+            {
+                newSet.set(value);
+            }
+        });
+
+        return newSet;
+    }	
+	
+    union(set)
     {
         var newSet = new AutopSet();
 
@@ -32,7 +47,29 @@ class AutopSet extends Phaser.Structs.Set {
         return newSet;
     }
 	
+    difference(set)
+    {
+        var newSet = new AutopSet();
+
+        this.entries.forEach(function (value)
+        {
+            if (!set.contains(value))
+            {
+                newSet.set(value);
+            }
+        });
+
+        return newSet;
+    }	
 	
+	shuffle() {
+		this.entries = Phaser.Utils.Array.Shuffle(this.entries);
+		return this;
+	}
+	
+	random() {
+		return Phaser.Math.RND.pick(this.entries);
+	}
 }
 
 export default AutopSet;

@@ -41,8 +41,8 @@ create () {
 		}
 	}
 	
-	//this.lib.create();
-	this.c.create(this);
+	//this.lib.create();	
+	this.c.create(this);	
 	
 	let pobj = this.lib.gen_path.generate_path();	
 	this.lib.generate_wall(pobj);
@@ -51,7 +51,9 @@ create () {
 	this.registry.get('paths').push(pobj.points);
 	this.lib.wall_show(pobj);
 	this.lib.show_path(pobj);	
+	
 	this.lib.draw_obstacles(this.lib.generate_obstacles(pobj));
+	
 	
 	for(let i = 0; i < 3; i++) {				
 		let pobj_correct = this.lib.gen_path.generate_path(prev_tail);

@@ -1,19 +1,20 @@
 
 let _config = {	
 	playerWidthHeight: [34, 34],
-	rtreeCoeff: 0.5,
-	showPaths: false,	
-	numObsImages: 12,
+	rtreeCoeff: 0.8,
+	showPaths: false,		
+	gridCellLineStyle: [1, 0xffffff, 1],
+	gridFullCells: true,
 	//tmp start
 	gen_obs: {		
-		type: 'square',
-		include_all: false,		
+		type: 'square',		
 		chance_multiplier: 10,
-		use_combined_cells: true
+		to_occupy: 0.3,
+		gridCellScales: [[1,0.05], [2, 0.2], [3, 0.45], [4, 0.3]],
+		imp_probability: 0.7
 	},/*
 	gen_obs: {
-		type: 'img',
-		use_combined_cells: true
+		type: 'img'		
 	},	*/ //tmp end
 	player_body_emitter: {
 		follow: {

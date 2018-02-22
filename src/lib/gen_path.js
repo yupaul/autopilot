@@ -270,7 +270,7 @@ export class AutopGenPathW extends AutopGenPath {
 			}
 			if(intersected_wo) break;
 		}		
-	if(!intersected_wo) {				
+		if(!intersected_wo) {
 		for(let _m = 1; _m <= this.generate_path_config.scale_y; _m++) {
 			let _min_y = new Phaser.Structs.Map();
 			for(let i = (path.length - 1); i >= 0; i--) {
@@ -279,14 +279,16 @@ export class AutopGenPathW extends AutopGenPath {
 				let _ys = obstacles.get(_x);				
 				if(_ys) {						
 					for(let i2 = 0; i2 < _ys.length; i2++) {
-						let _d = Math.abs(p[1] - _ys[i2].y);
+						if(!_ys[i2].full_cell && !_ys[i2].has_x(p[0])) continue;
+						let oy = _ys[i2].random_y(p[0]);
+						let _d = Math.abs(p[1] - oy);
 						if(_d <= this.generate_path_config.scale_y_length_r * _m) {
 							if(!_min_y.has(i)) {
-								_min_y.set(i, [i2, _d, _ys[i2].y]);
+								_min_y.set(i, [i2, _d, oy]);
 							} else if(_d < _min_y.get(i)[1]) {
 								_min_y.get(i)[0] = i2;
 								_min_y.get(i)[1] = _d;
-								_min_y.get(i)[2] = _ys[i2].y;
+								_min_y.get(i)[2] = oy;
 							}
 						}
 					}				
@@ -296,12 +298,13 @@ export class AutopGenPathW extends AutopGenPath {
 			if(_min_y_i.length > 0) {
 				Phaser.Utils.Array.Shuffle(_min_y_i);
 				let i = _min_y_i[0];
-				path[i][1] = _min_y.get(i)[2] + AutopRand.randint(1, this.cfg.grid);
+				//path[i][1] = _min_y.get(i)[2] + AutopRand.randint(1, this.cfg.grid);
+				path[i][1] = _min_y.get(i)[2];
 				intersected_wo = true;
 				break;
 			}			
-		}			
-	}
+		}
+		}
 		return intersected_wo;
 	}
 

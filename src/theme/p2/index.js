@@ -15,7 +15,7 @@ let theme = {
 		Phaser.Utils.Objects.Extend(config, _config);		
 		
 		config.grid = config.playerWidthHeight[0] + config.playerWidthHeight[1];	
-		config.rtreeOffset = Math.round((config.playerWidthHeight[0] + config.playerWidthHeight[1]) * config.rtreeCoeff);
+		config.rtreeOffset = Math.round((config.playerWidthHeight[0] + config.playerWidthHeight[1]) * config.rtreeCoeff);		
 		config.speed = Math.round(cfg_w * config.speedCoeff);
 		config.playerNumBodyParts = Math.round(cfg_w * config.playerNumBodyPartsCoeff);
 		cstmg.start_x = rwh ? (config.heightField - config.start_x) : config.start_x;
@@ -31,14 +31,21 @@ let theme = {
 	},
 	
 	preload: function(scene) {
-		scene.cfg.grid = AutopRand.randint(Math.round((scene.cfg.playerWidthHeight[0] + scene.cfg.playerWidthHeight[1]) * 0.5), Math.round((scene.cfg.playerWidthHeight[0] + scene.cfg.playerWidthHeight[1]) * 1));
+		scene.cfg.grid = AutopRand.randint(Math.round((scene.cfg.playerWidthHeight[0] + scene.cfg.playerWidthHeight[1]) * 0.3), Math.round((scene.cfg.playerWidthHeight[0] + scene.cfg.playerWidthHeight[1]) * 0.6));
 		scene.load.image('pause', './assets/'+this.theme_name+'/images/pause.png');
 		scene.load.image('bg_dark', './assets/'+this.theme_name+'/images/bg_dark2.png');
 		scene.load.image('player', './assets/'+this.theme_name+'/images/player2.png');
 		scene.load.image('player_body_particle', './assets/'+this.theme_name+'/images/pbp1.png');
-		for(let i = 1; i <= scene.cfg.numObsImages; i++) {
+		scene.load.atlas('obstacles_all', './assets/'+this.theme_name+'/images/obstacles_out1_x15.png', './assets/'+this.theme_name+'/images/obstacles_out1_x15.json');
+
+//    var atlasTexture = this.textures.get('megaset'); //tmp to delete
+//    var frames = atlasTexture.getFrameNames(); //tmp to delete
+
+		/* //tmp to delete
+		for(let i = 1; i <= scene.cfg.numObsImages; i++) { 
 			scene.load.image('o'+i, './assets/'+this.theme_name+'/images/o/'+i+'.png');
 		}
+		*/
 	},
 	
 	create: function(scene) {

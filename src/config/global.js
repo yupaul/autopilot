@@ -29,6 +29,7 @@ export let _config_global = {
 		gridCellLineStyle: false, //[1, 0x627261, 1] //tmp
 		gridCellFillStyle: 0xffffff, // 0x007090
 		gridCellTextureName: 'grid_cell',
+		gridCellScales: [1,2,3,4],
 		sectionCounterStyle: {color: '#cd3221', fill: '#cd3221', fontSize: '40px Tahoma'},
 		sectionCounterName: 'section_counter',
 		
@@ -64,7 +65,6 @@ export let _config_global = {
 		},
 		gen_obs: {
 			type: 'square',
-			include_all: true,
 			prev_collide_limit: 4,
 			chance_multiplier: 3
 		},

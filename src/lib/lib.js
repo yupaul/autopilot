@@ -9,7 +9,7 @@ class AutopLIB {
 		this.cfg = this.sc.cfg;
 		this.rwh = this.cfg.revertWidthHeight;
 		this.gen_path = this.rwh ? (new AutopGenPathH(sc)) : (new AutopGenPathW(sc));
-		this.gen_obs = new AutopGenObs(this.cfg);
+		this.gen_obs = new AutopGenObs(this.cfg, this.sc);
 	}
 	
 	camera_follow(player) {
@@ -323,9 +323,10 @@ class AutopLIB {
 	}
 
 	draw_obstacles(obs) {
-		obs.each((_, rects) => {
-			for(let i = 0; i < rects.length; i++) {
-				this.sc.add.image(0, 0, this.cfg.gridCellTextureName).setOrigin(0).setPosition(rects[i].x, rects[i].y);				
+		obs.each((_, obs_x) => {
+			for(let i = 0; i < obs_x.length; i++) {
+				obs_x[i].add_image(this.sc);
+				//this.sc.add.image(0, 0, this.cfg.gridCellTextureName).setOrigin(0).setPosition(rects[i].x, rects[i].y);
 			}
 			return true;
 		});					
