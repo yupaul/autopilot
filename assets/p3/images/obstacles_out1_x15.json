@@ -1,0 +1,97 @@
+{"frames": [
+    {
+        "filename": "o1",
+        "frame": {"x":9,"y":9,"w":176,"h":176},
+	"type":"circle",
+	"center":{"x":88,"y":92},
+	"radius":84
+   },
+
+    {
+        "filename": "o2",
+        "frame": {"x":201,"y":9,"w":176,"h":176},
+	"type":"circle",
+	"center":{"x":86,"y":92},
+	"radius":84
+   },
+
+    {
+        "filename": "o3",
+        "frame": {"x":396,"y":9,"w":168,"h":168},
+	"type":"circle",
+	"center":{"x":78,"y":89},
+	"radius":78
+   },
+
+    {
+        "filename": "o4",
+        "frame": {"x":586,"y":7,"w":166,"h":166},
+	"type":"circle",
+	"center":{"x":77,"y":88},
+	"radius":78
+   },
+
+    {
+        "filename": "o5",
+        "frame": {"x":4,"y":190,"w":183,"h":183},
+	"type":"circle",
+	"center":{"x":87,"y":97},
+	"radius":87
+   },
+
+    {
+        "filename": "o6",
+        "frame": {"x":201,"y":190,"w":183,"h":183},
+	"type":"circle",
+	"center":{"x":87,"y":97},
+	"radius":87
+   },
+
+    {
+        "filename": "o7",
+        "frame": {"x":405,"y":204,"w":164,"h":164},
+	"type":"rect",
+	"center":{"x":82,"y":82},
+	"radius":82
+   },
+
+    {
+        "filename": "o8",
+        "frame": {"x":595,"y":204,"w":164,"h":164},
+	"type":"rect",
+	"center":{"x":82,"y":82},
+	"radius":82
+   },
+
+    {
+        "filename": "o9",
+        "frame": {"x":1,"y":381,"w":192,"h":192},
+	"type":"circle",
+	"center":{"x":93,"y":99},
+	"radius":85
+   },
+
+    {
+        "filename": "o10",
+        "frame": {"x":193,"y":381,"w":192,"h":192},
+	"type":"circle",
+	"center":{"x":93,"y":99},
+	"radius":85
+   },
+
+    {
+        "filename": "o11",
+        "frame": {"x":385,"y":381,"w":192,"h":192},
+	"type":"circle",
+	"center":{"x":93,"y":99},
+	"radius":85
+   },
+
+    {
+        "filename": "o12",
+        "frame": {"x":577,"y":381,"w":192,"h":192},
+	"type":"circle",
+	"center":{"x":93,"y":99},
+	"radius":85
+   }
+]}

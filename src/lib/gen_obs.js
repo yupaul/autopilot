@@ -3,17 +3,13 @@ import AutopSet from '../util/set';
 import {AutopMap, AutopMapOfSets} from '../util/map';
 
 class Obstacle {
-	constructor(type, texture_data, shape_data, full_cell) {
+	constructor(type, texture_data, shape_data) {
 		this.image = false;
 		this.type = type === 'rect' ? 'rect' : 'circle';
 		this.texture_key = texture_data.key;
-		this.texture_origin = texture_data.origin;
+		this.texture_origin = texture_data.origin;				
 		this.texture_scale = texture_data.hasOwnProperty('scale') ? texture_data.scale : false;
-		if(full_cell === undefined) {
-			this.full_cell = false;
-		} else {
-			this.full_cell = full_cell;
-		}
+
 		this.shape_data = shape_data; //[[x, y, radius_or_width, height_optional]]
 		
 		if(this.type === 'rect') {
@@ -31,7 +27,7 @@ class Obstacle {
 	
 	add_image(scene) {
 		if(!this.image) {
-			this.image = scene.add.image(0, 0, this.texture_key).setOrigin(0).setPosition(...this.texture_origin);
+			this.image = scene.add.image(0, 0, ...this.texture_key).setOrigin(0).setPosition(...this.texture_origin);
 			if(this.texture_scale) this.image.setScale(...this.texture_scale);
 		}
 	}
@@ -54,11 +50,12 @@ class Obstacle {
 	
 	_random_circle_y(x, circle) {
 		let _y = circle.radius * (2 * Math.random() - 1);
-		while(true) {
+		for(let i = 0; i < 3; i++) {
 			let y = circle.y + _y;
 			if(circle.contains(x, y)) return y;
 			_y *= 0.5;
 		}
+		return circle.y;
 		/* //tmp to delete
 		let _x = (x - circle.x) / circle.radius;		
 		if(Math.abs(_x) > 1) return false;
@@ -90,7 +87,7 @@ class AutopGenObs {
 		this.cfggrid2 = this.cfg.grid * 2;
 		this.cfggrid3 = this.cfg.grid * 3;	
 		//return this._gen(this.cfg.gen_obs.type, path_objects, this.cfg.gen_obs);
-		var type = this.cfg.gen_obs.type;
+//		var type = this.cfg.gen_obs.type;
 		var opts = this.cfg.gen_obs;		
 		
 		//tmp
@@ -250,24 +247,39 @@ class AutopGenObs {
 	
 	_gen_add_obstacle(x, y, multiplier, out) {
 		let texture_key;
+		let origin;		
+		let cdata_func;
 		let texture_keys = this.sc.registry.get('obstacle_textures')['x'+multiplier];
 		if(Array.isArray(texture_keys)) {
 			texture_key = Phaser.Math.RND.pick(texture_keys);
 		} else {
 			texture_key = texture_keys;
 		}
-		let cdata = this.sc.textures.get(texture_key).customData;				
+		if(this.cfg.gen_obs.texture_selector !== 'texture' && this.cfg.gen_obs.texture_root !== undefined) {
+			texture_key = [this.cfg.gen_obs.texture_root, texture_key];
+			cdata_func = 'getFrame';			
+		} else {			
+			texture_key = [texture_key];
+			cdata_func = 'get';			
+		}		
+		let cdata = this.sc.textures[cdata_func](...texture_key).customData;
+		
 		let shape_data = cdata.shape_data.concat([]);
-		let scale = false;
-		shape_data[0] = x;
-		shape_data[1] = y;
-		let o = new Obstacle(cdata.type, {
+		let scale = cdata.hasOwnProperty('scale') ? cdata.scale : false;
+		origin = [x, y];
+		if(!this.cfg.gridFullCells) {
+			if(cdata.offset_x) origin[0] += Math.round(Math.random() * cdata.offset_x);
+			if(cdata.offset_y) origin[0] += Math.round(Math.random() * cdata.offset_y);
+		}
+		shape_data[0] += origin[0];
+		shape_data[1] += origin[1];		
+		
+		let texture_data = {		
 			key: texture_key,
-			origin: [x, y],
-			scale: false
-		},
-		shape_data, 		
-		this.cfg.gridFullCells);		
+			origin: origin,
+			scale: scale
+		};
+		let o = new Obstacle(cdata.type, texture_data, shape_data);		
 		for(let i = 1; i <= multiplier; i++) {
 			out.append(x + this.cfg.grid * (i - 1), o);			
 		}			

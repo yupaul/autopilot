@@ -1,6 +1,6 @@
 
 export let _config_global = {
-		theme_name: 'p2',
+		theme_name: 'p3',
 		levels : [
 			{},
 			{},
@@ -64,7 +64,6 @@ export let _config_global = {
 			minmax_method_min_max: [0.4, 1.7], //minmax
 		},
 		gen_obs: {
-			type: 'square',
 			prev_collide_limit: 4,
 			chance_multiplier: 3
 		},
