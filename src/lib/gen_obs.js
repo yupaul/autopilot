@@ -27,8 +27,18 @@ class Obstacle {
 	
 	add_image(scene) {
 		if(!this.image) {
-			this.image = scene.add.image(0, 0, ...this.texture_key).setOrigin(0).setPosition(...this.texture_origin);
+			this.image = scene.add.image(0, 0, ...this.texture_key).setOrigin(0.5);
+			this.image.setPosition(...this.texture_origin.map((_x) => (_x + this.image.width * 0.5)));
 			if(this.texture_scale) this.image.setScale(...this.texture_scale);
+			//this.image.setOrigin(0.5);
+			if(scene.cfg.gen_obs.rotate !== undefined) {
+				scene.tweens.add({
+					targets: this.image,
+					angle: (AutopRand.coinflip() ? 360 : -360),
+					duration: AutopRand.randint(...scene.cfg.gen_obs.rotate),
+					repeat: -1
+				});			
+			}
 		}
 	}
 	
