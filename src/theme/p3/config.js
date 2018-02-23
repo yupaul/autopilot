@@ -1,18 +1,18 @@
 
 let _config = {	
 	playerWidthHeight: [34, 34],
-	rtreeCoeff: 0.6,
-	showPaths: true,		
+	rtreeCoeff: 0.75,
+	showPaths: false,		
 	gridCellLineStyle: [1, 0xffffff, 1],
 	gridFullCells: true,
 	//tmp start
 	gen_obs: {		
-		chance_multiplier: 10,
-		to_occupy: 0.3,
-		gridCellScales: [/*[1,0.05], */[2, 0.3], [3, 0.3], [4, 0.4]],
-		imp_probability: 0.7,
+		to_occupy: 0.85, 
+		gridCellScales: [[1,0.05], [2, 0.3], [3, 0.3], [4, 0.3]],
+		imp_probability: 1,
 		texture_selector: 'frame',
-		rotate: [2500, 19000]
+		rotate: [2000, 22000],
+		img_scaling_step: 0.1
 	},/*
 	gen_obs: {
 		type: 'img'		

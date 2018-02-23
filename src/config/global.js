@@ -64,8 +64,7 @@ export let _config_global = {
 			minmax_method_min_max: [0.4, 1.7], //minmax
 		},
 		gen_obs: {
-			prev_collide_limit: 4,
-			chance_multiplier: 3
+			prev_collide_limit: 4
 		},
 		controls: {
 			separator_line_style: [3, 0xffffff, 1], //[3, 0xff0000, 1],

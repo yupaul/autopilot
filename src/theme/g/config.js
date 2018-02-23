@@ -1,7 +1,6 @@
 
 let _config = {	
 	gen_obs: {		
-		chance_multiplier: 10,
 		to_occupy: 0.5,
 		imp_probability: 0.7
 	},

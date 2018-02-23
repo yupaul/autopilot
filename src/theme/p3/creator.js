@@ -17,6 +17,21 @@ class AutopCreator {
 		this.obstacles();
 		this.wall();		
 		this.section_counter();		
+		
+		//tmp
+		/*
+		let __g = 0.1;
+		let grs_rect = this.sc.make.graphics();
+		grs_rect.fillStyle(0xdedede);//tmp
+		grs_rect.fillRect(0, 0, Math.round(this.sc.sys.game.config.width * __g), this.sc.sys.game.config.height);
+		//grs_rect.lineStyle(...[10, 0xffffff, 1]);
+		//grs_rect.strokeRect(0, 0, Math.round(this.sc.sys.game.config.width * __g), this.sc.sys.game.config.height);		
+		grs_rect.generateTexture('_tmp1111', Math.round(this.sc.sys.game.config.width * __g), this.sc.sys.game.config.height); 		
+		let __img = this.sc.add.image(0, 0, '_tmp1111').setDepth(100).setOrigin(0).setPosition(Math.round(this.sc.sys.game.config.width * (1 - __g)), 0);
+		__img.alphaTopLeft = 0;
+		__img.alphaBottomLeft = 0;
+		if(this.sc.cameras.cameras.length > 1) this.sc.cameras.cameras[1].ignore(__img);
+		*/
 	}
 
 	background() {
@@ -98,7 +113,7 @@ class AutopCreator {
 		frames.forEach((_f) => {
 			let n = cell_scales[_i];			
 			let fr = this.sc.textures.getFrame(this.cfg.gen_obs.texture_root, _f);
-			let _scale_to = (1 + 0.1 * n * (Math.random() - 1)) * this.cfg.grid * n;
+			let _scale_to = (1 + this.cfg.gen_obs.img_scaling_step * n * (Math.random() - 1)) * this.cfg.grid * n;
 			fr.customData.scale = [Math.round((_scale_to / fr.width) * 100) * 0.01, Math.round((_scale_to / fr.height) * 100) * 0.01];
 			
 			if(fr.customData.type === 'rect') {

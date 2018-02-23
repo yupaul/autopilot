@@ -7,7 +7,6 @@ let _config = {
 	gridFullCells: true,
 	//tmp start
 	gen_obs: {		
-		chance_multiplier: 10,
 		to_occupy: 0.3,
 		gridCellScales: [[1,0.05], [2, 0.2], [3, 0.45], [4, 0.3]],
 		imp_probability: 0.7,

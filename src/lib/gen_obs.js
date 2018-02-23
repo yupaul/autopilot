@@ -3,7 +3,7 @@ import AutopSet from '../util/set';
 import {AutopMap, AutopMapOfSets} from '../util/map';
 
 class Obstacle {
-	constructor(type, texture_data, shape_data) {
+	constructor(type, texture_data, shape_data) {		
 		this.image = false;
 		this.type = type === 'rect' ? 'rect' : 'circle';
 		this.texture_key = texture_data.key;
@@ -15,11 +15,13 @@ class Obstacle {
 		if(this.type === 'rect') {
 			if(this.shape_data.length < 4) this.shape_data.push(this.shape_data[2]);
 			this.shape = new Phaser.Geom.Rectangle(...this.shape_data);
+			this.center = [this.shape_data[0] + this.shape_data[2] * 0.5, this.shape_data[1] + this.shape_data[3] * 0.5];
 			this.min_x = this.shape.x;
 			this.max_x = this.min_x + this.shape.width;
 		} else {
 			this.shape = new Phaser.Geom.Circle(...this.shape_data);
 			let radius = this.shape.radius;
+			this.center = [this.shape_data[0], this.shape_data[1]];			
 			this.min_x =  this.shape.x - radius;
 			this.max_x =  this.shape.x + radius;
 		}		
@@ -28,7 +30,9 @@ class Obstacle {
 	add_image(scene) {
 		if(!this.image) {
 			this.image = scene.add.image(0, 0, ...this.texture_key).setOrigin(0.5);
-			this.image.setPosition(...this.texture_origin.map((_x) => (_x + this.image.width * 0.5)));
+			//this.image.setPosition(...this.texture_origin.map((_x) => (_x + this.image.width * 0.5)));
+			//this.image.setPosition(...this.texture_origin);
+			this.image.setPosition(...this.center);
 			if(this.texture_scale) this.image.setScale(...this.texture_scale);
 			//this.image.setOrigin(0.5);
 			if(scene.cfg.gen_obs.rotate !== undefined) {
