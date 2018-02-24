@@ -152,10 +152,19 @@ class AutopLIB {
 		};			
 	}
 
-	wall_show(x) {
+	wall_add(x) {
 		let _x = x.wall_coords !== undefined ? x.wall_coords : x;
-		this.sc.registry.get('walls').push(this.sc.add.image(_x, 0, this.cfg.wallTextureName).setOrigin(0));
+		this.sc.registry.get('walls').push(_x);
 	}
+	
+	wall_show(tw) {
+		let _x = this.sc.registry.get('walls').shift();
+		//let _x = x.wall_coords !== undefined ? x.wall_coords : x;
+		Phaser.Actions.SetX(this.sc.registry.get('wall_group').getChildren(), _x);
+		//this.sc.registry.get('walls').push(_x);
+		if(tw !== undefined && tw === true) this.sc.registry.get('wall_group').toggleVisible();
+		//this.sc.registry.get('walls').push(this.sc.add.image(_x, 0, this.cfg.wallTextureName).setOrigin(0));
+	}	
 
 	update_section_counter() {
 		let current = parseInt(this.sc.registry.get(this.cfg.sectionCounterName).text);
@@ -190,10 +199,11 @@ class AutopLIB {
 		let _pos = _all_pos.shift();						
 					
 		let _pos_i = button.path_index;
-		let _wall = this.sc.registry.get('walls').shift();
-		if(_wall) _wall.setAlpha(this.cfg.wallOpenAlpha);
+		this.wall_show();
+		//let _wall = this.sc.registry.get('walls').shift();
+		//if(_wall) _wall.setAlpha(this.cfg.wallOpenAlpha);
 					
-		if(_pos[_pos_i].nxt && _pos[_pos_i].nxt[0].wall_coords) this.wall_show(_pos[_pos_i].nxt[0]);					
+		if(_pos[_pos_i].nxt && _pos[_pos_i].nxt[0].wall_coords) this.wall_add(_pos[_pos_i].nxt[0]);					
 
 		this.sc.registry.get('paths').push(_pos[_pos_i].points);
 		this.show_path(_pos[_pos_i]);					

@@ -165,11 +165,28 @@ class AutopCreator {
 	}
 
 	wall() {
+		this.cfg.wallWidth = this.sc.textures.get(this.cfg.wallTextureName).get().width;
+		this.cfg.wallHeight = this.sc.textures.get(this.cfg.wallTextureName).get().height;
+		let total = Math.ceil(this.cfg.heightField / (this.cfg.wallHeight + 2));
+		let offset = Math.round((this.cfg.heightField % (this.cfg.wallHeight + 2)) / 2);
+		let grp = this.sc.make.group({
+			classType: Phaser.GameObjects.Image, 
+			key: this.cfg.wallTextureName, quantity: 1, repeat: -1, max: total, visible: false, 
+			gridAlign: {
+				width: 1, height: -1, 
+				cellWidth: (this.cfg.wallWidth + 2), cellHeight: (this.cfg.wallHeight + 2),
+				y: offset
+			}
+		});
+		grp.setDepth(-10);
+		this.sc.registry.set('wall_group', grp);
+
+		/*
 		var grs_rect = this.sc.make.graphics();		
 		grs_rect.fillStyle(this.cfg.wallStyle);
 		let _wh = [this.cfg.wallWidth, this.cfg.heightField];
 		if(this.rwh) _wh.reverse();
-		grs_rect.fillRect(0, 0, ..._wh).generateTexture(this.cfg.wallTextureName, ..._wh); 
+		grs_rect.fillRect(0, 0, ..._wh).generateTexture(this.cfg.wallTextureName, ..._wh); */
 	}	
 
 	section_counter() {

@@ -1,15 +1,16 @@
 
 let _config = {	
 	playerWidthHeight: [34, 34],
-	rtreeCoeff: 0.75,
+	rtreeCoeff: 0.3,
 	showPaths: false,		
 	gridCellLineStyle: [1, 0xffffff, 1],
 	gridFullCells: true,
 	//tmp start
 	gen_obs: {		
-		to_occupy: 0.85, 
+		//to_occupy: 0.85, 
 		gridCellScales: [[1,0.05], [2, 0.3], [3, 0.3], [4, 0.3]],
 		imp_probability: 1,
+		notimp_probability: 0.1,
 		texture_selector: 'frame',
 		rotate: [2000, 22000],
 		img_scaling_step: 0.1

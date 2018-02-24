@@ -180,19 +180,22 @@ class AutopGenObs {
 		let out = new AutopMap();
 		let occupied = new AutopSet();
 		let totalNumCells = tmpdata.x1.size;
-		let to_occupy = Math.round(totalNumCells * opts.to_occupy);
+		let imp_size = Math.round(tmpdata.imp.size * opts.imp_probability);		
+		let notimp_size = Math.round(tmpdata.notimp.size * opts.notimp_probability);
+		
+		//let to_occupy_percent = opts.to_occupy;
+		//let to_occupy = Math.round(totalNumCells * to_occupy_percent);
 		let stats = {};
 		opts.gridCellScales.forEach((_v) => {
-			stats['x'+_v[0]] = [Math.ceil((to_occupy * _v[1]) / (_v[0] * _v[0])), 0];
+			//stats['x'+_v[0]] = [Math.ceil((to_occupy * _v[1]) / (_v[0] * _v[0])), 0];
+			stats['x'+_v[0]] = [Math.floor((notimp_size * _v[1]) / (_v[0] * _v[0])), 0];
 		});
 		
-		let multipliers = opts.gridCellScales.map((_x) => _x[0]);
-		
-		let imp_size = Math.round(tmpdata.imp.size * opts.imp_probability);		
+		let multipliers = opts.gridCellScales.map((_x) => _x[0]);		
 
 		['imp', 'notimp'].forEach((_imp) => {
 		tmpdata[_imp].iterate((coord) => {
-			if(_imp === 'imp' && occupied.intersect(tmpdata.imp).size >= imp_size) return false;
+			if((_imp === 'imp' && occupied.intersect(tmpdata.imp).size >= imp_size) || (_imp === 'notimp' && occupied.intersect(tmpdata.notimp).size >= notimp_size)) return false;
 			if(multipliers.length < 1) return false;
 			if(occupied.contains(coord)) {
 				this._gen_cleanup_cell(tmpdata, coord);
@@ -239,7 +242,7 @@ class AutopGenObs {
 			}
 			this._gen_cleanup_cell(tmpdata, coord);
 			stats['x'+m][1]++;
-			if(stats['x'+m][1] >= stats['x'+m][0] && multipliers.indexOf(m) > -1) multipliers.splice(multipliers.indexOf(m), 1);
+			if(_imp === 'notimp' && stats['x'+m][1] >= stats['x'+m][0] && multipliers.indexOf(m) > -1) multipliers.splice(multipliers.indexOf(m), 1);
 			let _coord = m > 1 ? coord2 : coord;
 			_coord = _coord.split('_').map((_x) => parseInt(_x));
 			this._gen_add_obstacle(..._coord, m, out);
