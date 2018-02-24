@@ -37,7 +37,7 @@ let theme = {
 		scene.load.image('player', './assets/'+this.theme_name+'/images/player2.png');
 		scene.load.image('player_body_particle', './assets/'+this.theme_name+'/images/pbp1.png');
 		scene.load.image(scene.cfg.wallTextureName, './assets/'+this.theme_name+'/images/krestik23.png');
-		scene.load.image('far_mask', './assets/'+this.theme_name+'/images/msk1.png');		
+		scene.load.image('far_mask', './assets/'+this.theme_name+'/images/msk2.png');		
 		scene.load.atlas('obstacles_all', './assets/'+this.theme_name+'/images/obstacles_out1_x15.png', './assets/'+this.theme_name+'/images/obstacles_out1_x15.json');
 		scene.cfg.gen_obs.texture_root = 'obstacles_all';
 

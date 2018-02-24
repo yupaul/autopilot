@@ -167,7 +167,7 @@ class AutopCreator {
 	wall() {
 		this.cfg.wallWidth = this.sc.textures.get(this.cfg.wallTextureName).get().width;
 		this.cfg.wallHeight = this.sc.textures.get(this.cfg.wallTextureName).get().height;
-		let total = Math.ceil(this.cfg.heightField / (this.cfg.wallHeight + 2));
+		let total = Math.floor(this.cfg.heightField / (this.cfg.wallHeight + 2));
 		let offset = Math.round((this.cfg.heightField % (this.cfg.wallHeight + 2)) / 2);
 		let grp = this.sc.make.group({
 			classType: Phaser.GameObjects.Image, 

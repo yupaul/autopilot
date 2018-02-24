@@ -6,7 +6,7 @@ export let _config_global = {
 			{},
 			{}
 		],
-		dbg: true, //tmp
+		dbg: false, //tmp
 		twoCorrectChance: 3, //tmp
 		fourPathsChance: 3, //tmp
 		revertWidthHeight: false, // (_h > _w) //tmp
@@ -46,6 +46,8 @@ export let _config_global = {
 		wallStyle: 0xffffff, //0xAB2121
 		wallOpenAlpha: 0.03,
 		wallTextureName: 'wall',
+		wallMoveDuration: [400, 800],
+		wallMoveEase: 'Sine.easeInOut',		
 		buttonEnableDelay: [400, 800],
 		rtreeCoeff: 1.2,
 		gen_path: {

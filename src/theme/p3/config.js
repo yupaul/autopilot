@@ -7,6 +7,11 @@ let _config = {
 	gridFullCells: true,
 	wallOpenAlpha: 0.12,
 	wallOpenBlitter: true,
+	wallMoveDuration: [400, 800],
+	wallMoveEase: 'Sine.easeInOut',
+	useFarMask: true,
+	farMaskMoveDuration: 700,
+	farMaskOffset: 300,
 	//tmp start
 	gen_obs: {		
 		//to_occupy: 0.85, 

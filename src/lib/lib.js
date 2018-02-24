@@ -155,36 +155,57 @@ class AutopLIB {
 	wall_add(x, create_far_mask) {
 		let _x = x.wall_coords !== undefined ? x.wall_coords : x;
 		this.sc.registry.get('walls').push(_x);
-		if(create_far_mask !== undefined && create_far_mask) {
-			if(!this.sc.registry.has('far_mask')) {
-				this.sc.registry.set('far_mask', this.sc.add.image(0, 0, 'far_mask').setOrigin(0));
-			}
-			this.sc.registry.get('far_mask').setPosition(_x - this.cfg.wallWidth * 2, 0).setDepth(500);				
-			this.sc.cameras.cameras[1].ignore(this.sc.registry.get('far_mask'));
-		}		
+		if(create_far_mask !== undefined && create_far_mask) this.create_far_mask(_x);
+	}
+
+	create_far_mask(x) {
+		if(this.sc.registry.has('far_mask')) {
+			this.sc.registry.get('far_mask').destroy();
+			this.sc.registry.remove('far_mask');
+		}
+		this.sc.registry.set('far_mask', this.sc.add.image(0, 0, 'far_mask').setOrigin(0).setPosition(x - this.cfg.farMaskOffset, 0).setDepth(500));	
+		this.sc.cameras.cameras[1].ignore(this.sc.registry.get('far_mask'));
 	}
 	
 	move_far_mask() {
 		if(this.sc.registry.get('walls').length) {
 			this.sc.tweens.add({
 				targets: this.sc.registry.get('far_mask'),
-				x: this.sc.registry.get('walls')[0] - this.cfg.wallWidth * 2,
-				duration: 500
+				x: this.sc.registry.get('walls')[0] - this.cfg.farMaskOffset,
+				duration: this.cfg.farMaskMoveDuration
 			});			
 		}
 	}
+	
 	wall_show(tw) {
 		let _x = this.sc.registry.get('walls').shift();
+		let _first = tw !== undefined && tw === true;
 		//let _x = x.wall_coords !== undefined ? x.wall_coords : x;
-		if(tw !== undefined && tw === true) {
+		if(_first) {
 			this.sc.registry.get('wall_group').toggleVisible();		
-		} else if(this.cfg.wallOpenBlitter) {
-			let blitter = this.sc.add.blitter(0, 0, this.cfg.wallTextureName);
-			this.sc.registry.get('wall_group').getChildren().forEach((_img) => {
-				blitter.create(_img.x, _img.y).setAlpha(this.cfg.wallOpenAlpha);
-			});
-		}
-		Phaser.Actions.SetX(this.sc.registry.get('wall_group').getChildren(), _x);
+			Phaser.Actions.SetX(this.sc.registry.get('wall_group').getChildren(), _x);
+		} else {
+			if(this.cfg.wallOpenBlitter) {
+				let blitter = this.sc.add.blitter(0, 0, this.cfg.wallTextureName);
+				this.sc.registry.get('wall_group').getChildren().forEach((_img) => {
+					blitter.create(_img.x, _img.y).setAlpha(this.cfg.wallOpenAlpha);
+				});
+			}			
+			let _ch = this.sc.registry.get('wall_group').getChildren();
+			let _ys = _ch.map((_i) => _i.y);		
+			Phaser.Utils.Array.Shuffle(_ys);
+			for(let i = 0; i < _ch.length; i++) {
+				let _dur = AutopRand.randint(...this.cfg.wallMoveDuration);
+				this.sc.tweens.add({
+					targets: _ch[i],
+					x: _x,
+					y: _ys[i],
+					ease: this.cfg.wallMoveEase,
+					duration: AutopRand.randint(_dur)
+				});			
+			}
+		}		
+		
 		//this.sc.registry.get('walls').push(_x);
 		//this.sc.registry.get('walls').push(this.sc.add.image(_x, 0, this.cfg.wallTextureName).setOrigin(0));
 	}	
@@ -227,7 +248,7 @@ class AutopLIB {
 		//if(_wall) _wall.setAlpha(this.cfg.wallOpenAlpha);
 					
 		if(_pos[_pos_i].nxt && _pos[_pos_i].nxt[0].wall_coords) this.wall_add(_pos[_pos_i].nxt[0]);	
-		this.move_far_mask();
+		if(this.cfg.useFarMask) this.add_to_update_queue('move_far_mask', 10);
 
 		this.sc.registry.get('paths').push(_pos[_pos_i].points);
 		this.show_path(_pos[_pos_i]);					

@@ -28,9 +28,14 @@ create() {
 	gr.fillRect(...coords).strokeRect(...coords);
 
 	let _play_button = this.add.graphics();
+	let _play_button_dbg = this.add.graphics();
 	let _play_button_coords = [Math.round((0.5 - _hsize) * w),Math.round((0.5 - _hsize) * h),Math.round((0.5 - _hsize) * w),Math.round((0.5 + _hsize) * h),Math.round((0.5 + _hsize) * w),Math.round(h * 0.5)];
 	let play_triangle = new Phaser.Geom.Triangle(..._play_button_coords);
 	_play_button.fillStyle(this.cfg.play_button_style).fillTriangle(..._play_button_coords);
+	
+	let _play_button_coords_dbg = [w * 0.75, 60, (w * 0.75) + 30, 75, w * 0.75, 90];
+	let play_triangle_dbg = new Phaser.Geom.Triangle(..._play_button_coords_dbg);
+	_play_button.fillStyle(0xab32ba).fillTriangle(..._play_button_coords_dbg);
 
 	let game_over_text = this.add.text(Math.round((0.5 + _hsize) * w * 0.5), Math.round((0.5 - _hsize) * h * 0.5), this.cfg.gameOverText, this.cfg.gameOverStyle);
 	if(!this.registry.get('_do_gameover')) {
@@ -47,7 +52,7 @@ create() {
 	this.input.on('pointerdown', (event) => {
 //		if(Phaser.Geom.Triangle.Contains(play_triangle, event.x, event.y)) console.log('!!!!!!!!!!!!!!!!');//tmp
 //		this.scene.sendToBack();
-		if(Phaser.Geom.Triangle.Contains(play_triangle, event.x, event.y)) {
+		if(Phaser.Geom.Triangle.Contains(play_triangle, event.x, event.y) || Phaser.Geom.Triangle.Contains(play_triangle_dbg, event.x, event.y)) {
 			game_over_text.visible = 0;
 			if(!this.game_started) {				
 				this.scene.start('PlayMain');
@@ -56,6 +61,7 @@ create() {
 				this.scene.wake('PlayMain');
 			}		
 			this.scene.stop();
+			if(Phaser.Geom.Triangle.Contains(play_triangle_dbg, event.x, event.y)) this.c.config.dbg = true;			
 		}
 	});
 
