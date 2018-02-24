@@ -53,13 +53,12 @@ create () {
 	this.lib.wall_show(true);
 	this.lib.show_path(pobj);	
 	
-	this.lib.draw_obstacles(this.lib.generate_obstacles(pobj));
-	
+	this.lib.draw_obstacles(this.lib.generate_obstacles(pobj));	
 	
 	for(let i = 0; i < 3; i++) {				
 		let pobj_correct = this.lib.gen_path.generate_path(prev_tail);
 		this.lib.generate_wall(pobj_correct);		
-		this.lib.wall_add(pobj_correct);
+		this.lib.wall_add(pobj_correct, !i);
 		let obs = this.lib.generate_obstacles(pobj_correct);
 		this.lib.draw_obstacles(obs);
 		let pobj_wrong = this.lib.gen_path.generate_path(prev_tail, obs, false, false, {path: pobj_correct, value: 0});//tmp

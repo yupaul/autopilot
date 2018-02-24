@@ -152,17 +152,40 @@ class AutopLIB {
 		};			
 	}
 
-	wall_add(x) {
+	wall_add(x, create_far_mask) {
 		let _x = x.wall_coords !== undefined ? x.wall_coords : x;
 		this.sc.registry.get('walls').push(_x);
+		if(create_far_mask !== undefined && create_far_mask) {
+			if(!this.sc.registry.has('far_mask')) {
+				this.sc.registry.set('far_mask', this.sc.add.image(0, 0, 'far_mask').setOrigin(0));
+			}
+			this.sc.registry.get('far_mask').setPosition(_x - this.cfg.wallWidth * 2, 0).setDepth(500);				
+			this.sc.cameras.cameras[1].ignore(this.sc.registry.get('far_mask'));
+		}		
 	}
 	
+	move_far_mask() {
+		if(this.sc.registry.get('walls').length) {
+			this.sc.tweens.add({
+				targets: this.sc.registry.get('far_mask'),
+				x: this.sc.registry.get('walls')[0] - this.cfg.wallWidth * 2,
+				duration: 500
+			});			
+		}
+	}
 	wall_show(tw) {
 		let _x = this.sc.registry.get('walls').shift();
 		//let _x = x.wall_coords !== undefined ? x.wall_coords : x;
+		if(tw !== undefined && tw === true) {
+			this.sc.registry.get('wall_group').toggleVisible();		
+		} else if(this.cfg.wallOpenBlitter) {
+			let blitter = this.sc.add.blitter(0, 0, this.cfg.wallTextureName);
+			this.sc.registry.get('wall_group').getChildren().forEach((_img) => {
+				blitter.create(_img.x, _img.y).setAlpha(this.cfg.wallOpenAlpha);
+			});
+		}
 		Phaser.Actions.SetX(this.sc.registry.get('wall_group').getChildren(), _x);
 		//this.sc.registry.get('walls').push(_x);
-		if(tw !== undefined && tw === true) this.sc.registry.get('wall_group').toggleVisible();
 		//this.sc.registry.get('walls').push(this.sc.add.image(_x, 0, this.cfg.wallTextureName).setOrigin(0));
 	}	
 
@@ -203,7 +226,8 @@ class AutopLIB {
 		//let _wall = this.sc.registry.get('walls').shift();
 		//if(_wall) _wall.setAlpha(this.cfg.wallOpenAlpha);
 					
-		if(_pos[_pos_i].nxt && _pos[_pos_i].nxt[0].wall_coords) this.wall_add(_pos[_pos_i].nxt[0]);					
+		if(_pos[_pos_i].nxt && _pos[_pos_i].nxt[0].wall_coords) this.wall_add(_pos[_pos_i].nxt[0]);	
+		this.move_far_mask();
 
 		this.sc.registry.get('paths').push(_pos[_pos_i].points);
 		this.show_path(_pos[_pos_i]);					

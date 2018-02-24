@@ -5,6 +5,8 @@ let _config = {
 	showPaths: false,		
 	gridCellLineStyle: [1, 0xffffff, 1],
 	gridFullCells: true,
+	wallOpenAlpha: 0.12,
+	wallOpenBlitter: true,
 	//tmp start
 	gen_obs: {		
 		//to_occupy: 0.85, 
