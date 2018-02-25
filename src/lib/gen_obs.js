@@ -3,8 +3,11 @@ import AutopSet from '../util/set';
 import {AutopMap, AutopMapOfSets} from '../util/map';
 
 class Obstacle {
-	constructor(type, texture_data, shape_data) {		
+	constructor(type, texture_data, shape_data) {
+		this.tween = false;
 		this.image = false;
+		this._destroy_x = false;
+		this._destroy_scheduled_time = AutopRand.randint(5000, 10000);
 		this.type = type === 'rect' ? 'rect' : 'circle';
 		this.texture_key = texture_data.key;
 		this.texture_origin = texture_data.origin;				
@@ -27,9 +30,25 @@ class Obstacle {
 		}		
 	}
 	
+	destroy_scheduled(scene) {
+		scene.time.addEvent({
+			delay: this._destroy_scheduled_time, 
+			callback: () => {
+				if(!this.image || !scene || !scene.time || !scene.registry.has('player')) return;				
+				if(this._destroy_x > scene.registry.get('player').x) {
+					this.destroy_scheduled(scene);
+				} else {
+					if(this.tween) this.tween.stop();
+					this.image.destroy();
+					this.image = false;			
+				}
+			}, 
+			callbackScope: this
+		});	
+	}
+	
 	add_image(scene) {
-		if(this.image) return;
-		let tween = false;
+		if(this.image) return;		
 		this.image = scene.add.image(0, 0, ...this.texture_key).setOrigin(0.5);
 		//this.image.setPosition(...this.texture_origin.map((_x) => (_x + this.image.width * 0.5)));
 		//this.image.setPosition(...this.texture_origin);
@@ -37,23 +56,15 @@ class Obstacle {
 		if(this.texture_scale) this.image.setScale(...this.texture_scale);
 		//this.image.setOrigin(0.5);
 		if(scene.cfg.gen_obs.rotate !== undefined) {
-			tween = scene.tweens.add({
+			this.tween = scene.tweens.add({
 				targets: this.image,
 				angle: (AutopRand.coinflip() ? 360 : -360),
 				duration: AutopRand.randint(...scene.cfg.gen_obs.rotate),
 				repeat: -1
 			});			
 		}
-		if(scene.cfg._just_started !== undefined && !scene.cfg._just_started) {
-			scene.time.addEvent({
-				delay: 20000, 
-				callback: () => {
-					if(tween) tween.stop();
-					this.image.destroy();
-				}, 
-				callbackScope: this
-			});
-		}		
+		this._destroy_x = this.image.x + scene.sys.game.config.width;
+		this.destroy_scheduled(scene);
 	}
 	
 	has_x(x) {

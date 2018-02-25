@@ -133,6 +133,10 @@ class AutopConfigurator {
 		return this.config_menu;
 	}	
 	
+	get_version() {
+		return this._config_global.v;
+	}
+	
 }
 
 let configurator = new AutopConfigurator(_config_global, _config_game, [Menu, PlayMain]);

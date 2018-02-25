@@ -26,6 +26,8 @@ create() {
 	let _offset = (1 - this.cfg.bg_proportion) * 0.5;
 	let coords = [Math.round(w * _offset), Math.round(h * _offset), Math.round(w * this.cfg.bg_proportion), Math.round(h * this.cfg.bg_proportion)];
 	gr.fillRect(...coords).strokeRect(...coords);
+	
+	this.add.text(Math.round(w * _offset) + Math.round(w * this.cfg.bg_proportion) - 50, Math.round(h * _offset) + Math.round(h * this.cfg.bg_proportion) - 50, this.c.get_version(), {color: '#979797', fill: '#979797', fontSize: '14px Tahoma'});
 
 	let _play_button = this.add.graphics();
 	let _play_button_dbg = this.add.graphics();
