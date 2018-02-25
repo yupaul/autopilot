@@ -45,18 +45,19 @@ let _config = {
 			x: 0,
 			y: {min: -100, max: 100},
 			gravityX: -50,
+			gravityY: 0,
 			blendMode: 'NORMAL',
 			rotate: {min: -60, max: 60},
 			scale: { start: 0.7, end: 0 },
-			speed: { min: -4, max: -8 },
-			alpha: { start: 0.4, end: 0, ease: 'Quartic.easeOut' },
-			frequency: 10,
-			lifespan: 2250,	
+			speed: { min: -25, max: -50 },
+			alpha: { start: 0.6, end: 0, ease: 'Quartic.easeOut' },
+			frequency: 2,
+			lifespan: 1400,	
 			//acceleration: 100,
 			//radial: true,
-			angle: {min: -150, max: -30},
+			//angle: {min: -120, max: -60},
 			delay: 100,			
-			quantity: 3		
+			quantity: 1		
 		},
 		/* //tmp
 		zone: {
