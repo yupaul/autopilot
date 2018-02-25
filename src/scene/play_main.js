@@ -28,7 +28,7 @@ create () {
 	this.registry.set('path_objects', []);
 	this.registry.set('walls', []);
 	this.registry.set('obstacles', (new Phaser.Structs.Map()));
-	this.registry.get('show_path_last_point', false)
+	this.registry.set('show_path_last_point', false)
 
 //	this.lib.config_preprocess(rwh, _w, _h);//tmp to delete
 
@@ -51,6 +51,7 @@ create () {
 	this.registry.get('paths').push(pobj.points);
 	this.lib.wall_add(pobj);
 	this.lib.wall_show(true);
+	
 	this.lib.show_path(pobj);	
 	
 	this.lib.draw_obstacles(this.lib.generate_obstacles(pobj));	

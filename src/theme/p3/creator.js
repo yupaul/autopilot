@@ -8,6 +8,7 @@ class AutopCreator {
 	}
 
 	create() {
+		this.masks();
 		this.background();
 		this.show_path();
 		this.controls();
@@ -33,6 +34,28 @@ class AutopCreator {
 		if(this.sc.cameras.cameras.length > 1) this.sc.cameras.cameras[1].ignore(__img);
 		*/
 	}
+	
+	masks() {
+		let texture_name = 'mask_black';
+		if(this.sc.textures.exists(texture_name)) {
+			this.sc.textures.get(texture_name).destroy();
+			delete this.sc.textures.list[texture_name];	
+		}
+		let gr = this.sc.make.graphics();
+		gr.fillStyle(0x000000, 1);
+		gr.fillRect(0, 0, this.sc.sys.game.config.width, this.sc.sys.game.config.height).generateTexture(texture_name, this.sc.sys.game.config.width, this.sc.sys.game.config.height);	
+		for(let i = 1; i <= 3; i++) {
+			this.sc.registry.set('mask'+i, this.sc.make.image({
+					x: -(this.sc.sys.game.config.width / 2),
+					y: this.sc.sys.game.config.height / 2,
+					key: texture_name,
+					add: false
+				})
+			);
+		}
+		this.sc.registry.get('mask1').setPosition(-(this.sc.sys.game.config.width / 2), this.sc.sys.game.config.height / 2);
+		this.sc.registry.get('mask2').setOrigin(0).setPosition(0, 0);
+	}
 
 	background() {
 		//this.sc.sys.game.textures.create('bg_dark', this.sc.sys.game.textures.get('bg_dark_src').getSourceImage(), this.sc.sys.game.config.width, this.sc.sys.game.config.height).add('__BASE', 0, 0, 0, this.sc.sys.game.config.width, this.sc.sys.game.config.height);
@@ -45,10 +68,10 @@ class AutopCreator {
 	}
 
 	show_path() {
-		if(!this.cfg.showPaths) return;
+		/*if(!this.cfg.showPaths) return;
 		let gr = this.sc.make.graphics();
 		gr.fillStyle(this.cfg.showPathStyle[1], this.cfg.showPathStyle[2]);
-		gr.fillCircle(this.cfg.showPathRadius, this.cfg.showPathRadius, this.cfg.showPathRadius).generateTexture(this.cfg.showPathTextureName, this.cfg.showPathRadius * 2, this.cfg.showPathRadius * 2);		
+		gr.fillCircle(this.cfg.showPathRadius, this.cfg.showPathRadius, this.cfg.showPathRadius).generateTexture(this.cfg.showPathTextureName, this.cfg.showPathRadius * 2, this.cfg.showPathRadius * 2);*/
 	}
 	
 	controls() {

@@ -86,6 +86,14 @@ class AutopPointsPath {
 		return out;
 	}
 	
+	movePointsExternal(points, x, y) {
+		let out = [];
+		for(let i = 0; i < points.length; i++) {
+			out.push(new Phaser.Math.Vector2(points[i].x + x, points[i].y + y));
+		}
+		return out;
+	}	
+	
 	movePointsToZero() {
 		return this.movePoints(-this.points[0].x, -this.points[0].y);
 	}

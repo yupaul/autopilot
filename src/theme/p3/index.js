@@ -73,11 +73,12 @@ let theme = {
 		}
 		
 		let _cfg = scene.cfg.player_body_emitter.follow;
+		let xy = scene.registry.get('player_xy');
 		if(AutopRand.chanceOneIn(_cfg.chance)) {			
-			let r = [AutopRand.randint(0, _cfg.position_range[0]), AutopRand.randint(0, _cfg.position_range[1])];
-			let xy = scene.registry.get('player_xy');
+			let r = [AutopRand.randint(0, _cfg.position_range[0]), AutopRand.randint(0, _cfg.position_range[1])];			
 			scene.registry.get('player_body_group').setPosition(xy[0] + r[0] - _cfg.position_range_half[0], xy[1] + r[1] - _cfg.position_range_half[1]).setGravityY((r[1] - _cfg.position_range_half[1]) * _cfg.gravity_y_multiplier).setGravityX(-AutopRand.randint(..._cfg.gravity_x_range));
 		}
+		scene.registry.get('mask2').x = scene.registry.get('player').x;
 	},	
 
 	test: function() {

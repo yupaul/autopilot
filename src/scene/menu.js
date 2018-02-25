@@ -47,12 +47,12 @@ create() {
 	}
 //	console.log(game_over_text.getTextMetrics());//tmp
 //	game_over_text.setStyle({color: '#fff'});
-
-        
+    
 	this.input.on('pointerdown', (event) => {
 //		if(Phaser.Geom.Triangle.Contains(play_triangle, event.x, event.y)) console.log('!!!!!!!!!!!!!!!!');//tmp
 //		this.scene.sendToBack();
 		if(Phaser.Geom.Triangle.Contains(play_triangle, event.x, event.y) || Phaser.Geom.Triangle.Contains(play_triangle_dbg, event.x, event.y)) {
+			if(Phaser.Geom.Triangle.Contains(play_triangle_dbg, event.x, event.y)) window.game = this.sys.game;
 			game_over_text.visible = 0;
 			if(!this.game_started) {				
 				this.scene.start('PlayMain');
@@ -61,7 +61,7 @@ create() {
 				this.scene.wake('PlayMain');
 			}		
 			this.scene.stop();
-			if(Phaser.Geom.Triangle.Contains(play_triangle_dbg, event.x, event.y)) this.c.config.dbg = true;			
+			if(Phaser.Geom.Triangle.Contains(play_triangle_dbg, event.x, event.y)) this.c.config.dbg = true;	
 		}
 	});
 

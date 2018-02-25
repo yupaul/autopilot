@@ -2,7 +2,16 @@
 let _config = {	
 	playerWidthHeight: [34, 34],
 	rtreeCoeff: 0.3,
-	showPaths: false,		
+	showPaths: true,
+	show_path: {
+		styles: [
+			[5, 0xffffff, 0.9],
+			[10, 0xededed, 0.25],
+			[15, 0xdedede, 0.15],
+			[25, 0xffffff, 0.05]
+		],
+		subset: 9
+	},
 	gridCellLineStyle: [1, 0xffffff, 1],
 	gridFullCells: true,
 	wallOpenAlpha: 0.12,
@@ -41,13 +50,13 @@ let _config = {
 			scale: { start: 0.7, end: 0 },
 			speed: { min: -4, max: -8 },
 			alpha: { start: 0.4, end: 0, ease: 'Quartic.easeOut' },
-			frequency: 20,
+			frequency: 10,
 			lifespan: 2250,	
 			//acceleration: 100,
 			//radial: true,
 			angle: {min: -150, max: -30},
 			delay: 100,			
-			quantity: 2		
+			quantity: 3		
 		},
 		/* //tmp
 		zone: {

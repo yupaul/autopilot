@@ -33,11 +33,13 @@ export let _config_global = {
 		sectionCounterStyle: {color: '#cd3221', fill: '#cd3221', fontSize: '40px Tahoma'},
 		sectionCounterName: 'section_counter',
 		
-		showPathStyle: [1, 0xffffff, 0.4], //[1, 0xff0000, 0.2],
-		showPathSubSet: 20,
-		showPathRadius: 4,
 		showPaths: true,
-		showPathTextureName: 'show_path_circle',
+		show_path: {
+			styles: [[1, 0xffffff, 0.4]], //[1, 0xff0000, 0.2],
+			subset: 20,
+			radius: 4,		
+			texture_name: 'show_path_circle',
+		},
 	
 		randomizeButtons: true, //tmp
 		gameOver: true, //tmp

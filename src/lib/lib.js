@@ -56,25 +56,81 @@ class AutopLIB {
 	}
 	
 	show_path(path_object) {
-		if(!this.cfg.showPaths) return;		
+		if(!this.cfg.showPaths) return;	
 		
-		//gr.lineStyle(...this.cfg.showPathStyle);
-		//gr.strokePoints(path_object.points.getPoints());
+		let texture_counter = AutopRand.randint(1, 100000000);
+		//if(this.path_texture_counter > 2) this.path_texture_counter = 0;
+		//this.path_texture_counter++;
+		/*['fore', 'back'].forEach((_k) => {
+			if(this.sc.textures.exists('show_path_'+_k+this.path_texture_counter)) {
+				this.sc.textures.get('show_path_'+_k+this.path_texture_counter).destroy();
+				delete this.sc.textures.list['show_path_'+_k+this.path_texture_counter];
+			}
+		});*/
+		
+		
+		let _points = path_object.points.getPointsSubSet(this.cfg.show_path.subset);
+		//if(this.sc.registry.get('show_path_last_point')) _points.unshift(this.sc.registry.get('show_path_last_point'));
+		//this.sc.registry.set('show_path_last_point', _points[_points.length - 1]);
+		if(this.sc.registry.get('show_path_last_point')) _points = this.sc.registry.get('show_path_last_point').concat(_points);
+		this.sc.registry.set('show_path_last_point', [_points[_points.length - 2], _points[_points.length - 1]]);
+		
+		
+/*		let _lp = this.sc.registry.get('show_path_last_point');
+			if(_lp.distance(_points[1]) > _points[1].distance(_points[2]) * 1.5) {
+				let _fp = new Phaser.Math.Vector2((_lp.x + _points[1].x) * 0.5, (_lp.y + _points[1].y) * 0.5);
+				_points.unshift(_fp);
+			}
+		}*/
+		let last_style = this.cfg.show_path.styles.length - 1;
+		let start_x = _points[0].x;
+		_points = path_object.points.movePointsExternal(_points, -start_x, 0);
+		let _bounds = Phaser.Geom.Rectangle.FromPoints(_points);		
+		let texture_wh = [Math.ceil(_bounds.width), this.cfg.heightField + this.cfg.show_path.styles[last_style][0]];
+		
+		let gr = this.sc.make.graphics();
+		let gr2 = this.sc.make.graphics();
+		
+		for(let i = last_style; i > 0; i--) {
+			gr.lineStyle(...this.cfg.show_path.styles[i]);
+			gr.strokePoints(_points);				
+		}		
+		gr.generateTexture('show_path_back'+texture_counter, ...texture_wh);		
+		gr2.lineStyle(...this.cfg.show_path.styles[0]);
+		gr2.strokePoints(_points).generateTexture('show_path_fore'+texture_counter, ...texture_wh);	
+		
+		let back = this.sc.add.image(0, 0, 'show_path_back'+texture_counter).setOrigin(0).setPosition(start_x, 0).setDepth(-51).setBlendMode('SCREEN');
+		let fore = this.sc.add.image(0, 0, 'show_path_fore'+texture_counter).setOrigin(0).setPosition(start_x, 0).setDepth(-51).setBlendMode('SCREEN');
+		back.mask = new Phaser.Display.Masks.BitmapMask(this.sc, this.sc.registry.get('mask1'));
+		fore.mask = new Phaser.Display.Masks.BitmapMask(this.sc, this.sc.registry.get('mask1'));
+		
+		this.sc.registry.get('mask1').x = start_x - this.sc.sys.game.config.width / 2;
+		this.sc.tweens.add({
+			targets: this.sc.registry.get('mask1'),
+			x: path_object.points.getEndPoint().x - this.sc.sys.game.config.width / 2,			
+			duration: AutopRand.randint(...this.cfg.wallMoveDuration),
+			onComplete: () => {
+				back.mask = null;
+				fore.mask = new Phaser.Display.Masks.BitmapMask(this.sc, this.sc.registry.get('mask2'));
+			}
+		});					
+		
+		return;
 		/*let points1 = path_object.points.movePoints(0, this.cfg.playerWidthHeight[1]);
 		let points2 = path_object.points.movePoints(0, -this.cfg.playerWidthHeight[1]);
 		gr.strokePoints(points1);
 		gr.strokePoints(points2);*/
 		//gr.fillStyle(this.cfg.showPathStyle[1], this.cfg.showPathStyle[2]);
-		let points = path_object.points.getPointsSubSet(this.cfg.showPathSubSet);
+		let points = path_object.points.getPointsSubSet(this.cfg.show_path.subset);
 		if(this.sc.registry.get('show_path_last_point')) {
 			let _lp = this.sc.registry.get('show_path_last_point');
 			if(_lp.distance(points[1]) > points[1].distance(points[2]) * 1.5) {
 				let _fp = new Phaser.Math.Vector2((_lp.x + points[1].x) * 0.5, (_lp.y + points[1].y) * 0.5);
-				this.sc.add.image(0, 0, this.cfg.showPathTextureName).setPosition(_fp.x, _fp.y).setDepth(-101);
+				this.sc.add.image(0, 0, this.cfg.show_path.texture_name).setPosition(_fp.x, _fp.y).setDepth(-101);
 			}
 		}
 		for(let i = 1; i < (points.length - 1); i++) {
-			this.sc.add.image(0, 0, this.cfg.showPathTextureName).setPosition(points[i].x, points[i].y).setDepth(-101);
+			this.sc.add.image(0, 0, this.cfg.show_path.texture_name).setPosition(points[i].x, points[i].y).setDepth(-101);
 			if(i === (points.length - 2)) this.sc.registry.set('show_path_last_point', points[i]);
 			//gr.fillCircle(points[i].x, points[i].y, this.cfg.showPathRadius);
 		}
@@ -410,7 +466,7 @@ class AutopLIB {
 		this.sc.cameras.cameras.forEach((c) => {c.fade(this.cfg.gameOverFade);});
 		var _this = this;
 		this.sc.time.addEvent({delay: Math.round(this.cfg.gameOverFade * 0.9), callback: function() {	                         				
-			_this.sc.scene.stop('PlayMain');
+			_this.sc.scene.stop('PlayMain');			
 			_this.cfg.speed = _this.cfg.speed_initial;
 			_this.sc.scene.start('Menu');		
 		}});

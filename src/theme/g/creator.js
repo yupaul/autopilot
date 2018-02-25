@@ -26,8 +26,8 @@ class AutopCreator {
 	show_path() {
 		if(!this.cfg.showPaths) return;
 		let gr = this.sc.make.graphics();
-		gr.fillStyle(this.cfg.showPathStyle[1], this.cfg.showPathStyle[2]);
-		gr.fillCircle(this.cfg.showPathRadius, this.cfg.showPathRadius, this.cfg.showPathRadius).generateTexture(this.cfg.showPathTextureName, this.cfg.showPathRadius * 2, this.cfg.showPathRadius * 2);		
+		gr.fillStyle(this.cfg.show_path.styles[0][1], this.cfg.show_path.styles[0][2]);
+		gr.fillCircle(this.cfg.show_path.radius, this.cfg.show_path.radius, this.cfg.show_path.radius).generateTexture(this.cfg.show_path.texture_name, this.cfg.show_path.radius * 2, this.cfg.show_path.radius * 2);		
 	}
 	
 	controls() {
