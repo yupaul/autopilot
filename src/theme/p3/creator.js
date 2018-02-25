@@ -17,7 +17,8 @@ class AutopCreator {
 		this.player_body();
 		this.obstacles();
 		this.wall();		
-		this.section_counter();		
+		this.section_counter();	
+		this.bg_particles();
 		
 		//tmp
 		/*
@@ -67,6 +68,21 @@ class AutopCreator {
 		//this.sc.add.image(0, 0, 'bg_dark').setOrigin(0).setSize(this.sc.sys.game.config.width, this.sc.sys.game.config.height).setPosition(this.sc.sys.game.config.width, 0);		
 	}
 
+	bg_particles() {
+		let offset_ahead_min = Math.round(this.cfg._rwhcfg.cfg_w * (1 - this.cfg.cameraOffset) + 50);
+		let offset_ahead_max = offset_ahead_min + this.cfg._rwhcfg.cfg_w;
+		let offset_behind = Math.round(this.cfg._rwhcfg.cfg_w * this.cfg.cameraOffset * 2);
+		
+		let bg_imgs = [];
+		for(let i = 0; i < this.cfg.bg_particles.length; i++) {
+			let cfg = this.cfg.bg_particles[i];
+			bg_imgs.push([]);
+			for(let i2 = 0; i2 < cfg.total; i2++) {
+				//bg_imgs.push(this.sc.add.image(0, 0, 'bg_particle'+i).setOrigin(0));//tmp
+			}
+		}
+	}
+	
 	show_path() {
 		/*if(!this.cfg.showPaths) return;
 		let gr = this.sc.make.graphics();

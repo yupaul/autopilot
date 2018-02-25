@@ -36,6 +36,8 @@ let theme = {
 		scene.load.image('bg_dark', './assets/'+this.theme_name+'/images/bg_dark2.png');
 		scene.load.image('player', './assets/'+this.theme_name+'/images/player2.png');
 		scene.load.image('player_body_particle', './assets/'+this.theme_name+'/images/pbp1.png');
+		scene.load.image('bg_particle0', './assets/'+this.theme_name+'/images/bgp1.png');
+		scene.load.image('bg_particle1', './assets/'+this.theme_name+'/images/bgp2.png');
 		scene.load.image(scene.cfg.wallTextureName, './assets/'+this.theme_name+'/images/krestik23.png');
 		scene.load.image('far_mask', './assets/'+this.theme_name+'/images/msk2.png');		
 		scene.load.atlas('obstacles_all', './assets/'+this.theme_name+'/images/obstacles_out1_x15.png', './assets/'+this.theme_name+'/images/obstacles_out1_x15.json');
@@ -65,6 +67,7 @@ let theme = {
 	},
 	
 	player_update: function(scene) {
+		if(!scene.registry.get('player').pathTween || !scene.registry.get('player').pathTween.isPlaying()) return;
 		if(!scene.registry.get('player_body_group').visible) {
 			scene.registry.get('player').setBlendMode('SCREEN');
 			scene.registry.get('player_body_group').visible = 1;

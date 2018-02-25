@@ -38,7 +38,7 @@ class AutopLIB {
 		if(_rects && _rects.length > 0) {
 			for(let _i = 0; _i < _rects.length; _i++) {
 				if(_rects[_i].contains(player.x, player.y)) {
-					player.stop();
+					//player.stop();
 					this.gameover();
 					return false;
 				}
@@ -166,7 +166,7 @@ class AutopLIB {
 		config.onCompleteScope = this.sc;	
 	
 		_player.start(config);
-		_player.setRotateToPath(true, config.rotationOffset, config.verticalAdjust);	
+		_player.setRotateToPath(false, config.rotationOffset, config.verticalAdjust);	
 		this.cfg._pause_scheduled = true;	
 		return _player;	
 	}
@@ -484,15 +484,21 @@ class AutopLIB {
 	}
 	
 	gameover() {
-		if(!this.cfg.gameOver) return;
-		this.sc.sys.game.registry.set('_do_gameover', true);
-		this.sc.cameras.cameras.forEach((c) => {c.fade(this.cfg.gameOverFade);});
+		if(!this.cfg.gameOver) return;		
+		let _xy = [this.sc.registry.get('player').x, this.sc.registry.get('player').y];
+		this.sc.registry.get('player').setAlpha(0);
+		if(this.sc.registry.get('player').pathTween.isPlaying()) this.sc.registry.get('player').stop();				
+		//this.sc.registry.get('player_body_group').manager.setDepth(100);
+		//this.sc.registry.get('player_body_group').setAlpha(0.9).explode(200, ..._xy);
+		this.sc.sys.game.registry.set('_do_gameover', true);		
+		//this.sc.cameras.cameras.forEach((c) => {c.fade(this.cfg.gameOverFade);});
+		this.sc.cameras.main.fade(this.cfg.gameOverFade);
 		var _this = this;
 		this.sc.time.addEvent({delay: Math.round(this.cfg.gameOverFade * 0.9), callback: function() {	                         				
 			_this.sc.scene.stop('PlayMain');			
 			_this.cfg.speed = _this.cfg.speed_initial;
 			_this.sc.scene.start('Menu');		
-		}});
+		}});		
 	}
 	
 }

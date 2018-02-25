@@ -1,6 +1,6 @@
 
 export let _config_global = {
-		v: 0.242,
+		v: 0.243,
 		theme_name: 'p3',
 		levels : [
 			{},
@@ -88,6 +88,6 @@ export let _config_global = {
 			bg_proportion: 0.96,
 			play_button_style: 0xffffff,
 			play_button_half_size: 0.2
-		}			
-			
+		},
+		bg_particles: []
 };
