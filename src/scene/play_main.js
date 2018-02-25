@@ -25,6 +25,8 @@ create () {
 	
 	this.registry.set('buttons', []);
 	this.registry.set('paths', []);
+	this.registry.set('path_images', {});
+	this.registry.set('path_textures', []);
 	this.registry.set('path_objects', []);
 	this.registry.set('walls', []);
 	this.registry.set('obstacles', (new Phaser.Structs.Map()));

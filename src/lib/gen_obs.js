@@ -28,22 +28,32 @@ class Obstacle {
 	}
 	
 	add_image(scene) {
-		if(!this.image) {
-			this.image = scene.add.image(0, 0, ...this.texture_key).setOrigin(0.5);
-			//this.image.setPosition(...this.texture_origin.map((_x) => (_x + this.image.width * 0.5)));
-			//this.image.setPosition(...this.texture_origin);
-			this.image.setPosition(...this.center);
-			if(this.texture_scale) this.image.setScale(...this.texture_scale);
-			//this.image.setOrigin(0.5);
-			if(scene.cfg.gen_obs.rotate !== undefined) {
-				scene.tweens.add({
-					targets: this.image,
-					angle: (AutopRand.coinflip() ? 360 : -360),
-					duration: AutopRand.randint(...scene.cfg.gen_obs.rotate),
-					repeat: -1
-				});			
-			}
+		if(this.image) return;
+		let tween = false;
+		this.image = scene.add.image(0, 0, ...this.texture_key).setOrigin(0.5);
+		//this.image.setPosition(...this.texture_origin.map((_x) => (_x + this.image.width * 0.5)));
+		//this.image.setPosition(...this.texture_origin);
+		this.image.setPosition(...this.center);
+		if(this.texture_scale) this.image.setScale(...this.texture_scale);
+		//this.image.setOrigin(0.5);
+		if(scene.cfg.gen_obs.rotate !== undefined) {
+			tween = scene.tweens.add({
+				targets: this.image,
+				angle: (AutopRand.coinflip() ? 360 : -360),
+				duration: AutopRand.randint(...scene.cfg.gen_obs.rotate),
+				repeat: -1
+			});			
 		}
+		if(scene.cfg._just_started !== undefined && !scene.cfg._just_started) {
+			scene.time.addEvent({
+				delay: 20000, 
+				callback: () => {
+					if(tween) tween.stop();
+					this.image.destroy();
+				}, 
+				callbackScope: this
+			});
+		}		
 	}
 	
 	has_x(x) {

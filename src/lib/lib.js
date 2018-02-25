@@ -103,24 +103,30 @@ class AutopLIB {
 		let fore = this.sc.add.image(0, 0, 'show_path_fore'+texture_counter).setOrigin(0).setPosition(start_x, 0).setDepth(-51).setBlendMode('SCREEN');
 		back.mask = new Phaser.Display.Masks.BitmapMask(this.sc, this.sc.registry.get('mask1'));
 		fore.mask = new Phaser.Display.Masks.BitmapMask(this.sc, this.sc.registry.get('mask1'));
+		this.sc.registry.get('path_images')['i'+texture_counter] = [back, fore];
+		this.sc.registry.get('path_textures').push(texture_counter);
+		this.add_to_update_queue('cleanup_show_paths', 150);
 		
 		this.sc.registry.get('mask1').x = start_x - this.sc.sys.game.config.width / 2;
 		this.sc.tweens.add({
 			targets: this.sc.registry.get('mask1'),
 			x: path_object.points.getEndPoint().x - this.sc.sys.game.config.width / 2,			
-			duration: AutopRand.randint(...this.cfg.wallMoveDuration),
+			duration: AutopRand.randint(...this.cfg.wallMoveDuration) - 100,
 			onComplete: () => {
 				back.mask = null;
 				fore.mask = new Phaser.Display.Masks.BitmapMask(this.sc, this.sc.registry.get('mask2'));
-			}
+			},
+			delay: 150,
 		});					
 		
 		return;
+		//tmp to delete
 		/*let points1 = path_object.points.movePoints(0, this.cfg.playerWidthHeight[1]);
 		let points2 = path_object.points.movePoints(0, -this.cfg.playerWidthHeight[1]);
 		gr.strokePoints(points1);
 		gr.strokePoints(points2);*/
 		//gr.fillStyle(this.cfg.showPathStyle[1], this.cfg.showPathStyle[2]);
+		/*
 		let points = path_object.points.getPointsSubSet(this.cfg.show_path.subset);
 		if(this.sc.registry.get('show_path_last_point')) {
 			let _lp = this.sc.registry.get('show_path_last_point');
@@ -133,8 +139,19 @@ class AutopLIB {
 			this.sc.add.image(0, 0, this.cfg.show_path.texture_name).setPosition(points[i].x, points[i].y).setDepth(-101);
 			if(i === (points.length - 2)) this.sc.registry.set('show_path_last_point', points[i]);
 			//gr.fillCircle(points[i].x, points[i].y, this.cfg.showPathRadius);
-		}
+		}*/
 	}	
+	
+	cleanup_show_paths() {
+		let ts = this.sc.registry.get('path_textures');
+		if(ts.length < 6) return;
+		this.sc.registry.get('path_images')['i'+ts[0]][0].destroy();
+		this.sc.registry.get('path_images')['i'+ts[0]][1].destroy();
+		delete this.sc.registry.get('path_images')['i'+ts[0]];
+		if(this.sc.textures.exists('show_path_fore'+ts[0])) this.sc.textures.get('show_path_fore'+ts[0]).destroy();
+		if(this.sc.textures.exists('show_path_back'+ts[0])) this.sc.textures.get('show_path_back'+ts[0]).destroy();
+		ts.shift();
+	}
 	
 	multipath_follower(config, texture) {
 		let _p = this.sc.registry.get('paths').shift();
@@ -380,8 +397,14 @@ class AutopLIB {
 	}
 	
 	generate_new_step2(pobj_correct, prev_obj) {
-		let obs = this.generate_obstacles(pobj_correct);
-		this.add_to_update_queue('generate_new_step3', AutopRand.randint(2,6), [pobj_correct, prev_obj, obs]);
+		//let obs = this.generate_obstacles(pobj_correct);
+		//this.add_to_update_queue('generate_new_step3', AutopRand.randint(2,6), [pobj_correct, prev_obj, obs]);
+		let p = new Promise((res, rej) => {
+			res(this.generate_obstacles(pobj_correct));
+		});
+		p.then((obs) => {
+			this.add_to_update_queue('generate_new_step3', AutopRand.randint(2,6), [pobj_correct, prev_obj, obs]);
+		});
 	}
 
 	generate_new_step3(pobj_correct, prev_obj, obs) {
