@@ -455,7 +455,42 @@ class AutopLIB {
 	generate_obstacles(path_objects) {
 		return this.gen_obs.generate(path_objects);
 	}
+	
+	bg_particle_static(particle, interval, behind, ahead) {
+		let px = this.sc.registry.has('player') ? this.sc.registry.get('player').x : 0;
+		if(particle.x < (px - behind) || particle.x > (px + ahead[1])) particle.x = px + AutopRand.randint(...ahead);
+		this.sc.time.addEvent({delay: interval, callback: () => {
+			this.bg_particle_static(particle, interval, behind, ahead);
+		}, callbackScope: this});
+	}
 
+	bg_particle_moving(particle, interval, behind, ahead, speed) {
+		let px = this.sc.registry.has('player') ? this.sc.registry.get('player').x : 0;
+		let _ahead = AutopRand.randint(...ahead);
+		particle.x = px + _ahead;
+		let distance = _ahead + behind;
+		let duration = Math.round((distance / speed) * 5000);
+
+		let tw = this.sc.tweens.add({
+			targets: particle,
+			x: px - behind,			
+			duration: duration,
+			onUpdate: () => {
+				let px = this.sc.registry.has('player') ? this.sc.registry.get('player').x : 0;
+				if(particle.x < (px - behind) || particle.x > (px + ahead[1])) {
+					tw.stop();
+					this.bg_particle_moving(particle, interval, behind, ahead, speed);
+				}					
+			},
+			onComplete: () => {				
+				this.bg_particle_moving(particle, interval, behind, ahead, speed);
+				/*this.sc.time.addEvent({delay: interval, callback: () => {
+					this.bg_particle_moving(particle, interval, behind, ahead, speed);
+				}, callbackScope: this}); */
+			}			
+		});		
+	}	
+	
 	draw_obstacles(obs) {
 		obs.each((_, obs_x) => {
 			for(let i = 0; i < obs_x.length; i++) {
@@ -488,6 +523,8 @@ class AutopLIB {
 		let _xy = [this.sc.registry.get('player').x, this.sc.registry.get('player').y];
 		this.sc.registry.get('player').setAlpha(0);
 		if(this.sc.registry.get('player').pathTween.isPlaying()) this.sc.registry.get('player').stop();				
+		this.sc.registry.get('player_body_group').manager.setDepth(100);
+		this.sc.registry.get('player_body_group').setPosition(..._xy);		
 		//this.sc.registry.get('player_body_group').manager.setDepth(100);
 		//this.sc.registry.get('player_body_group').setAlpha(0.9).explode(200, ..._xy);
 		this.sc.sys.game.registry.set('_do_gameover', true);		

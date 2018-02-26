@@ -69,20 +69,20 @@ let _config = {
 	},
 	bg_particles: [
 	{
-		total: 18,
-		alpha: [0.2, 1],
-		scale: [0.25, 1.2],
-		moving: 0.33,
-		speed: [30, 60],
-		pause: [2500, 8000]
+		total: 9,
+		alpha: [0.2, 0.9],
+		scale: [0.3, 0.7],
+		moving: 6,
+		speed: [5, 90],
+		pause: [1000, 3000]
 	},
 	{
-		total: 32,
-		alpha: [0.5, 1],
-		scale: [0.5, 1.25],
-		moving: 0.4,
-		speed: [20, 100],
-		pause: [3000, 10000]
+		total: 13,
+		alpha: [0.2, 0.5],
+		scale: [0.4, 0.8],
+		moving: 4,
+		speed: [10, 80],
+		pause: [2000, 4000]
 	}
 	]
 }

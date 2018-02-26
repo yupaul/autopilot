@@ -69,17 +69,43 @@ class AutopCreator {
 	}
 
 	bg_particles() {
-		let offset_ahead_min = Math.round(this.cfg._rwhcfg.cfg_w * (1 - this.cfg.cameraOffset) + 50);
-		let offset_ahead_max = offset_ahead_min + this.cfg._rwhcfg.cfg_w;
-		let offset_behind = Math.round(this.cfg._rwhcfg.cfg_w * this.cfg.cameraOffset * 2);
-		
-		let bg_imgs = [];
+		let offset_ahead = [Math.round(this.cfg._rwhcfg.cfg_w * (1 - this.cfg.cameraOffset) + 50)];
+		offset_ahead.push(offset_ahead[0] + this.cfg._rwhcfg.cfg_w);
+		let offset_behind = Math.round(this.cfg._rwhcfg.cfg_w * this.cfg.cameraOffset + 50);
+		let rect = new Phaser.Geom.Rectangle(0, 50, this.cfg._rwhcfg.cfg_w * 2, this.cfg._rwhcfg.cfg_h - 100);
+
 		for(let i = 0; i < this.cfg.bg_particles.length; i++) {
-			let cfg = this.cfg.bg_particles[i];
-			bg_imgs.push([]);
-			for(let i2 = 0; i2 < cfg.total; i2++) {
-				//bg_imgs.push(this.sc.add.image(0, 0, 'bg_particle'+i).setOrigin(0));//tmp
-			}
+			let cfg = this.cfg.bg_particles[i];			
+			let grps = {};
+			grps.s = this.sc.make.group({
+				classType: Phaser.GameObjects.Image, 
+				key: ('bg_particle'+i), quantity: 1, repeat: (cfg.total - cfg.moving)
+			});
+			grps.m = this.sc.make.group({
+				classType: Phaser.GameObjects.Image, 
+				key: ('bg_particle'+i), quantity: 1, repeat: cfg.moving
+			});
+			['s', 'm'].forEach((_k) => {
+				let grp = grps[_k];
+				grp.setDepth(-200);	
+				Phaser.Actions.RandomRectangle(grp.getChildren(), rect);
+				grp.getChildren().forEach((ch) => {
+					ch.setAlpha(Math.random() * (cfg.alpha[1] - cfg.alpha[0]) + cfg.alpha[0]);
+					ch.setScale(Math.random() * (cfg.scale[1] - cfg.scale[0]) + cfg.scale[0]);
+					if(_k === 's') {
+						this.sc.lib.bg_particle_static(ch, AutopRand.randint(...cfg.pause), offset_behind, offset_ahead);
+					} else {
+						let _s = Math.random();
+						if(_s > 0.6) {
+							_s = _s + (1 - _s) / 2;
+						} else if(_s < 0.4) {
+							_s = _s / 2;
+						}
+						let speed = (cfg.speed[1] - cfg.speed[0]) * _s + cfg.speed[0];
+						this.sc.lib.bg_particle_moving(ch, AutopRand.randint(...cfg.pause), offset_behind, offset_ahead, speed);					
+					}
+				});
+			});
 		}
 	}
 	
