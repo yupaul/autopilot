@@ -35,7 +35,7 @@ create () {
 //	this.lib.config_preprocess(rwh, _w, _h);//tmp to delete
 
 	//this.cameras.main.setSize(this.cameras.main.width, this.cfg.heightField);	
-	if(this.cameras.cameras.length < 2) this.cameras.add(0, this.cfg.heightField, this.cameras.main.width, this.cfg.heightControls).setBounds(0, this.cfg.heightField, this.cameras.main.width, this.cfg.heightControls);
+//	if(this.cameras.cameras.length < 2) this.cameras.add(0, this.cfg.heightField, this.cameras.main.width, this.cfg.heightControls).setBounds(0, this.cfg.heightField, this.cameras.main.width, this.cfg.heightControls);
 	for (let _i in this.cameras.cameras) {
 		this.cameras.cameras[_i].setScroll(0, 0);
 		for (let _k in this.cameras.cameras[_i]) {

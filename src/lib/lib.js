@@ -240,7 +240,7 @@ class AutopLIB {
 			this.sc.registry.remove('far_mask');
 		}
 		this.sc.registry.set('far_mask', this.sc.add.image(0, 0, 'far_mask').setOrigin(0).setPosition(x - this.cfg.farMaskOffset, 0).setDepth(500));	
-		this.sc.cameras.cameras[1].ignore(this.sc.registry.get('far_mask'));
+//		this.sc.cameras.cameras[1].ignore(this.sc.registry.get('far_mask'));
 	}
 	
 	move_far_mask() {
@@ -449,7 +449,8 @@ class AutopLIB {
 		if(btn.path !== undefined && btn.path instanceof Phaser.GameObjects.Image && btn.path.active) btn.path.destroy();		
 		minipath.lineStyle(...this.cfg.controls.button_path_style);	
 		btn.path = this.gen_path.minipath(minipath, points, btn, texture_name);
-		this.sc.cameras.main.ignore(btn.path);
+		btn.path.setScrollFactor(0);
+		//this.sc.cameras.main.ignore(btn.path);
 		btn.path_index = path_index;
 		btn.is_correct = is_correct;
 		if(this.cfg.dbg) btn.button.setAlpha(is_correct ? 1 : 0.25);//tmp
@@ -461,7 +462,11 @@ class AutopLIB {
 	
 	bg_particle_static(particle, interval, behind, ahead) {
 		let px = this.sc.registry.has('player') ? this.sc.registry.get('player').x : 0;
-		if(particle.x < (px - behind) || particle.x > (px + ahead[1])) particle.x = px + AutopRand.randint(...ahead);
+		if(particle.x < (px - behind))  {
+			particle.x = px + AutopRand.randint(...ahead);
+		} else if(particle.x > (px + ahead[1])) {
+			particle.x = px + AutopRand.randint(0, this.cfg._rwhcfg.cfg_w * 2);
+		}
 		this.sc.time.addEvent({delay: interval, callback: () => {
 			this.bg_particle_static(particle, interval, behind, ahead);
 		}, callbackScope: this});
