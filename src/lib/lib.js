@@ -101,20 +101,23 @@ class AutopLIB {
 		
 		let back = this.sc.add.image(0, 0, 'show_path_back'+texture_counter).setOrigin(0).setPosition(start_x, 0).setDepth(-51).setBlendMode('SCREEN');
 		let fore = this.sc.add.image(0, 0, 'show_path_fore'+texture_counter).setOrigin(0).setPosition(start_x, 0).setDepth(-51).setBlendMode('SCREEN');
-		back.mask = new Phaser.Display.Masks.BitmapMask(this.sc, this.sc.registry.get('mask1'));
-		fore.mask = new Phaser.Display.Masks.BitmapMask(this.sc, this.sc.registry.get('mask1'));
+//		back.mask = new Phaser.Display.Masks.BitmapMask(this.sc, this.sc.registry.get('mask1'));
+//		fore.mask = new Phaser.Display.Masks.BitmapMask(this.sc, this.sc.registry.get('mask1'));
+		back.mask = new Phaser.Display.Masks.GeometryMask(this.sc, this.sc.registry.get('mask1'));
+		fore.mask = new Phaser.Display.Masks.GeometryMask(this.sc, this.sc.registry.get('mask1'));
 		this.sc.registry.get('path_images')['i'+texture_counter] = [back, fore];
 		this.sc.registry.get('path_textures').push(texture_counter);
 		this.add_to_update_queue('cleanup_show_paths', 150);
 		
-		this.sc.registry.get('mask1').x = start_x - this.sc.sys.game.config.width / 2;
+		this.sc.registry.get('mask1').x = start_x - this.cfg._rwhcfg.cfg_w;
 		this.sc.tweens.add({
 			targets: this.sc.registry.get('mask1'),
-			x: path_object.points.getEndPoint().x - this.sc.sys.game.config.width / 2,			
+			x: path_object.points.getEndPoint().x - this.cfg._rwhcfg.cfg_w,			
 			duration: AutopRand.randint(...this.cfg.wallMoveDuration) - 100,
 			onComplete: () => {
 				back.mask = null;
-				fore.mask = new Phaser.Display.Masks.BitmapMask(this.sc, this.sc.registry.get('mask2'));
+//				fore.mask = new Phaser.Display.Masks.BitmapMask(this.sc, this.sc.registry.get('mask2'));
+				fore.mask = new Phaser.Display.Masks.GeometryMask(this.sc, this.sc.registry.get('mask2'));
 			},
 			delay: 150,
 		});					

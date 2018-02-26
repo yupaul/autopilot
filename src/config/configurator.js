@@ -56,7 +56,7 @@ class AutopConfigurator {
 		cstm._rwhcfg.cfg_h = cfg_h;
 		
 		cstm._cameraOffset = Math.round(cfg_w * (rwh ? (1 - cstm.cameraOffset) : cstm.cameraOffset));
-		cstm.speedMult = cstm.useFrames ? 100 : 1000;		
+		cstm.speedMult = cstm.useFrames ? 100 : 1500;		
 		//if(this.config.f.init && typeof this.config.f.init === 'function') this.config.f.init(this.cfg);//tmp
 		if(this.theme.boot && typeof this.theme.boot === 'function') this.theme.boot(cstm);
 		

@@ -42,9 +42,17 @@ class AutopCreator {
 			this.sc.textures.get(texture_name).destroy();
 			delete this.sc.textures.list[texture_name];	
 		}
-		let gr = this.sc.make.graphics();
-		gr.fillStyle(0x000000, 1);
-		gr.fillRect(0, 0, this.sc.sys.game.config.width, this.sc.sys.game.config.height).generateTexture(texture_name, this.sc.sys.game.config.width, this.sc.sys.game.config.height);	
+		let gr1 = this.sc.make.graphics();
+		gr1.fillStyle(0x000000, 1);
+		gr1.fillRect(0, 0, this.cfg._rwhcfg.cfg_w, this.cfg._rwhcfg.cfg_h);
+		this.sc.registry.set('mask1', gr1);
+		let gr2 = this.sc.make.graphics();
+		gr2.fillStyle(0x000000, 1);
+		gr2.fillRect(0, 0, this.cfg._rwhcfg.cfg_w, this.cfg._rwhcfg.cfg_h);
+		this.sc.registry.set('mask2', gr2);
+
+//		gr.fillRect(0, 0, this.sc.sys.game.config.width, this.sc.sys.game.config.height);
+/*		gr.generateTexture(texture_name, this.sc.sys.game.config.width, this.sc.sys.game.config.height);	
 		for(let i = 1; i <= 3; i++) {
 			this.sc.registry.set('mask'+i, this.sc.make.image({
 					x: -(this.sc.sys.game.config.width / 2),
@@ -53,9 +61,11 @@ class AutopCreator {
 					add: false
 				})
 			);
-		}
-		this.sc.registry.get('mask1').setPosition(-(this.sc.sys.game.config.width / 2), this.sc.sys.game.config.height / 2);
-		this.sc.registry.get('mask2').setOrigin(0).setPosition(0, 0);
+		}*/
+//		this.sc.registry.get('mask1').setPosition(-(this.sc.sys.game.config.width / 2), this.sc.sys.game.config.height / 2);
+		this.sc.registry.get('mask1').setPosition(-this.cfg._rwhcfg.cfg_w, 0);
+		this.sc.registry.get('mask2').setPosition(0, 0);
+//		this.sc.registry.get('mask2').setOrigin(0).setPosition(0, 0);
 	}
 
 	background() {

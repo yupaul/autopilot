@@ -1,6 +1,6 @@
 
 export let _config_global = {
-		v: 0.244,
+		v: 0.245,
 		theme_name: 'p3',
 		levels : [
 			{},
@@ -18,7 +18,7 @@ export let _config_global = {
 		playerNumBodyPartsCoeff: 0.04,
 		playerBodyEaSteps: 3,
 		speedCoeff: 0.2, //0.12, 0.15
-		useFrames: true,
+		useFrames: false,
 //		speedUpCoeff: 0.07,
 //		speed: 120,
 		speedUp: 8, //7
