@@ -83,10 +83,14 @@ class AutopLIB {
 			}
 		}*/
 		let last_style = this.cfg.show_path.styles.length - 1;
-		let start_x = _points[0].x;
-		_points = path_object.points.movePointsExternal(_points, -start_x, 0);
+//		let start_x = _points[0].x;
+//		_points = path_object.points.movePointsExternal(_points, -start_x, 0);
 		let _bounds = Phaser.Geom.Rectangle.FromPoints(_points);		
-		let texture_wh = [Math.ceil(_bounds.width), this.cfg.heightField + this.cfg.show_path.styles[last_style][0]];
+		let start_x = _bounds.x;
+		let start_y = _bounds.y - 10;
+		_points = path_object.points.movePointsExternal(_points, -start_x, -start_y);
+//		let texture_wh = [Math.ceil(_bounds.width), this.cfg.heightField + this.cfg.show_path.styles[last_style][0]];
+		let texture_wh = [Math.ceil(_bounds.width), Math.ceil(_bounds.height) + this.cfg.show_path.styles[last_style][0]];
 		
 		let gr = this.sc.make.graphics();
 		let gr2 = this.sc.make.graphics();
@@ -99,15 +103,17 @@ class AutopLIB {
 		gr2.lineStyle(...this.cfg.show_path.styles[0]);
 		gr2.strokePoints(_points).generateTexture('show_path_fore'+texture_counter, ...texture_wh);	
 		
-		let back = this.sc.add.image(0, 0, 'show_path_back'+texture_counter).setOrigin(0).setPosition(start_x, 0).setDepth(-51).setBlendMode('SCREEN');
-		let fore = this.sc.add.image(0, 0, 'show_path_fore'+texture_counter).setOrigin(0).setPosition(start_x, 0).setDepth(-51).setBlendMode('SCREEN');
+//		let back = this.sc.add.image(0, 0, 'show_path_back'+texture_counter).setOrigin(0).setPosition(start_x, 0).setDepth(-51).setBlendMode('SCREEN');
+//		let fore = this.sc.add.image(0, 0, 'show_path_fore'+texture_counter).setOrigin(0).setPosition(start_x, 0).setDepth(-51).setBlendMode('SCREEN');
+		let back = this.sc.add.image(0, 0, 'show_path_back'+texture_counter).setOrigin(0).setPosition(start_x, start_y).setDepth(-51).setBlendMode('SCREEN');
+		let fore = this.sc.add.image(0, 0, 'show_path_fore'+texture_counter).setOrigin(0).setPosition(start_x, start_y).setDepth(-51).setBlendMode('SCREEN');
+
 //		back.mask = new Phaser.Display.Masks.BitmapMask(this.sc, this.sc.registry.get('mask1'));
 //		fore.mask = new Phaser.Display.Masks.BitmapMask(this.sc, this.sc.registry.get('mask1'));
 		back.mask = new Phaser.Display.Masks.GeometryMask(this.sc, this.sc.registry.get('mask1'));
 		fore.mask = new Phaser.Display.Masks.GeometryMask(this.sc, this.sc.registry.get('mask1'));
 		this.sc.registry.get('path_images')['i'+texture_counter] = [back, fore];
-		this.sc.registry.get('path_textures').push(texture_counter);
-		this.add_to_update_queue('cleanup_show_paths', 150);
+		this.sc.registry.get('path_textures').push(texture_counter);		
 		
 		this.sc.registry.get('mask1').x = start_x - this.cfg._rwhcfg.cfg_w;
 		this.sc.tweens.add({
@@ -121,8 +127,8 @@ class AutopLIB {
 			},
 			delay: 150,
 		});					
+		this.add_to_update_queue('cleanup_show_paths', 150);
 		
-		return;
 		//tmp to delete
 		/*let points1 = path_object.points.movePoints(0, this.cfg.playerWidthHeight[1]);
 		let points2 = path_object.points.movePoints(0, -this.cfg.playerWidthHeight[1]);
@@ -339,28 +345,25 @@ class AutopLIB {
 		}
 	}
 	
-	controls_on_click(event) {
-		let button_pause = this.sc.registry.get('button_pause');
-		if(event.x > button_pause.bounds.x1 && event.y > button_pause.bounds.y1 && event.x < button_pause.bounds.x2 && event.y < button_pause.bounds.y2) return this.pause();
+	controls_on_click(event, button) {
+		if(button.name === 'button_pause') return this.pause();
 		if(!this.cfg._buttons_enabled) return;
+		let _ar = button.name.match(/^button_path_(\d+)$/);
+		if(!_ar) return;
+		let i = parseInt(_ar[1]);
 		let buttons = this.sc.registry.get('buttons');		
-		for(let i = 0; i < buttons.length; i++) { // tmp
-			if(!buttons[i].button.visible) continue;
-			if(event.x > buttons[i].bounds.x1 && event.y > buttons[i].bounds.y1 && event.x < buttons[i].bounds.x2 && event.y < buttons[i].bounds.y2) {
-				let player = this.sc.registry.get('player');
-				if(!player.isFollowing()) player.resume();
-				if(this.cfg._just_started) {
-					this.click_just_started();
-				} else {
-					this.click_path_button(buttons[i]);
-				}				
-				for(let _i2 = 0; _i2 < buttons.length; ++_i2) {
-					if(buttons[_i2].button.visible && buttons[_i2].path !== undefined) buttons[_i2].path.setAlpha(this.cfg.controls.button_disabled_alpha);
-				}				
-				this.cfg._buttons_enabled = false;				
-				break;
-			}
-		}		
+		if(i >= buttons.length || !buttons[i].button.visible) return;
+		let player = this.sc.registry.get('player');
+		if(!player.isFollowing()) player.resume();
+		if(this.cfg._just_started) {
+			this.click_just_started();
+		} else {
+			this.click_path_button(buttons[i]);
+		}				
+		for(let _i2 = 0; _i2 < buttons.length; ++_i2) {
+			if(buttons[_i2].button.visible && buttons[_i2].path !== undefined) buttons[_i2].path.setAlpha(this.cfg.controls.button_disabled_alpha);
+		}				
+		this.cfg._buttons_enabled = false;				
 	}
 	
 	add_to_update_queue(method, num_delay_frames, args) {

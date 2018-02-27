@@ -1,0 +1,14 @@
+{"frames": [
+    {
+        "filename": "button_on",
+        "frame": {"x":0,"y":0,"w":173,"h":173}
+   },
+    {
+        "filename": "button_off",
+        "frame": {"x":189,"y":0,"w":173,"h":173}
+   },
+    {
+        "filename": "button_sh",
+        "frame": {"x":378,"y":0,"w":219,"h":227}
+   }
+]}

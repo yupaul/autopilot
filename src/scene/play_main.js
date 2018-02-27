@@ -83,9 +83,10 @@ create () {
 		}, 'player'));
 	this.registry.get('player').setDepth(-100);
 	
-	this.input.on('pointerdown', (event) => {
-		this.lib.controls_on_click(event);
+	this.input.on('gameobjectdown', (event, button) => {
+		this.lib.controls_on_click(event, button);
 	});
+
 	this.cfg._just_started = true;
 	this.cfg._buttons_enabled = true;
 	this.cfg._correct_selected = true;

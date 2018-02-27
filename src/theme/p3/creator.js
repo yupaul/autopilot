@@ -107,9 +107,10 @@ class AutopCreator {
 						this.sc.lib.bg_particle_static(ch, AutopRand.randint(...cfg.pause), offset_behind, offset_ahead);
 					} else {
 						let _s = Math.random();
-						if(_s > 0.6) {
-							_s = _s + (1 - _s) / 2;
-						} else if(_s < 0.4) {
+						//if(_s > 0.7) {
+						//	_s = _s + (1 - _s) / 2;
+						//} else 
+						if(_s < 0.4) {
 							_s = _s / 2;
 						}
 						let speed = (cfg.speed[1] - cfg.speed[0]) * _s + cfg.speed[0];
@@ -128,7 +129,7 @@ class AutopCreator {
 	}
 	
 	controls() {
-		this.sc.registry.set('button_pause', {button: this.sc.add.image(Math.round(this.sc.sys.game.config.width * this.cfg.controls.pause_button_x_position), Math.round(this.sc.sys.game.config.height - this.cfg.heightControls * 0.5), 'pause').setInteractive()});		
+		this.sc.registry.set('button_pause', {button: this.sc.add.image(Math.round(this.sc.sys.game.config.width * this.cfg.controls.pause_button_x_position), Math.round(this.sc.sys.game.config.height - this.cfg.heightControls * 0.5), 'pause').setInteractive().setName('button_pause')});		
 		this.sc.lib._set_button_bounds('button_pause');
 		this.sc.registry.get('button_pause').button.setScrollFactor(0);
 //		this.sc.cameras.main.ignore(this.sc.registry.get('button_pause').button);
@@ -150,7 +151,7 @@ class AutopCreator {
 		grs_rect.lineStyle(...this.cfg.controls.button_bounds_style);
 		grs_rect.strokeRect(0, 0, button_width, button_height).generateTexture('button_bounds', button_width, button_height); 
 		for(let i = 0; i < this.cfg.maxNumPaths; i++) {
-			this.sc.registry.get('buttons').push({button: this.sc.add.image(0, 0, 'button_bounds').setInteractive().setVisible(false)});
+			this.sc.registry.get('buttons').push({button: this.sc.add.image(0, 0, 'button_bounds').setInteractive().setVisible(false).setName('button_path_'+i)});
 		}
 		this.sc.lib.activate_path_buttons(2);//tmp
 		this.sc.registry.get('buttons')[1].button.setVisible(false);//tmp
@@ -166,7 +167,7 @@ class AutopCreator {
 	}
 	
 	player_body() {	
-		var p = this.sc.add.particles('player_body_particle').createEmitter(this.cfg.player_body_emitter.emitter);		
+		var p = this.sc.add.particles('player_body_particle').createEmitter(this.cfg.player_body_emitter.emitter).setPosition(-200, 0);		
 		/* //tmp
 		//this.cfg.player_body_emitter.zone.source = new Phaser.Geom.Circle(0, 0, Math.round(this.cfg.playerWidthHeight[0] * 0.5));
 		//this.cfg.player_body_emitter.zone.source = new Phaser.Geom.Triangle(-100, -50, 0, 0, -100, 50);

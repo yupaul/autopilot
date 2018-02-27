@@ -41,6 +41,7 @@ let theme = {
 		scene.load.image(scene.cfg.wallTextureName, './assets/'+this.theme_name+'/images/krestik23.png');
 		scene.load.image('far_mask', './assets/'+this.theme_name+'/images/msk2.png');		
 		scene.load.atlas('obstacles_all', './assets/'+this.theme_name+'/images/obstacles_out1_x15.png', './assets/'+this.theme_name+'/images/obstacles_out1_x15.json');
+		scene.load.atlas('path_buttons', './assets/'+this.theme_name+'/images/buttons1.png', './assets/'+this.theme_name+'/images/buttons1.json');
 		scene.cfg.gen_obs.texture_root = 'obstacles_all';
 
 //    var atlasTexture = this.textures.get('megaset'); //tmp to delete
@@ -68,18 +69,18 @@ let theme = {
 	
 	player_update: function(scene) {
 		if(!scene.registry.get('player').pathTween || !scene.registry.get('player').pathTween.isPlaying()) return;
-		if(!scene.registry.get('player_body_group').visible) {
-			scene.registry.get('player').setBlendMode('SCREEN');
-			scene.registry.get('player_body_group').visible = 1;
-			scene.registry.get('player_body_group').manager.setDepth(scene.registry.get('player').depth - 1);
-			//scene.registry.get('player_body_group').startFollow(scene.registry.get('player'));
-		}
 		
 		let _cfg = scene.cfg.player_body_emitter.follow;
 		let xy = scene.registry.get('player_xy');
 		if(AutopRand.chanceOneIn(_cfg.chance)) {			
 			let r = [AutopRand.randint(0, _cfg.position_range[0]), AutopRand.randint(0, _cfg.position_range[1])];			
 			scene.registry.get('player_body_group').setPosition(xy[0] + r[0] - _cfg.position_range_half[0], xy[1] + r[1] - _cfg.position_range_half[1]).setGravityY((r[1] - _cfg.position_range_half[1]) * _cfg.gravity_y_multiplier).setGravityX(-AutopRand.randint(..._cfg.gravity_x_range));
+			if(!scene.registry.get('player_body_group').visible) {
+				scene.registry.get('player').setBlendMode('SCREEN');
+				scene.registry.get('player_body_group').visible = 1;
+				scene.registry.get('player_body_group').manager.setDepth(scene.registry.get('player').depth - 1);
+				//scene.registry.get('player_body_group').startFollow(scene.registry.get('player'));
+			}
 		}
 		scene.registry.get('mask2').x = scene.registry.get('player').x;
 	},	
