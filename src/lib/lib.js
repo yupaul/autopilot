@@ -463,8 +463,9 @@ class AutopLIB {
 		let btn = this.sc.registry.get('buttons')[button_index];
 		if(btn.path !== undefined && btn.path instanceof Phaser.GameObjects.Image && btn.path.active) btn.path.destroy();		
 		minipath.lineStyle(...this.cfg.controls.button_path_style);	
-		btn.path = this.gen_path.minipath(minipath, points, btn, texture_name);
-		btn.path.setDepth(-100).setScrollFactor(0);		
+		btn.path = this.gen_path.minipath(minipath, points, btn, texture_name, this.cfg.controls.button_path_styles_add ? this.cfg.controls.button_path_styles_add : false);
+		btn.path.setDepth(-100).setScrollFactor(0);
+		if(this.cfg.controls.button_path_path_tint) btn.path.setTint(this.cfg.controls.button_path_path_tint);
 		//this.sc.cameras.main.ignore(btn.path);
 		btn.path_index = path_index;
 		btn.is_correct = is_correct;

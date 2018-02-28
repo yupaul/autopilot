@@ -87,6 +87,10 @@ let _config = {
 		separator_line_style: [3, 0xffffff, 1], //[3, 0xff0000, 1],
 		button_bounds_style: [4, 0xffffff, 1], //[4, 0x890021, 1],
 		button_path_style: [20, 0xdeedde, 0.75], //[20, 0xff0000, 1]
+		button_path_styles_add: [
+			[55, 0xbccbbc, 0.12]
+		],
+		button_path_path_tint: 0xf5f5f5,
 		button_path_tint: 0xc5c5c5,
 		button_height: 0.9,
 		button_gap: 50,

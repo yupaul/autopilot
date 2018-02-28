@@ -308,12 +308,18 @@ export class AutopGenPathW extends AutopGenPath {
 		return intersected_wo;
 	}
 
-	minipath(minipath, points, btn, texture_name) {
+	minipath(minipath, points, btn, texture_name, styles_add) {
 		let minipath_xy, coeff_y;
 		let min_xy = points.findExtrem().min_y;
 		let _points = points.movePoints(-points.getZeroX(), -min_xy);
 		let _bounds = Phaser.Geom.Rectangle.FromPoints(_points);
 		minipath.strokePoints(_points);		
+		if(styles_add) {
+			styles_add.forEach((_style) => {
+				minipath.lineStyle(..._style);	
+				minipath.strokePoints(_points);
+			});
+		}
 		let minipath_wh = [Math.ceil(_bounds.width), Math.ceil(_bounds.height)];
 		minipath.generateTexture(texture_name, ...minipath_wh);
 
