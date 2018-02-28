@@ -232,6 +232,18 @@ class AutopLIB {
 			y1 : __pbounds.y,
 			y2 : __pbounds.y + __pbounds.height,
 		};			
+		if(btn.button.texture.frames[btn.button.texture.firstFrame].customData.bounds_to_rect) {
+			let x_offset = this.cfg.controls.path_in_button_x_offset ? this.cfg.controls.path_in_button_x_offset : 0;
+			let c = btn.button.texture.frames[btn.button.texture.firstFrame].customData.bounds_to_rect;
+			let wi = __pbounds.width * c;
+			let hi = __pbounds.height * c;
+			btn.bounds_internal = {};
+			btn.bounds_internal.x1 = btn.bounds.x1 + (__pbounds.width - wi) / 2+ x_offset;
+			btn.bounds_internal.x2 = btn.bounds_internal.x1 + wi + x_offset;
+			btn.bounds_internal.y1 = btn.bounds.y1 + (__pbounds.height - hi) / 2;
+			btn.bounds_internal.y2 = btn.bounds_internal.y1 + hi;
+			
+		}
 	}
 
 	wall_add(x, create_far_mask) {
@@ -452,7 +464,7 @@ class AutopLIB {
 		if(btn.path !== undefined && btn.path instanceof Phaser.GameObjects.Image && btn.path.active) btn.path.destroy();		
 		minipath.lineStyle(...this.cfg.controls.button_path_style);	
 		btn.path = this.gen_path.minipath(minipath, points, btn, texture_name);
-		btn.path.setScrollFactor(0);
+		btn.path.setDepth(-100).setScrollFactor(0);		
 		//this.sc.cameras.main.ignore(btn.path);
 		btn.path_index = path_index;
 		btn.is_correct = is_correct;

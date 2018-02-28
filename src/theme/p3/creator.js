@@ -147,18 +147,22 @@ class AutopCreator {
 		let button_width = Math.round(this.sc.sys.game.config.width * _tmp[0] * this.cfg.heightControlsRate * this.cfg.controls.button_height);
 		let button_height = Math.round(this.sc.sys.game.config.height * _tmp[1] * this.cfg.heightControlsRate * this.cfg.controls.button_height);	
 		
-		var grs_rect = this.sc.make.graphics();
-		grs_rect.lineStyle(...this.cfg.controls.button_bounds_style);
-		grs_rect.strokeRect(0, 0, button_width, button_height).generateTexture('button_bounds', button_width, button_height); 
+		//var grs_rect = this.sc.make.graphics();
+		//grs_rect.lineStyle(...this.cfg.controls.button_bounds_style);
+		//grs_rect.strokeRect(0, 0, button_width, button_height).generateTexture('button_bounds', button_width, button_height); 
+		//b.button.texture.frames[b.button.texture.firstFrame].customData
 		for(let i = 0; i < this.cfg.maxNumPaths; i++) {
-			this.sc.registry.get('buttons').push({button: this.sc.add.image(0, 0, 'button_bounds').setInteractive().setVisible(false).setName('button_path_'+i)});
+			let _btn = this.sc.add.image(0, 0, 'path_buttons', 'button_on').setInteractive().setVisible(false).setName('button_path_'+i).setScrollFactor(0).setDisplaySize(button_width, button_height);
+			if(this.cfg.controls.button_path_tint) _btn.setTint(this.cfg.controls.button_path_tint);			
+			this.sc.registry.get('buttons').push({button: _btn});
+			//this.sc.registry.get('buttons').push({button: this.sc.add.image(0, 0, 'button_bounds').setInteractive().setVisible(false).setName('button_path_'+i)});			
 		}
 		this.sc.lib.activate_path_buttons(2);//tmp
 		this.sc.registry.get('buttons')[1].button.setVisible(false);//tmp
-		for(let i = 0; i < this.sc.registry.get('buttons').length; i++) {
+		/*for(let i = 0; i < this.sc.registry.get('buttons').length; i++) {
 			this.sc.registry.get('buttons')[i].button.setScrollFactor(0)
 //			this.sc.cameras.main.ignore(this.sc.registry.get('buttons')[i].button);
-		}
+		}*/
 	}
 	
 	player() {

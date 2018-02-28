@@ -81,9 +81,15 @@ let theme = {
 				scene.registry.get('player_body_group').manager.setDepth(scene.registry.get('player').depth - 1);
 				//scene.registry.get('player_body_group').startFollow(scene.registry.get('player'));
 			}
+		}		
+		if(this.mask_moved === 0) {
+			this.mask_moved = scene.cfg.playerMaskMoveSpeed;
+			scene.registry.get('mask2').x = scene.registry.get('player').x;
+		} else {
+			this.mask_moved--;
 		}
-		scene.registry.get('mask2').x = scene.registry.get('player').x;
 	},	
+	mask_moved: 0,
 
 	test: function() {
 		console.log('test');

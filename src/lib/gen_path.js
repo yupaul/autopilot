@@ -317,7 +317,7 @@ export class AutopGenPathW extends AutopGenPath {
 		let minipath_wh = [Math.ceil(_bounds.width), Math.ceil(_bounds.height)];
 		minipath.generateTexture(texture_name, ...minipath_wh);
 
-		let __bounds = btn.bounds;
+		let __bounds = btn.bounds_internal ? btn.bounds_internal : btn.bounds;
 		let coeff_xy = (__bounds.x2 - __bounds.x1 - this.cfg.gen_path.minipath_offset * 2) / minipath_wh[0];	
 		min_xy = Math.max(min_xy, 0);
 		

@@ -1,11 +1,15 @@
 {"frames": [
     {
         "filename": "button_on",
-        "frame": {"x":0,"y":0,"w":173,"h":173}
+        "frame": {"x":0,"y":0,"w":173,"h":173},
+	"bounds_from_rect":1.4065,
+	"bounds_to_rect":0.85
    },
     {
         "filename": "button_off",
-        "frame": {"x":189,"y":0,"w":173,"h":173}
+        "frame": {"x":189,"y":0,"w":173,"h":173},
+	"bounds_from_rect":1.4065,
+	"bounds_to_rect":0.85
    },
     {
         "filename": "button_sh",

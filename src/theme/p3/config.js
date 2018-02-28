@@ -21,7 +21,8 @@ let _config = {
 	useFarMask: true,
 	farMaskMoveDuration: 700,
 	farMaskOffset: 300,
-	//tmp start
+	playerMaskMoveSpeed: 2,
+	speedUp: 12,	
 	gen_obs: {		
 		//to_occupy: 0.85, 
 		gridCellScales: [[1,0.05], [2, 0.3], [3, 0.3], [4, 0.3]],
@@ -30,10 +31,7 @@ let _config = {
 		texture_selector: 'frame',
 		rotate: [2000, 22000],
 		img_scaling_step: 0.1
-	},/*
-	gen_obs: {
-		type: 'img'		
-	},	*/ //tmp end
+	},	
 	player_body_emitter: {
 		follow: {
 			chance: 2,
@@ -84,7 +82,18 @@ let _config = {
 		speed: [10, 95],
 		pause: [2000, 4000]
 	}
-	]
+	],
+	controls: {
+		separator_line_style: [3, 0xffffff, 1], //[3, 0xff0000, 1],
+		button_bounds_style: [4, 0xffffff, 1], //[4, 0x890021, 1],
+		button_path_style: [20, 0xdeedde, 0.75], //[20, 0xff0000, 1]
+		button_path_tint: 0xc5c5c5,
+		button_height: 0.9,
+		button_gap: 50,
+		button_disabled_alpha: 0.4,
+		pause_button_x_position: 0.2,
+		path_in_button_x_offset: -3
+	}
 }
 
 export default _config;
