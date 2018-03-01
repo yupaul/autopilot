@@ -2,6 +2,7 @@
 let _config = {	
 	playerWidthHeight: [34, 34],
 	rtreeCoeff: 0.3,
+	heightControlsRate: 0.25,
 	showPaths: true,
 	show_path: {
 		styles: [
@@ -91,18 +92,20 @@ let _config = {
 		button_bounds_style: [4, 0xffffff, 1], //[4, 0x890021, 1],
 		//button_path_style: [20, 0xdeedde, 0.75], //[20, 0xff0000, 1]
 		//button_path_style: [20, 0x719b71, 1], //[20, 0xff0000, 1]
-		button_path_style: [20, 0xbabdba, 1], //[20, 0xff0000, 1]
+		button_path_style: [20, 0xffffff, 1], //[20, 0xff0000, 1]
 		button_path_styles_add: [
 			//[55, 0x267226, 0.35]
-			[50, 0x444d44, 0.35]
+			[50, 0x666f66, 0.35]
 		],
 		//button_path_path_tint: 0xf5f5f5,
 		//button_path_tint: 0xc5c5c5,
+		button_shadow: true,
 		button_height: 0.9,
+		button_offset_coeff: 0.75,
 		button_gap: 50,
 		button_disabled_alpha: 0.4,
 		pause_button_x_position: 0.2,
-		path_in_button_x_offset: -3
+		path_in_button_x_offset: 0, //-3
 	}
 }
 

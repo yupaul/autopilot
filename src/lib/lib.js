@@ -217,7 +217,7 @@ class AutopLIB {
 		} else {
 			x = Math.round((this.sc.sys.game.config.width - this.cfg.controls.button_gap * (num - 1) - button_width * num) * 0.5);
 		}
-		let y = Math.round(this.sc.sys.game.config.height - this.cfg.heightControls * 0.5);
+		let y = Math.round(this.sc.sys.game.config.height - this.cfg.heightControls * this.cfg.controls.button_offset_coeff);
 		for(let i = 0; i < this.sc.registry.get('buttons').length; i++) {
 			if(i >= num) {
 				if(this.sc.registry.get('buttons')[i].path && this.sc.registry.get('buttons')[i].path.destroy) {
@@ -225,9 +225,14 @@ class AutopLIB {
 					this.sc.registry.get('buttons')[i].path = false;
 				}
 				this.sc.registry.get('buttons')[i].button.setVisible(false);
+				if(this.cfg.controls.button_shadow) this.sc.registry.get('buttons')[i].shadow.setVisible(false);
 			} else {
-				this.sc.registry.get('buttons')[i].button.setPosition(x + (button_width + this.cfg.controls.button_gap) * i, y).setVisible(true);
+				let _x = x + (button_width + this.cfg.controls.button_gap) * i;
+				this.sc.registry.get('buttons')[i].button.setPosition(_x, y).setVisible(true);
 				this._set_button_bounds('buttons', i);
+				
+				let _cdata = this.sc.registry.get('buttons')[i].shadow_data;
+				if(this.cfg.controls.button_shadow) this.sc.registry.get('buttons')[i].shadow.setPosition(_x + _cdata.w_factor * _cdata.w_offset, y + _cdata.h_factor * _cdata.h_offset).setVisible(true);				
 			}
 		}
 

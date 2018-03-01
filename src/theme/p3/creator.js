@@ -152,13 +152,18 @@ class AutopCreator {
 		//grs_rect.strokeRect(0, 0, button_width, button_height).generateTexture('button_bounds', button_width, button_height); 
 		//b.button.texture.frames[b.button.texture.firstFrame].customData
 		for(let i = 0; i < this.cfg.maxNumPaths; i++) {
-			let _btn = this.sc.add.image(0, 0, 'path_buttons', 'button_on').setInteractive().setVisible(false).setName('button_path_'+i).setScrollFactor(0).setDisplaySize(button_width, button_height);
+			let _btn = this.sc.add.image(0, 0, 'path_buttons', 'button_on').setInteractive().setVisible(false).setName('button_path_'+i).setScrollFactor(0).setDisplaySize(button_width, button_height).setDepth(-10);
 			if(this.cfg.controls.button_path_tint) _btn.setTint(this.cfg.controls.button_path_tint);			
 			this.sc.registry.get('buttons').push({button: _btn});
+			let _cdata = this.sc.textures.get('path_buttons').frames['button_sh'].customData;
+			let _sh = this.sc.add.image(0, 0, 'path_buttons', 'button_sh').setVisible(false).setName('button_sh_'+i).setScrollFactor(0).setDisplaySize(button_width * (1 / _cdata.w_factor), button_height * (1 / _cdata.h_factor)).setDepth(-11);
+			this.sc.registry.get('buttons')[this.sc.registry.get('buttons').length - 1].shadow = _sh;
+			this.sc.registry.get('buttons')[this.sc.registry.get('buttons').length - 1].shadow_data = _cdata;			
 			//this.sc.registry.get('buttons').push({button: this.sc.add.image(0, 0, 'button_bounds').setInteractive().setVisible(false).setName('button_path_'+i)});			
 		}
 		this.sc.lib.activate_path_buttons(2);//tmp
 		this.sc.registry.get('buttons')[1].button.setVisible(false);//tmp
+		this.sc.registry.get('buttons')[1].shadow.setVisible(false);
 		/*for(let i = 0; i < this.sc.registry.get('buttons').length; i++) {
 			this.sc.registry.get('buttons')[i].button.setScrollFactor(0)
 //			this.sc.cameras.main.ignore(this.sc.registry.get('buttons')[i].button);

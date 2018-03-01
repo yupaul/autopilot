@@ -13,6 +13,10 @@
    },
     {
         "filename": "button_sh",
-        "frame": {"x":378,"y":0,"w":219,"h":227}
+        "frame": {"x":378,"y":0,"w":219,"h":227},
+	"w_factor":0.69,
+	"h_factor":0.76,
+	"w_offset":-1,
+	"h_offset":24
    }
 ]}
