@@ -71,7 +71,7 @@ class AutopCreator {
 	background() {
 		//this.sc.sys.game.textures.create('bg_dark', this.sc.sys.game.textures.get('bg_dark_src').getSourceImage(), this.sc.sys.game.config.width, this.sc.sys.game.config.height).add('__BASE', 0, 0, 0, this.sc.sys.game.config.width, this.sc.sys.game.config.height);
 		//this.sc.sys.game.textures.get('bg_dark').add('bg_dark_resized', 0, 0, 0, this.sc.sys.game.config.width, this.sc.sys.game.config.height);
-		let bg = this.sc.add.tileSprite(0, 0, this.sc.sys.game.config.width, this.sc.sys.game.config.height, 'bg_dark').setOrigin(0).setDepth(-1080);
+		let bg = this.sc.add.tileSprite(0, 0, Phaser.Math.Pow2.GetNext(this.sc.sys.game.config.width), Phaser.Math.Pow2.GetNext(this.sc.sys.game.config.height), 'bg_dark').setOrigin(0).setDepth(-1080);
 		//let bg = this.sc.add.image(0, 0, 'bg_dark').setOrigin(0).setDisplaySize(this.sc.sys.game.config.width, this.sc.sys.game.config.height);
 //		bg.setScrollFactor(0);
 //		if(this.sc.cameras.cameras.length > 1) this.sc.cameras.cameras[1].ignore(bg);

@@ -229,11 +229,18 @@ class AutopLIB {
 			} else {
 				let _x = x + (button_width + this.cfg.controls.button_gap) * i;
 				this.sc.registry.get('buttons')[i].button.setPosition(_x, y).setVisible(true);
+				if(this.cfg.controls.button_disabled_type === 'tint') {
+					if(this.cfg.controls.button_path_tint) {
+						this.sc.registry.get('buttons')[i].button.setTint(this.cfg.controls.button_path_tint);
+					} else {
+						this.sc.registry.get('buttons')[i].button.clearTint();
+					}
+				}
 				this._set_button_bounds('buttons', i);
 				
 				let _cdata = this.sc.registry.get('buttons')[i].shadow_data;
 				if(this.cfg.controls.button_shadow) this.sc.registry.get('buttons')[i].shadow.setPosition(_x + _cdata.w_factor * _cdata.w_offset, y + _cdata.h_factor * _cdata.h_offset).setVisible(true);				
-			}
+			}			
 		}
 
 	}
@@ -388,7 +395,14 @@ class AutopLIB {
 			this.click_path_button(buttons[i]);
 		}				
 		for(let _i2 = 0; _i2 < buttons.length; ++_i2) {
-			if(buttons[_i2].button.visible && buttons[_i2].path !== undefined) buttons[_i2].path.setAlpha(this.cfg.controls.button_disabled_alpha);
+			if(buttons[_i2].button.visible && buttons[_i2].path !== undefined) {
+				if(this.cfg.controls.button_disabled_type === 'alpha') {
+					buttons[_i2].path.setAlpha(this.cfg.controls.button_disabled_alpha);
+				} else if(this.cfg.controls.button_disabled_type === 'tint') {
+					buttons[_i2].button.setTint(this.cfg.controls.button_disabled_tint);
+					buttons[_i2].path.setTint(this.cfg.controls.button_disabled_tint);
+				}				
+			}
 		}				
 		this.cfg._buttons_enabled = false;				
 	}

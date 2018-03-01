@@ -2,7 +2,7 @@
 let _config = {	
 	playerWidthHeight: [34, 34],
 	rtreeCoeff: 0.3,
-	heightControlsRate: 0.25,
+	heightControlsRate: 0.2,
 	showPaths: true,
 	show_path: {
 		styles: [
@@ -99,11 +99,13 @@ let _config = {
 		],
 		//button_path_path_tint: 0xf5f5f5,
 		//button_path_tint: 0xc5c5c5,
-		button_shadow: true,
+		button_shadow: false,
 		button_height: 0.9,
-		button_offset_coeff: 0.75,
+		button_offset_coeff: 0.5,
 		button_gap: 50,
+		button_disabled_type: 'tint',
 		button_disabled_alpha: 0.4,
+		button_disabled_tint: 0x667666,
 		pause_button_x_position: 0.2,
 		path_in_button_x_offset: 0, //-3
 	}

@@ -1,6 +1,6 @@
 
 export let _config_global = {
-		v: '0.251',
+		v: '0.252',
 		theme_name: 'p3',
 		levels : [
 			{},
@@ -78,6 +78,7 @@ export let _config_global = {
 			button_height: 0.9,
 			button_gap: 50,
 			button_disabled_alpha: 0.25,
+			button_disabled_type: 'alpha',
 			pause_button_x_position: 0.2
 		},
 		menu: {
