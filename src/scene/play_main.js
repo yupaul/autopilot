@@ -30,7 +30,8 @@ create () {
 	this.registry.set('path_objects', []);
 	this.registry.set('walls', []);
 	this.registry.set('obstacles', (new Phaser.Structs.Map()));
-	this.registry.set('show_path_last_point', false)
+	this.registry.set('show_path_last_point', false);
+	this.registry.set('minipath_indexes', []);
 
 //	this.lib.config_preprocess(rwh, _w, _h);//tmp to delete
 

@@ -160,6 +160,16 @@ class AutopLIB {
 		if(this.sc.textures.exists('show_path_fore'+ts[0])) this.sc.textures.get('show_path_fore'+ts[0]).destroy();
 		if(this.sc.textures.exists('show_path_back'+ts[0])) this.sc.textures.get('show_path_back'+ts[0]).destroy();
 		ts.shift();
+		this.add_to_update_queue('cleanup_minipaths', 100);
+	}
+	
+	cleanup_minipaths() {
+		let ts = this.sc.registry.get('minipath_indexes');
+		if(ts.length < 20) return;
+		for(let i = 0; i < 4; i++) {
+			if(this.sc.textures.exists(ts[i])) this.sc.textures.get(ts[i]).destroy();
+		}
+		ts.slice(4);			
 	}
 	
 	multipath_follower(config, texture) {
@@ -408,7 +418,7 @@ class AutopLIB {
 		for(let i = 0; i < _pos.length; i++) {
 			let prev_tail = _pos[i].tail;
 			let pobj_correct = [this.gen_path.generate_path(prev_tail)];	
-			if(AutopRand.chanceOneIn(this.cfg.twoCorrectChance)) pobj_correct.push(this.gen_path.generate_path(prev_tail, false, pobj_correct[0].path_x_length));
+			if(this.cfg.twoCorrectChance && AutopRand.chanceOneIn(this.cfg.twoCorrectChance)) pobj_correct.push(this.gen_path.generate_path(prev_tail, false, pobj_correct[0].path_x_length));
 			this.generate_wall(pobj_correct[0]);
 			this.add_to_update_queue('generate_new_step2', AutopRand.randint(2,6), [pobj_correct, _pos[i]]);
 		}
@@ -431,7 +441,7 @@ class AutopLIB {
 		prev_obj.nxt = [...pobj_correct, pobj_wrong];
 		prev_obj.obs = obs;
 		
-		if(this.cfg.maxNumPaths > (pobj_correct.length + 1) && AutopRand.chanceOneIn(this.cfg.fourPathsChance)) {
+		if(this.cfg.fourPathsChance && this.cfg.maxNumPaths > (pobj_correct.length + 1) && AutopRand.chanceOneIn(this.cfg.fourPathsChance)) {
 			let _to_gen = this.cfg.maxNumPaths - pobj_correct.length - 1;
 			if(_to_gen > 1) _to_gen = AutopRand.randint(1, _to_gen);
 			for(let i = 0; i < _to_gen; i++) {
@@ -456,10 +466,13 @@ class AutopLIB {
 		}
 		var texture_name;
 		var minipath = this.sc.make.graphics();
+		let minipath_index;
 		while(true) {
-			texture_name = '_grs'+((Math.random() * 1000000) | 0);
+			minipath_index = '_grs'+((Math.random() * 1000000) | 0);
+			texture_name = minipath_index;
 			if(!this.sc.sys.textures.exists(texture_name)) break;
 		}
+		this.sc.registry.get('minipath_indexes').push(minipath_index);
 		let btn = this.sc.registry.get('buttons')[button_index];
 		if(btn.path !== undefined && btn.path instanceof Phaser.GameObjects.Image && btn.path.active) btn.path.destroy();		
 		minipath.lineStyle(...this.cfg.controls.button_path_style);	

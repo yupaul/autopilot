@@ -12,6 +12,9 @@ let _config = {
 		],
 		subset: 9
 	},
+	twoCorrectChance: 0, //tmp 3
+	fourPathsChance: 0, //tmp 3
+	
 	gridCellLineStyle: [1, 0xffffff, 1],
 	gridFullCells: true,
 	wallOpenAlpha: 0.12,
@@ -86,12 +89,15 @@ let _config = {
 	controls: {
 		separator_line_style: [3, 0xffffff, 1], //[3, 0xff0000, 1],
 		button_bounds_style: [4, 0xffffff, 1], //[4, 0x890021, 1],
-		button_path_style: [20, 0xdeedde, 0.75], //[20, 0xff0000, 1]
+		//button_path_style: [20, 0xdeedde, 0.75], //[20, 0xff0000, 1]
+		//button_path_style: [20, 0x719b71, 1], //[20, 0xff0000, 1]
+		button_path_style: [20, 0xbabdba, 1], //[20, 0xff0000, 1]
 		button_path_styles_add: [
-			[55, 0xbccbbc, 0.12]
+			//[55, 0x267226, 0.35]
+			[50, 0x444d44, 0.35]
 		],
-		button_path_path_tint: 0xf5f5f5,
-		button_path_tint: 0xc5c5c5,
+		//button_path_path_tint: 0xf5f5f5,
+		//button_path_tint: 0xc5c5c5,
 		button_height: 0.9,
 		button_gap: 50,
 		button_disabled_alpha: 0.4,
