@@ -10,6 +10,7 @@ class PlayMain extends PlayBase {
   }
   
 	preload () {
+		console.log('PlayMain preload()');//tmp
 		this.c = this.registry.get('c');
 		this.cfg = this.c.get_play();
 	  	this.lib = new AutopLIB(this);
@@ -60,14 +61,18 @@ create () {
 	this.lib.draw_obstacles(this.lib.generate_obstacles(pobj));	
 	
 	for(let i = 0; i < 3; i++) {				
+		let id = i + 1;
+		let cfg = this.c.get_section_by_id(id);
+		this.lib.gen_path.setConfig(cfg);
 		let pobj_correct = this.lib.gen_path.generate_path(prev_tail);
 		this.lib.generate_wall(pobj_correct);		
 		this.lib.wall_add(pobj_correct, !i);
-		let obs = this.lib.generate_obstacles(pobj_correct);
+		let obs = this.lib.generate_obstacles(pobj_correct, cfg);
 		this.lib.draw_obstacles(obs);
 		let pobj_wrong = this.lib.gen_path.generate_path(prev_tail, obs, false, false, {path: pobj_correct, value: 0});//tmp
 		this.registry.get('obstacles').merge(obs, true);
 		prev_tail = pobj_correct.tail;
+		pobj_correct.config_id = pobj_wrong.config_id = id;
 		this.registry.get('path_objects').push([pobj_correct, pobj_wrong]);		
 	}
 	
@@ -88,9 +93,9 @@ create () {
 		this.lib.controls_on_click(event, button);
 	});
 
-	this.cfg._just_started = true;
-	this.cfg._buttons_enabled = true;
-	this.cfg._correct_selected = true;
+	this.registry.get('state')._just_started = true;
+	this.registry.get('state')._buttons_enabled = true;
+	this.registry.get('state')._correct_selected = true;
 }
 
 update() {	
@@ -98,9 +103,9 @@ update() {
 	if(!this.registry.has('player')) return;
 	let player = this.registry.get('player');
 //	console.log(player.pathTween.getValue(), Math.round(player.x * 100) / 100, Math.round(player.y * 100) / 100);//tmp debug to fix start / end 2 frame delay
-	if(this.cfg._pause_scheduled !== undefined && this.cfg._pause_scheduled && player.isFollowing()) {
+	if(this.registry.get('state')._pause_scheduled !== undefined && this.registry.get('state')._pause_scheduled && player.isFollowing()) {
 		player.pause();
-		this.cfg._pause_scheduled = false;
+		this.registry.get('state')._pause_scheduled = false;
 		return;
 	}
 	

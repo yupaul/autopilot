@@ -7,20 +7,27 @@ import {_config_global} from './global';
 import PlayMain from '../scene/play_main';
 import Menu from '../scene/menu';
 
+import {AutopLevels} from '../lib/level';
+
 class AutopConfigurator {
 	
 	constructor(config_global, config_game, scenes) {
+		this.configs = [];
+		this.current_config_id = 0;
 		this._config_game;						
 		this._config_global;
 		this.config_boot;
-		this.config_boot_menu;		
+		this.config_boot_menu;	
+		this.config_afterload;
 		this.config;
 		this.config_menu;		
+		this.levels;
 		this.set_global(config_global);
 		this.set_game(config_game, scenes);				
 		this.theme = require('../theme/'+this._config_global.theme_name);		
 		this.has_theme_update = this.theme.update && typeof this.theme.update === 'function';
 		this.has_theme_player_update = this.theme.player_update && typeof this.theme.player_update === 'function';
+		this.has_theme_new_level = this.theme.new_level && typeof this.theme.new_level === 'function';
 		
 		this.boot();		
 	}	
@@ -28,7 +35,7 @@ class AutopConfigurator {
 	boot() {
 		let cstm = this._config_global;
 		let cstmg = cstm.gen_path;		
-		cstm.configurator = this;
+//		cstm.configurator = this;
 		let rwh = cstm.revertWidthHeight;
 		var _w = rwh ? 'height' : 'width';
 		var _h = rwh ? 'width' : 'height';
@@ -37,10 +44,10 @@ class AutopConfigurator {
 			w : _w,
 			h : _h
 		};
-		cstm._position = {l : 0, p : 0};
+//		this.registry.get('state')._position = {l : 0, p : 0};
 
-		cstm._current_camera_offset = 0;
-		cstm._current_camera_inc_speed = 0;		
+//		this.registry.get('state')._current_camera_offset = 0;
+//		this.registry.get('state')._current_camera_inc_speed = 0;		
 		
 		cstm.heightControls = Math.round(this._config_game.height * cstm.heightControlsRate);
 		cstm.heightField = this._config_game.height - cstm.heightControls;		
@@ -55,7 +62,7 @@ class AutopConfigurator {
 		cstm._rwhcfg.cfg_w = cfg_w;
 		cstm._rwhcfg.cfg_h = cfg_h;
 		
-		cstm._cameraOffset = Math.round(cfg_w * (rwh ? (1 - cstm.cameraOffset) : cstm.cameraOffset));
+		cstm.cameraOffsetPx = Math.round(cfg_w * (rwh ? (1 - cstm.cameraOffset) : cstm.cameraOffset));
 		cstm.speedMult = cstm.useFrames ? 100 : 1500;		
 		//if(this.config.f.init && typeof this.config.f.init === 'function') this.config.f.init(this.cfg);//tmp
 		if(this.theme.boot && typeof this.theme.boot === 'function') this.theme.boot(cstm);
@@ -77,17 +84,25 @@ class AutopConfigurator {
 
 		cstmg.rwh = rwh;
 		cstmg.screen_length = cfg_w;
-		this.config_boot = Immutable.Map(cstm);
-		this.config_boot_menu = Immutable.Map(cstm.menu);
+		this.config_boot = Immutable.fromJS(cstm);
+		this.config_boot_menu = Immutable.fromJS(cstm.menu);
 	}
 
-	preload(scene) {
-		if(this.theme.preload && typeof this.theme.preload === 'function') this.theme.preload(scene);
+	preload(scene) {		
+		if(this.theme.preload && typeof this.theme.preload === 'function') {
+			this.theme.preload(scene);		
+			this.config_afterload = Immutable.fromJS(scene.cfg);
+		}
+		this.levels = new AutopLevels(this.theme.levels, this);
 	}
 	
 	create(scene) {
-		if(this.theme.create && typeof this.theme.create === 'function') this.theme.create(scene);
-		
+		if(this.theme.create && typeof this.theme.create === 'function') this.theme.create(scene);	
+		this.levels.next_section(true);
+		for(let i = 0; i < 5; i++) {
+			this.add_next_section();
+		}
+		if(this.has_theme_new_level) this.theme.new_level(scene, 0, false);		
 	}
 	
 	update(scene) {
@@ -98,15 +113,35 @@ class AutopConfigurator {
 		if(this.has_theme_player_update) this.theme.player_update(scene);
 	}
 	
+	
+	add_next_section() {
+		this.configs.push(this.levels.next_section());
+	}
+	
+	get_section(n, full) {
+		if(full === undefined) full = false;
+		return (this.configs.length > n ? (full ? this.configs[n] : this.configs[n].config) : (full ? false : this.config));
+	}
+	
+	get_section_by_id(id) {
+		for(let i = 0; i < this.configs.length; i++) {
+			if(this.configs[i].id === id) return this.configs[i].config;
+		}
+		return this.config;
+	}	
+	
 	update_section(scene) {
 		//update _position
-		if(this.config.levels[this.config._position.l].num_sections && this.config._position.p === this.config.levels[this.config._position.l].num_sections) {
-			this.config._position.p = 0;
-			this.config._positions.l++;
-		} else {
-			this.config._position.p++;
+		if(this.configs.length > 0) {
+			let _cfg = this.configs.shift();
+			Phaser.Utils.Objects.Extend(true, this.config, _cfg.config);
+			if(this.has_theme_new_level && _cfg.position.position === 0) this.theme.new_level(scene, _cfg.position.level, _cfg.position.is_last_level);
+			this.current_config_id = _cfg.id;
 		}
-		if(this.config.speedUp) this.config.speed += this.config.speedUp;
+		setTimeout(() => {this.add_next_section();}, 1000);
+		
+//		scene.registry.get('state')._position.p = this.levels.position;		
+//		if(this.levels.new_level) scene.registry.get('state')._position.l = this.levels.level;
 		//if(this.config.f.update && typeof this.config.f.update === 'function') this.config.f.update(this.cfg);//tmp
 	}		
 
@@ -124,12 +159,20 @@ class AutopConfigurator {
 	}
 
 	get_play(current) {
-		if(!current) this.config = this.config_boot.toObject()
+		if(!current) this.config = this.config_boot.toJS();
 		return this.config;
 	}
 
+	get_afterload() {
+		return this.config_afterload.toJS();
+	}
+	
+	get_afterboot() {
+		return this.config_boot.toJS();
+	}
+	
 	get_menu(current) {
-		if(!current) this.config_menu = this.config_boot_menu.toObject()
+		if(!current) this.config_menu = this.config_boot_menu.toJS()
 		return this.config_menu;
 	}	
 	

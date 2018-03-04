@@ -118,12 +118,14 @@ class AutopGenObs {
 		this.cfg = cfg;
 	}
 
-	generate(path_objects) {		
+	generate(path_objects, cfg) {		
+		if(cfg !== undefined) this.setConfig(cfg);
 		this.cfggrid2 = this.cfg.grid * 2;
 		this.cfggrid3 = this.cfg.grid * 3;	
 		//return this._gen(this.cfg.gen_obs.type, path_objects, this.cfg.gen_obs);
 //		var type = this.cfg.gen_obs.type;
-		var opts = this.cfg.gen_obs;		
+		var opts = this.cfg.gen_obs;
+//console.log(this.cfg);//tmp to delete
 		
 		//tmp
 		//rects -> rects, x4/9/16, important, small rects to generate wrong paths, real obs hit areas for collision

@@ -10,7 +10,7 @@ class Menu extends Phaser.Scene {
     this.game_started = false;
   }
 
-preload () {
+preload () {	
 	this.c = this.registry.get('c');
 	this.cfg = this.c.get_menu();
 }
@@ -27,7 +27,7 @@ create() {
 	let coords = [Math.round(w * _offset), Math.round(h * _offset), Math.round(w * this.cfg.bg_proportion), Math.round(h * this.cfg.bg_proportion)];
 	gr.fillRect(...coords).strokeRect(...coords);
 	
-	this.add.text(Math.round(w * _offset) + Math.round(w * this.cfg.bg_proportion) - 50, Math.round(h * _offset) + Math.round(h * this.cfg.bg_proportion) - 50, this.c.get_version(), {color: '#979797', fill: '#979797', fontSize: '14px Tahoma'});
+	this.add.text(Math.round(w * _offset) + Math.round(w * this.cfg.bg_proportion) - 50, Math.round(h * _offset) + Math.round(h * this.cfg.bg_proportion) - 50, this.c.get_version(), {color: '#979797', fill: '#979797', fontSize: '14px', fontFamily: ' Tahoma'});
 
 	let _play_button = this.add.graphics();
 	let _play_button_dbg = this.add.graphics();
@@ -63,7 +63,7 @@ create() {
 				this.scene.wake('PlayMain');
 			}		
 			this.scene.stop();
-			if(Phaser.Geom.Triangle.Contains(play_triangle_dbg, event.x, event.y)) this.c.config.dbg = true;	
+			this.registry.get('state').dbg = Phaser.Geom.Triangle.Contains(play_triangle_dbg, event.x, event.y);	
 		}
 	});
 

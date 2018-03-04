@@ -26,10 +26,11 @@ let _config = {
 	farMaskMoveDuration: 700,
 	farMaskOffset: 300,
 	playerMaskMoveSpeed: 2,
-	speedUp: 12,	
+	speedUp: 20,	
 	gen_obs: {		
 		//to_occupy: 0.85, 
-		gridCellScales: [[1,0.05], [2, 0.3], [3, 0.3], [4, 0.3]],
+		//gridCellScales: [[1,0.05], [2, 0.3], [3, 0.3], [4, 0.3]],
+		gridCellScales: [[1,0.25], [2, 0.75], [3, 0], [4, 0]],
 		imp_probability: 1,
 		notimp_probability: 0.1,
 		texture_selector: 'frame',

@@ -1,12 +1,12 @@
 
 export let _config_global = {
-		v: '0.252',
+		v: '0.253',
 		theme_name: 'p3',
-		levels : [
+		/*levels : [
 			{},
 			{},
 			{}
-		],
+		],*/
 		dbg: false, //tmp
 		twoCorrectChance: 3, //tmp
 		fourPathsChance: 3, //tmp
@@ -31,7 +31,7 @@ export let _config_global = {
 		gridCellFillStyle: 0xffffff, // 0x007090
 		gridCellTextureName: 'grid_cell',
 		gridCellScales: [1,2,3,4],
-		sectionCounterStyle: {color: '#cd3221', fill: '#cd3221', fontSize: '40px Tahoma'},
+		sectionCounterStyle: {color: '#cd3221', fill: '#cd3221', fontSize: '40px', fontFamily: 'Tahoma'},
 		sectionCounterName: 'section_counter',
 		
 		showPaths: true,
@@ -82,7 +82,7 @@ export let _config_global = {
 			pause_button_x_position: 0.2
 		},
 		menu: {
-			gameOverStyle: {color: '#ffffff', fill: '#ffffff', fontSize: '60px Tahoma'},
+			gameOverStyle: {color: '#ffffff', fill: '#ffffff', fontSize: '60px', fontFamily: 'Tahoma'},
 			gameOverText: 'Game Over',			
 			border_style: [5, 0xffffff, 1],
 			bg_style: 0x000000,

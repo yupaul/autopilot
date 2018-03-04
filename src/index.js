@@ -9,6 +9,9 @@ class AutopGame extends Phaser.Game {
 	 	super(configurator.get_game());
 		this.registry.set('c', configurator);
 		if(configurator.config_boot.get('dbg')) window.game = this;
+		this.registry.set('state', {
+			dbg: configurator.config_boot.get('dbg')
+		});		
 	}
 }
 

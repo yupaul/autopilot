@@ -1,9 +1,11 @@
 import AutopRand from '../../util/autoprand';
 import AutopCreator from './creator';
 import _config from './config';
+import levels from './levels';
 
 let theme = {
 	theme_name: 'p3', 
+	levels: levels,
 	boot: function(config) {		
 		let cstmg = config.gen_path;		
 		let rwh = config.revertWidthHeight;
@@ -54,9 +56,13 @@ let theme = {
 		*/
 	},
 	
-	create: function(scene) {
+	create: function(scene, method) {
 		let cr = new AutopCreator(scene);
-		cr.create();
+		if(method !== undefined && !!cr[method] === true && typeof cr[method] === 'function') {
+			cr[method]();
+		} else {
+			cr.create();
+		}
 	},
 	
 	update: function(scene) {
@@ -81,24 +87,61 @@ let theme = {
 				scene.registry.get('player_body_group').manager.setDepth(scene.registry.get('player').depth - 1);
 				//scene.registry.get('player_body_group').startFollow(scene.registry.get('player'));
 			}
-		}		
-		if(this.mask_moved === 0) {
-			this.mask_moved = scene.cfg.playerMaskMoveSpeed;
-			scene.registry.get('mask2').x = scene.registry.get('player').x;
-		} else {
-			this.mask_moved--;
+		}	
+		if(scene.registry.get('player').x > scene.registry.get('mask2').x) {
+			if(this.mask_moved === 0) {
+				this.mask_moved = scene.cfg.playerMaskMoveSpeed;
+				scene.registry.get('mask2').x = scene.registry.get('player').x;
+			} else {
+				this.mask_moved--;
+			}
 		}
 	},	
-	mask_moved: 0,
-
-	test: function() {
-		console.log('test');
-	}
-
-
-
-
-
+	
+	new_level: function(scene, level, is_last_level) {
+		//LEVEL ∞			
+		let was_playing;
+		scene.time.addEvent({delay: 100, callback: () => {
+			was_playing = scene.registry.has('player') && scene.registry.get('player').pathTween.isPlaying();
+			if(was_playing) scene.registry.get('player').pause();
+		}});
+		let level_msg = is_last_level ? 'ENDLESS MODE' : ('LEVEL'+(level + 1));
+		let _x0 = scene.cameras.main.scrollX + scene.cfg._rwhcfg.cfg_w * 0.5;
+		let _x = scene.cameras.main.scrollX + scene.cfg._rwhcfg.cfg_w * 0.1;
+		let _y0 = -20;
+		let _y = scene.cfg._rwhcfg.cfg_h * 0.1;
+		let level_text = scene.add.text(_x0, _y0, level_msg, {color: (is_last_level ? '#343' : '#aba'), fill: (is_last_level ? '#010' : '#aba'), fontSize: '48px', fontFamily: 'Georgia'}).setDepth(1000).setScale(0.25).setAlpha(0.1);
+		
+		scene.add.tween({
+			targets: level_text,
+			scaleX: 3,
+			scaleY: 3,
+				x: _x,
+				y: _y,
+				ease: 'Expo.In',
+				alpha: (is_last_level ? 0.9 : 0.6),
+				duration: 700,
+				onComplete: () => {		
+		scene.time.addEvent({delay: 800, callback: () => {
+			scene.add.tween({
+				targets: level_text,
+				scaleX: 0.25,
+				scaleY: 0.25,
+				x: scene.cameras.main.scrollX + scene.cfg._rwhcfg.cfg_w * 0.55,
+				y: scene.cfg._rwhcfg.cfg_h * 0.8,
+				ease: 'Circular.In',
+				alpha: 0.05,
+				duration: 1500,
+				onComplete: () => {
+					level_text.destroy();
+				}
+			});			
+			if(was_playing && !scene.registry.get('player').pathTween.isPlaying()) scene.registry.get('player').resume();
+		}});
+		}});
+	},
+	
+	mask_moved: 0
 
 }
 

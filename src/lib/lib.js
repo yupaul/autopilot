@@ -6,16 +6,16 @@ class AutopLIB {
 	
 	constructor(sc) {
 		this.sc = sc;
-		this.cfg = this.sc.cfg;
+		this.cfg = this.sc.c.config;
 		this.rwh = this.cfg.revertWidthHeight;
-		this.gen_path = this.rwh ? (new AutopGenPathH(sc)) : (new AutopGenPathW(sc));
+		this.gen_path = this.rwh ? (new AutopGenPathH(this.cfg)) : (new AutopGenPathW(this.cfg));
 		this.gen_obs = new AutopGenObs(this.cfg, this.sc);
 	}
 	
 	camera_follow(player) {
 		if(!this.rwh) {
-			if(player.x > this.cfg._cameraOffset) {
-				let _p = Math.round(player.x) - this.cfg._cameraOffset;
+			if(player.x > this.cfg.cameraOffsetPx) {
+				let _p = Math.round(player.x) - this.cfg.cameraOffsetPx;
 				if(_p > this.sc.cameras.main.scrollX) {
 					this.sc.cameras.main.setScroll(_p, 0);
 					if(this.sc.registry.get('bg')) {
@@ -25,8 +25,8 @@ class AutopLIB {
 				}
 			}
 		} else {
-			if(player.y < this.cfg._cameraOffset) {
-				let _p = Math.round(player.y) - this.cfg._cameraOffset;
+			if(player.y < this.cfg.cameraOffsetPx) {
+				let _p = Math.round(player.y) - this.cfg.cameraOffsetPx;
 				if(_p < this.sc.cameras.main.scrollY) this.sc.cameras.main.setScroll(0, _p);
 			}	
 		}
@@ -186,7 +186,7 @@ class AutopLIB {
 	
 		_player.start(config);
 		_player.setRotateToPath(false, config.rotationOffset, config.verticalAdjust);	
-		this.cfg._pause_scheduled = true;	
+		this.sc.registry.get('state')._pause_scheduled = true;	
 		return _player;	
 	}
 
@@ -203,7 +203,7 @@ class AutopLIB {
 		player.setRotateToPath(true, config.rotationOffset, config.verticalAdjust);	
 		//if(this.cfg.speedUp) this.cfg.speed += this.cfg.speedUp;	
 		this.sc.c.update_section(this.sc);
-		if(!this.cfg._buttons_enabled && this.cfg._correct_selected) this.controls_buttons_enable();
+		if(!this.sc.registry.get('state')._buttons_enabled && this.sc.registry.get('state')._correct_selected) this.controls_buttons_enable();
 		this.add_to_update_queue('update_section_counter', 5);
 	}
 	
@@ -331,11 +331,12 @@ class AutopLIB {
 		this.sc.registry.get(this.cfg.sectionCounterName).setText((current + 1) + '');
 	}
 	
-	controls_buttons_enable() {
+	controls_buttons_enable(show_second_button) {
 		let _this = this;
 		let delay_multiplier = 1 - this.cfg.speedUp / this.cfg.speed;
 		this.sc.time.addEvent({delay: AutopRand.randint(...this.cfg.buttonEnableDelay.map((_x) => {return Math.round(_x * delay_multiplier);})), callback: function() {
-			_this.cfg._buttons_enabled = true;
+			if(show_second_button !== undefined && show_second_button === true) this.sc.registry.get('buttons')[1].button.setVisible(true);
+			_this.sc.registry.get('state')._buttons_enabled = true;
 			let _pos = _this.sc.registry.get('path_objects')[0];
 			let btn_order = [...Array(_pos.length).keys()];
 			if(_this.cfg.randomizeButtons) Phaser.Utils.Array.Shuffle(btn_order);
@@ -347,14 +348,14 @@ class AutopLIB {
 	}
 
 	click_just_started() {
-		this.cfg._just_started = false;
-		this.cfg._correct_selected = true;
-		this.sc.registry.get('buttons')[1].button.setVisible(true);
-		this.controls_buttons_enable();
+		this.sc.registry.get('state')._just_started = false;
+		this.sc.registry.get('state')._correct_selected = true;
+//		this.sc.registry.get('buttons')[1].button.setVisible(true);
+		this.controls_buttons_enable(true);
 	}
 
 	click_path_button(button) {
-		this.cfg._correct_selected = button.is_correct;
+		this.sc.registry.get('state')._correct_selected = button.is_correct;
 		let _all_pos = this.sc.registry.get('path_objects');
 		let _pos = _all_pos.shift();						
 					
@@ -369,7 +370,7 @@ class AutopLIB {
 		this.sc.registry.get('paths').push(_pos[_pos_i].points);
 		this.show_path(_pos[_pos_i]);					
 					
-		if(this.cfg._correct_selected) {
+		if(this.sc.registry.get('state')._correct_selected) {
 			if(_pos[_pos_i].nxt) this.sc.registry.get('path_objects').push(_pos[_pos_i].nxt);
 			if(_pos[_pos_i].obs) {
 				this.draw_obstacles(_pos[_pos_i].obs);
@@ -381,7 +382,7 @@ class AutopLIB {
 	
 	controls_on_click(event, button) {
 		if(button.name === 'button_pause') return this.pause();
-		if(!this.cfg._buttons_enabled) return;
+		if(!this.sc.registry.get('state')._buttons_enabled) return;
 		let _ar = button.name.match(/^button_path_(\d+)$/);
 		if(!_ar) return;
 		let i = parseInt(_ar[1]);
@@ -389,7 +390,7 @@ class AutopLIB {
 		if(i >= buttons.length || !buttons[i].button.visible) return;
 		let player = this.sc.registry.get('player');
 		if(!player.isFollowing()) player.resume();
-		if(this.cfg._just_started) {
+		if(this.sc.registry.get('state')._just_started) {
 			this.click_just_started();
 		} else {
 			this.click_path_button(buttons[i]);
@@ -404,7 +405,7 @@ class AutopLIB {
 				}				
 			}
 		}				
-		this.cfg._buttons_enabled = false;				
+		this.sc.registry.get('state')._buttons_enabled = false;				
 	}
 	
 	add_to_update_queue(method, num_delay_frames, args) {
@@ -433,21 +434,24 @@ class AutopLIB {
 	
 	generate_new() {
 		let _all_pos = this.sc.registry.get('path_objects');
+		let last_config_id = _all_pos[_all_pos.length - 1][0].config_id;
+		let cfg = this.sc.c.get_section_by_id(last_config_id + 1);
+		this.gen_path.setConfig(cfg);
 		let _pos = this.find_last_paths(_all_pos[_all_pos.length - 1]);
 		for(let i = 0; i < _pos.length; i++) {
 			let prev_tail = _pos[i].tail;
 			let pobj_correct = [this.gen_path.generate_path(prev_tail)];	
 			if(this.cfg.twoCorrectChance && AutopRand.chanceOneIn(this.cfg.twoCorrectChance)) pobj_correct.push(this.gen_path.generate_path(prev_tail, false, pobj_correct[0].path_x_length));
 			this.generate_wall(pobj_correct[0]);
-			this.add_to_update_queue('generate_new_step2', AutopRand.randint(2,6), [pobj_correct, _pos[i]]);
+			this.add_to_update_queue('generate_new_step2', AutopRand.randint(2,6), [pobj_correct, _pos[i]], cfg);
 		}
 	}
 	
-	generate_new_step2(pobj_correct, prev_obj) {
+	generate_new_step2(pobj_correct, prev_obj, cfg) {
 		//let obs = this.generate_obstacles(pobj_correct);
 		//this.add_to_update_queue('generate_new_step3', AutopRand.randint(2,6), [pobj_correct, prev_obj, obs]);
 		let p = new Promise((res, rej) => {
-			res(this.generate_obstacles(pobj_correct));
+			res(this.generate_obstacles(pobj_correct, cfg));
 		});
 		p.then((obs) => {
 			this.add_to_update_queue('generate_new_step3', AutopRand.randint(2,6), [pobj_correct, prev_obj, obs]);
@@ -495,17 +499,18 @@ class AutopLIB {
 		let btn = this.sc.registry.get('buttons')[button_index];
 		if(btn.path !== undefined && btn.path instanceof Phaser.GameObjects.Image && btn.path.active) btn.path.destroy();		
 		minipath.lineStyle(...this.cfg.controls.button_path_style);	
-		btn.path = this.gen_path.minipath(minipath, points, btn, texture_name, this.cfg.controls.button_path_styles_add ? this.cfg.controls.button_path_styles_add : false);
+		let cfg = this.sc.c.get_section_by_id(this.sc.c.current_config_id + 1);
+		btn.path = this.gen_path.setConfig(cfg).minipath(minipath, points, btn, texture_name, (this.cfg.controls.button_path_styles_add ? this.cfg.controls.button_path_styles_add : false), this.sc);
 		btn.path.setDepth(-100).setScrollFactor(0);
 		if(this.cfg.controls.button_path_path_tint) btn.path.setTint(this.cfg.controls.button_path_path_tint);
 		//this.sc.cameras.main.ignore(btn.path);
 		btn.path_index = path_index;
 		btn.is_correct = is_correct;
-		if(this.cfg.dbg) btn.button.setAlpha(is_correct ? 1 : 0.25);//tmp
+		if(this.sc.registry.get('state').dbg) btn.button.setAlpha(is_correct ? 1 : 0.25);//tmp
 	}
 	
-	generate_obstacles(path_objects) {
-		return this.gen_obs.generate(path_objects);
+	generate_obstacles(path_objects, cfg) {
+		return this.gen_obs.generate(path_objects, cfg);
 	}
 	
 	bg_particle_static(particle, interval, behind, ahead) {
@@ -559,7 +564,7 @@ class AutopLIB {
 	
 	pause() {
 		//console.log('pause');//tmp to delete
-		if(!this.cfg.dbg) {
+		if(!this.sc.registry.get('state').dbg) {
 			this.sc.scene.launch('Menu');
 			this.sc.scene.bringToTop('Menu');
 			this.sc.scene.sleep('PlayMain');

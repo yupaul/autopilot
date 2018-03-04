@@ -3,26 +3,33 @@ import AutopPointsPath from './points_path';
 
 class AutopGenPath {
 
-	constructor(sc) {
-		this.sc = sc;		
-		this.cfg = this.sc.cfg;
-		this.setConfig();		
+	constructor(cfg) {					
+		this.cfg;
+		this.generate_path_config;
+		this.setConfig(cfg);		
+		this.setGpConfig();
 	}
 	
-	setConfig(config) {		
+	setConfig(cfg) {
+		this.cfg = cfg;		
+		return this;
+	}
+	
+	setGpConfig(config) {		
 		if(Phaser.Utils.Objects.IsPlainObject(config)) {
 			this.generate_path_config = Phaser.Utils.Objects.Merge(Phaser.Utils.Objects.Extend(true, {}, config), this.cfg.gen_path);
 		} else {
 			this.generate_path_config = this.cfg.gen_path;
 		}
+		return this;
 	}
 }
 
 
 export class AutopGenPathW extends AutopGenPath {
 
-	constructor(sc) {
-		super(sc);
+	constructor(cfg) {
+		super(cfg);
 	}
 	
 	_gp_prepare_random(start, path, prev_tail, first_x, path_x_length, is_first) {
@@ -177,7 +184,7 @@ export class AutopGenPathW extends AutopGenPath {
 		
 		var path, prev_tail, first_x, _pathobj;		
 		
-		if(config) this.setConfig(config);
+		if(config) this.setGpConfig(config);
 		let cfg = this.generate_path_config;			
 		
 		var _start = start === undefined ? false : start;	
@@ -308,7 +315,7 @@ export class AutopGenPathW extends AutopGenPath {
 		return intersected_wo;
 	}
 
-	minipath(minipath, points, btn, texture_name, styles_add) {
+	minipath(minipath, points, btn, texture_name, styles_add, scene) {
 		let minipath_xy, coeff_y;
 		let min_xy = points.findExtrem().min_y;
 		let _points = points.movePoints(-points.getZeroX(), -min_xy);
@@ -343,7 +350,7 @@ export class AutopGenPathW extends AutopGenPath {
 		//tmp end */
 		let coeff_x = coeff_xy;
 		minipath_xy = min_xy * coeff_y;
-		return this.sc.add.image(0, 0, texture_name).setScale(coeff_x, coeff_y).setOrigin(0).setPosition(__bounds.x1 + this.cfg.gen_path.minipath_offset, __bounds.y1 + Math.max(minipath_xy, this.cfg.gen_path.minipath_offset));
+		return scene.add.image(0, 0, texture_name).setScale(coeff_x, coeff_y).setOrigin(0).setPosition(__bounds.x1 + this.cfg.gen_path.minipath_offset, __bounds.y1 + Math.max(minipath_xy, this.cfg.gen_path.minipath_offset));
 	}
 
 
@@ -352,11 +359,11 @@ export class AutopGenPathW extends AutopGenPath {
 
 export class AutopGenPathH extends AutopGenPath {
 
-	constructor(sc) {
-		super(sc);
+	constructor(cfg) {
+		super(cfg);
 	}
 
-	minipath(minipath, points, btn, texture_name) {
+	minipath(minipath, points, btn, texture_name, styles_add, scene) {
 		let minipath_xy, coeff_x;
 		let min_xy = points.findExtrem().min_x;
 		let _points = points.movePoints(-min_xy, -points.getZeroY());
@@ -378,7 +385,7 @@ export class AutopGenPathH extends AutopGenPath {
 		}
 		let coeff_y = coeff_xy;
 		minipath_xy = min_xy * coeff_x;
-		return this.sc.add.image(0, 0, texture_name).setScale(coeff_x, coeff_y).setOrigin(0).setPosition(__bounds.x1 + Math.max(minipath_xy, this.cfg.gen_path.minipath_offset), __bounds.y1 + this.cfg.gen_path.minipath_offset);
+		return scene.add.image(0, 0, texture_name).setScale(coeff_x, coeff_y).setOrigin(0).setPosition(__bounds.x1 + Math.max(minipath_xy, this.cfg.gen_path.minipath_offset), __bounds.y1 + this.cfg.gen_path.minipath_offset);
 	}
 
 }
