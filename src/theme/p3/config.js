@@ -28,14 +28,18 @@ let _config = {
 	playerMaskMoveSpeed: 2,
 	speedUp: 20,	
 	gen_obs: {		
+		//prev_collide_limit: 4
 		//to_occupy: 0.85, 
 		//gridCellScales: [[1,0.05], [2, 0.3], [3, 0.3], [4, 0.3]],
-		gridCellScales: [[1,0.25], [2, 0.75], [3, 0], [4, 0]],
+		gridCellScales: [[1,0.25], [2, 0], [3, 0.75], [4, 0]],
+		//gridCellScales: [[1,0.25], [2, 0.75]],
 		imp_probability: 1,
 		notimp_probability: 0.1,
 		texture_selector: 'frame',
 		rotate: [2000, 22000],
-		img_scaling_step: 0.1
+		img_scaling_step: 0.1,
+		obs_set_sfx: '',
+		texture_root: 'obstacles_all'
 	},	
 	player_body_emitter: {
 		follow: {

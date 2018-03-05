@@ -12,7 +12,8 @@ class PlayMain extends PlayBase {
 	preload () {
 		console.log('PlayMain preload()');//tmp
 		this.c = this.registry.get('c');
-		this.cfg = this.c.get_play();
+		this.c.get_play();
+//		this.cfg = this.c.get_play();
 	  	this.lib = new AutopLIB(this);
 		this.c.preload(this);
 		
@@ -20,7 +21,7 @@ class PlayMain extends PlayBase {
 
 create () {		
 	console.log('PlayMain create()');//tmp
-	var rwh = this.cfg.revertWidthHeight;
+	var rwh = this.c.config.revertWidthHeight;
 	var _w = rwh ? 'height' : 'width';
 	var _h = rwh ? 'width' : 'height';
 	
@@ -36,8 +37,8 @@ create () {
 
 //	this.lib.config_preprocess(rwh, _w, _h);//tmp to delete
 
-	//this.cameras.main.setSize(this.cameras.main.width, this.cfg.heightField);	
-//	if(this.cameras.cameras.length < 2) this.cameras.add(0, this.cfg.heightField, this.cameras.main.width, this.cfg.heightControls).setBounds(0, this.cfg.heightField, this.cameras.main.width, this.cfg.heightControls);
+	//this.cameras.main.setSize(this.cameras.main.width, this.c.config.heightField);	
+//	if(this.cameras.cameras.length < 2) this.cameras.add(0, this.c.config.heightField, this.cameras.main.width, this.c.config.heightControls).setBounds(0, this.c.config.heightField, this.cameras.main.width, this.c.config.heightControls);
 	for (let _i in this.cameras.cameras) {
 		this.cameras.cameras[_i].setScroll(0, 0);
 		for (let _k in this.cameras.cameras[_i]) {
@@ -84,7 +85,7 @@ create () {
 			rotateToPath: false,
 			rotationOffset: 0,
 			verticalAdjust: true,
-			useFrames: (this.cfg.useFrames ? true : false),
+			useFrames: (this.c.config.useFrames ? true : false),
 			//ease: 'Circ.easeInOut'
 		}, 'player'));
 	this.registry.get('player').setDepth(-100);

@@ -3,9 +3,9 @@ import AutopRand from '../util/autoprand';
 export class AutopLevel {
 
 	constructor(cfg, configurator) {		
-		this.cfg = cfg || {};
 		this.c;
-		this.config;
+		this.config;	
+		this.cfg = cfg || {};
 		this._num_sections;
 		if(this.cfg.num_sections) {
 			if(Array.isArray(this.cfg.num_sections)) {
@@ -39,18 +39,18 @@ export class AutopLevel {
 		}
 	}
 	
-	init(configurator) {		
+	init(configurator, scene) {		
 		this.c = configurator;
 		if(this.cfg.reboot) {
-			this.config = this.get_afterboot();
-		} else if(this.cfg.reload) {
-			this.config = this.get_afterload();
+			this.config = this.c.get_afterboot();
+		} else if(this.cfg.reload) {			
+			this.config = this.c.get_afterload();
 		} else {
 			this._load_prev_config();
 		}
 		
 		if(this.cfg.config) Phaser.Utils.Objects.Extend(true, this.config, this.cfg.config);
-		this._init();
+		this._init(scene);
 	}
 
 	load_section(position) {		
@@ -65,7 +65,7 @@ export class AutopLevel {
 
 export class AutopLevels {
 	
-	constructor(config, configurator) {
+	constructor(config, configurator, scene) {		
 		this._cfg;
 		this.c = configurator;
 		this.level = -1;
@@ -74,6 +74,7 @@ export class AutopLevels {
 		this.id = 1;
 		this.new_level;
 		this.is_last_level;
+		this.sc = scene;
 		this.config(config);		
 		this.current_num_sections = -1;		
 	}
@@ -111,7 +112,7 @@ export class AutopLevels {
 			this.is_last_level = false;
 		} 
 		this.level_obj = this._cfg[level];
-		this.level_obj.init(this.c);
+		this.level_obj.init(this.c, this.sc);
 		if(!this.is_last_level) this.current_num_sections = this.level_obj.num_sections();
 		this.new_level = true;
 		this.level = level;

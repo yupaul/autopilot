@@ -31,35 +31,38 @@ let theme = {
 		cstmg.min_segment_length = config.playerWidthHeight[0] + config.playerWidthHeight[1];
 		cstmg.min_segment_length_sq = cstmg.min_segment_length * cstmg.min_segment_length;
 	},
+
+	reset_grid: function(cfg) {
+		cfg.grid = AutopRand.randint(Math.round((cfg.playerWidthHeight[0] + cfg.playerWidthHeight[1]) * 0.6), Math.round((cfg.playerWidthHeight[0] + cfg.playerWidthHeight[1]) * 0.8));
+	},
 	
 	preload: function(scene) {
-		scene.cfg.grid = AutopRand.randint(Math.round((scene.cfg.playerWidthHeight[0] + scene.cfg.playerWidthHeight[1]) * 0.6), Math.round((scene.cfg.playerWidthHeight[0] + scene.cfg.playerWidthHeight[1]) * 0.8));
+		this.reset_grid(scene.c.config);
 		scene.load.image('pause', './assets/'+this.theme_name+'/images/pause.png');
 		scene.load.image('bg_dark', './assets/'+this.theme_name+'/images/bg_dark2.png');
 		scene.load.image('player', './assets/'+this.theme_name+'/images/player2.png');
 		scene.load.image('player_body_particle', './assets/'+this.theme_name+'/images/pbp1.png');
 		scene.load.image('bg_particle0', './assets/'+this.theme_name+'/images/bgp1.png');
 		scene.load.image('bg_particle1', './assets/'+this.theme_name+'/images/bgp2.png');
-		scene.load.image(scene.cfg.wallTextureName, './assets/'+this.theme_name+'/images/krestik23.png');
+		scene.load.image(scene.c.config.wallTextureName, './assets/'+this.theme_name+'/images/krestik23.png');
 		scene.load.image('far_mask', './assets/'+this.theme_name+'/images/msk2.png');		
-		scene.load.atlas('obstacles_all', './assets/'+this.theme_name+'/images/obstacles_out1_x15.png', './assets/'+this.theme_name+'/images/obstacles_out1_x15.json');
-		scene.load.atlas('path_buttons', './assets/'+this.theme_name+'/images/buttons1.png', './assets/'+this.theme_name+'/images/buttons1.json');
-		scene.cfg.gen_obs.texture_root = 'obstacles_all';
+		scene.load.atlas(scene.c.config.gen_obs.texture_root, './assets/'+this.theme_name+'/images/obstacles_out1_x15.png', './assets/'+this.theme_name+'/images/obstacles_out1_x15.json');
+		scene.load.atlas('path_buttons', './assets/'+this.theme_name+'/images/buttons1.png', './assets/'+this.theme_name+'/images/buttons1.json');	
 
 //    var atlasTexture = this.textures.get('megaset'); //tmp to delete
 //    var frames = atlasTexture.getFrameNames(); //tmp to delete
 
 		/* //tmp to delete
-		for(let i = 1; i <= scene.cfg.numObsImages; i++) { 
+		for(let i = 1; i <= scene.c.config.numObsImages; i++) { 
 			scene.load.image('o'+i, './assets/'+this.theme_name+'/images/o/'+i+'.png');
 		}
 		*/
 	},
 	
-	create: function(scene, method) {
+	create: function(scene, method, config) {
 		let cr = new AutopCreator(scene);
 		if(method !== undefined && !!cr[method] === true && typeof cr[method] === 'function') {
-			cr[method]();
+			(config ? cr[method](config) : cr[method]);
 		} else {
 			cr.create();
 		}
@@ -76,7 +79,7 @@ let theme = {
 	player_update: function(scene) {
 		if(!scene.registry.get('player').pathTween || !scene.registry.get('player').pathTween.isPlaying()) return;
 		
-		let _cfg = scene.cfg.player_body_emitter.follow;
+		let _cfg = scene.c.config.player_body_emitter.follow;
 		let xy = scene.registry.get('player_xy');
 		if(AutopRand.chanceOneIn(_cfg.chance)) {			
 			let r = [AutopRand.randint(0, _cfg.position_range[0]), AutopRand.randint(0, _cfg.position_range[1])];			
@@ -90,7 +93,7 @@ let theme = {
 		}	
 		if(scene.registry.get('player').x > scene.registry.get('mask2').x) {
 			if(this.mask_moved === 0) {
-				this.mask_moved = scene.cfg.playerMaskMoveSpeed;
+				this.mask_moved = scene.c.config.playerMaskMoveSpeed;
 				scene.registry.get('mask2').x = scene.registry.get('player').x;
 			} else {
 				this.mask_moved--;
@@ -106,10 +109,10 @@ let theme = {
 			if(was_playing) scene.registry.get('player').pause();
 		}});
 		let level_msg = is_last_level ? 'ENDLESS MODE' : ('LEVEL'+(level + 1));
-		let _x0 = scene.cameras.main.scrollX + scene.cfg._rwhcfg.cfg_w * 0.5;
-		let _x = scene.cameras.main.scrollX + scene.cfg._rwhcfg.cfg_w * 0.1;
+		let _x0 = scene.cameras.main.scrollX + scene.c.config._rwhcfg.cfg_w * 0.5;
+		let _x = scene.cameras.main.scrollX + scene.c.config._rwhcfg.cfg_w * 0.1;
 		let _y0 = -20;
-		let _y = scene.cfg._rwhcfg.cfg_h * 0.1;
+		let _y = scene.c.config._rwhcfg.cfg_h * 0.1;
 		let level_text = scene.add.text(_x0, _y0, level_msg, {color: (is_last_level ? '#343' : '#aba'), fill: (is_last_level ? '#010' : '#aba'), fontSize: '48px', fontFamily: 'Georgia'}).setDepth(1000).setScale(0.25).setAlpha(0.1);
 		
 		scene.add.tween({
@@ -120,18 +123,18 @@ let theme = {
 				y: _y,
 				ease: 'Expo.In',
 				alpha: (is_last_level ? 0.9 : 0.6),
-				duration: 700,
+				duration: 300,
 				onComplete: () => {		
-		scene.time.addEvent({delay: 800, callback: () => {
+		scene.time.addEvent({delay: 1200, callback: () => {
 			scene.add.tween({
 				targets: level_text,
 				scaleX: 0.25,
 				scaleY: 0.25,
-				x: scene.cameras.main.scrollX + scene.cfg._rwhcfg.cfg_w * 0.55,
-				y: scene.cfg._rwhcfg.cfg_h * 0.8,
+				x: scene.cameras.main.scrollX + scene.c.config._rwhcfg.cfg_w * 0.55,
+				y: scene.c.config._rwhcfg.cfg_h * 0.8,
 				ease: 'Circular.In',
 				alpha: 0.05,
-				duration: 1500,
+				duration: 1000,
 				onComplete: () => {
 					level_text.destroy();
 				}

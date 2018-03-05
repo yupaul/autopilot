@@ -4,7 +4,8 @@ class AutopCreator {
 
 	constructor(scene) {
 		this.sc = scene;
-		this.cfg = this.sc.cfg;
+		this.c = this.sc.c;
+//		this.cfg = this.sc.cfg;
 	}
 
 	create() {
@@ -24,31 +25,31 @@ class AutopCreator {
 	}
 
 	show_path() {
-		if(!this.cfg.showPaths) return;
+		if(!this.c.config.showPaths) return;
 		let gr = this.sc.make.graphics();
-		gr.fillStyle(this.cfg.show_path.styles[0][1], this.cfg.show_path.styles[0][2]);
-		gr.fillCircle(this.cfg.show_path.radius, this.cfg.show_path.radius, this.cfg.show_path.radius).generateTexture(this.cfg.show_path.texture_name, this.cfg.show_path.radius * 2, this.cfg.show_path.radius * 2);		
+		gr.fillStyle(this.c.config.show_path.styles[0][1], this.c.config.show_path.styles[0][2]);
+		gr.fillCircle(this.c.config.show_path.radius, this.c.config.show_path.radius, this.c.config.show_path.radius).generateTexture(this.c.config.show_path.texture_name, this.c.config.show_path.radius * 2, this.c.config.show_path.radius * 2);		
 	}
 	
 	controls() {
-		this.sc.registry.set('button_pause', {button: this.sc.add.image(Math.round(this.sc.sys.game.config.width * this.cfg.controls.pause_button_x_position), Math.round(this.sc.sys.game.config.height - this.cfg.heightControls * 0.5), 'pause').setInteractive()});
+		this.sc.registry.set('button_pause', {button: this.sc.add.image(Math.round(this.sc.sys.game.config.width * this.c.config.controls.pause_button_x_position), Math.round(this.sc.sys.game.config.height - this.c.config.heightControls * 0.5), 'pause').setInteractive()});
 		this.sc.lib._set_button_bounds('button_pause');
 		var gr_separator_line = this.sc.add.graphics();
-		gr_separator_line.lineStyle(...this.cfg.controls.separator_line_style);	
-		let _l = new Phaser.Curves.Line([0, this.cfg.heightField + 1, this.sc.sys.game.config.width + 1, this.cfg.heightField + 1]);
+		gr_separator_line.lineStyle(...this.c.config.controls.separator_line_style);	
+		let _l = new Phaser.Curves.Line([0, this.c.config.heightField + 1, this.sc.sys.game.config.width + 1, this.c.config.heightField + 1]);
 		_l.draw(gr_separator_line, this.sc.sys.game.config.width + 1);		
 	}	
 
 	controls_buttons() {
-		let _tmp = [this.cfg.pathLength,  (1 - this.cfg.heightControlsRate)];
+		let _tmp = [this.c.config.pathLength,  (1 - this.c.config.heightControlsRate)];
 		if(this.rwh) _tmp.reverse();
-		let button_width = Math.round(this.sc.sys.game.config.width * _tmp[0] * this.cfg.heightControlsRate * this.cfg.controls.button_height);
-		let button_height = Math.round(this.sc.sys.game.config.height * _tmp[1] * this.cfg.heightControlsRate * this.cfg.controls.button_height);	
+		let button_width = Math.round(this.sc.sys.game.config.width * _tmp[0] * this.c.config.heightControlsRate * this.c.config.controls.button_height);
+		let button_height = Math.round(this.sc.sys.game.config.height * _tmp[1] * this.c.config.heightControlsRate * this.c.config.controls.button_height);	
 		
 		var grs_rect = this.sc.make.graphics();
-		grs_rect.lineStyle(...this.cfg.controls.button_bounds_style);
+		grs_rect.lineStyle(...this.c.config.controls.button_bounds_style);
 		grs_rect.strokeRect(0, 0, button_width, button_height).generateTexture('button_bounds', button_width, button_height); 
-		for(let i = 0; i < this.cfg.maxNumPaths; i++) {
+		for(let i = 0; i < this.c.config.maxNumPaths; i++) {
 			this.sc.registry.get('buttons').push({button: this.sc.add.image(0, 0, 'button_bounds').setInteractive().setVisible(false)});
 		}
 		this.sc.lib.activate_path_buttons(2);//tmp
@@ -57,17 +58,17 @@ class AutopCreator {
 	
 	player() {
 		var _player_graphics = this.sc.make.graphics();
-		_player_graphics.fillStyle(this.cfg.playerFillStyle).fillTriangle(...this.cfg.playerTrianglePoints).generateTexture('player', ...this.cfg.playerWidthHeight);
+		_player_graphics.fillStyle(this.c.config.playerFillStyle).fillTriangle(...this.c.config.playerTrianglePoints).generateTexture('player', ...this.c.config.playerWidthHeight);
 	}
 	
 	player_body() {
 		var gr = this.sc.make.graphics();
-		let radius = Math.round(this.cfg.playerWidthHeight[0] * 0.5);
-		gr.fillStyle(this.cfg.playerFillStyle).fillCircle(0, 0, radius).generateTexture('player_body', radius, radius);
-		let g = this.sc.add.group({key: 'player_body', frameQuantity: this.cfg.playerNumBodyParts });
+		let radius = Math.round(this.c.config.playerWidthHeight[0] * 0.5);
+		gr.fillStyle(this.c.config.playerFillStyle).fillCircle(0, 0, radius).generateTexture('player_body', radius, radius);
+		let g = this.sc.add.group({key: 'player_body', frameQuantity: this.c.config.playerNumBodyParts });
 		g.visible = 0;
 		for(let i = 0; i < g.getChildren().length; i++) {
-			//g.getChildren()[i].setAlpha(Phaser.Math.Easing.Stepped(i / g.getChildren().length, this.cfg.playerBodyEaSteps)); 
+			//g.getChildren()[i].setAlpha(Phaser.Math.Easing.Stepped(i / g.getChildren().length, this.c.config.playerBodyEaSteps)); 
 			g.getChildren()[i].setAlpha(Phaser.Math.Easing.Sine.Out(i / g.getChildren().length) * 0.75);
 		}
 		this.sc.registry.set('player_body_group', g);
@@ -75,38 +76,38 @@ class AutopCreator {
 
 	obstacles() {		
 		var ots = {};
-		for(let i = 0; i < this.cfg.gridCellScales.length; i++) {
-			let n = this.cfg.gridCellScales[i];			
-			if(this.sc.textures.exists(this.cfg.gridCellTextureName+n)) {
-				this.sc.textures.get(this.cfg.gridCellTextureName+n).destroy();
-				if(this.sc.textures.list.hasOwnProperty(this.cfg.gridCellTextureName+n)) delete this.sc.textures.list[this.cfg.gridCellTextureName+n];
+		for(let i = 0; i < this.c.config.gridCellScales.length; i++) {
+			let n = this.c.config.gridCellScales[i];			
+			if(this.sc.textures.exists(this.c.config.gridCellTextureName+n)) {
+				this.sc.textures.get(this.c.config.gridCellTextureName+n).destroy();
+				if(this.sc.textures.list.hasOwnProperty(this.c.config.gridCellTextureName+n)) delete this.sc.textures.list[this.c.config.gridCellTextureName+n];
 			}			
 			let grs_rect = this.sc.make.graphics();
-			//grs_rect.fillStyle(this.cfg.gridCellFillStyle);//tmp
+			//grs_rect.fillStyle(this.c.config.gridCellFillStyle);//tmp
 			grs_rect.fillStyle(AutopRand.randint(0, 0xffffff));//tmp
-			grs_rect.fillRect(0, 0, this.cfg.grid * n, this.cfg.grid * n);
-			if(this.cfg.gridCellLineStyle) {
-				grs_rect.lineStyle(...this.cfg.gridCellLineStyle);//1, 0xffffff, 1		
-				grs_rect.strokeRect(0, 0, this.cfg.grid * n, this.cfg.grid * n);
+			grs_rect.fillRect(0, 0, this.c.config.grid * n, this.c.config.grid * n);
+			if(this.c.config.gridCellLineStyle) {
+				grs_rect.lineStyle(...this.c.config.gridCellLineStyle);//1, 0xffffff, 1		
+				grs_rect.strokeRect(0, 0, this.c.config.grid * n, this.c.config.grid * n);
 			}
-			grs_rect.generateTexture(this.cfg.gridCellTextureName+n, this.cfg.grid * n, this.cfg.grid * n); 			
-			this.sc.textures.get(this.cfg.gridCellTextureName+n).customData.shape_data = [0, 0, this.cfg.grid * n, this.cfg.grid * n];			
-			this.sc.textures.get(this.cfg.gridCellTextureName+n).customData.type = 'rect';
-			ots['x'+n] = this.cfg.gridCellTextureName+n;
+			grs_rect.generateTexture(this.c.config.gridCellTextureName+n, this.c.config.grid * n, this.c.config.grid * n); 			
+			this.sc.textures.get(this.c.config.gridCellTextureName+n).customData.shape_data = [0, 0, this.c.config.grid * n, this.c.config.grid * n];			
+			this.sc.textures.get(this.c.config.gridCellTextureName+n).customData.type = 'rect';
+			ots['x'+n] = this.c.config.gridCellTextureName+n;
 		}
 		this.sc.registry.set('obstacle_textures', ots);		
 	}
 
 	wall() {
 		var grs_rect = this.sc.make.graphics();		
-		grs_rect.fillStyle(this.cfg.wallStyle);
-		let _wh = [this.cfg.wallWidth, this.cfg.heightField];
+		grs_rect.fillStyle(this.c.config.wallStyle);
+		let _wh = [this.c.config.wallWidth, this.c.config.heightField];
 		if(this.rwh) _wh.reverse();
-		grs_rect.fillRect(0, 0, ..._wh).generateTexture(this.cfg.wallTextureName, ..._wh); 
+		grs_rect.fillRect(0, 0, ..._wh).generateTexture(this.c.config.wallTextureName, ..._wh); 
 	}	
 
 	section_counter() {
-		this.sc.registry.set(this.cfg.sectionCounterName, this.sc.add.text(50, this.cfg.heightField + this.cfg.heightControls * 0.5 - 20, '0', this.cfg.sectionCounterStyle));
+		this.sc.registry.set(this.c.config.sectionCounterName, this.sc.add.text(50, this.c.config.heightField + this.c.config.heightControls * 0.5 - 20, '0', this.c.config.sectionCounterStyle));
 	}
 	
 

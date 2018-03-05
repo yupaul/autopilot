@@ -26,7 +26,7 @@ let theme = {
 	},
 	
 	preload: function(scene) {
-		scene.cfg.grid = AutopRand.randint(Math.round((scene.cfg.playerWidthHeight[0] + scene.cfg.playerWidthHeight[1]) * 0.25), scene.cfg.playerWidthHeight[0] + scene.cfg.playerWidthHeight[1]);
+		scene.c.config.grid = AutopRand.randint(Math.round((scene.c.config.playerWidthHeight[0] + scene.c.config.playerWidthHeight[1]) * 0.25), scene.c.config.playerWidthHeight[0] + scene.c.config.playerWidthHeight[1]);
 		scene.load.image('pause', './assets/'+this.theme_name+'/images/pause.png');
 	},
 	

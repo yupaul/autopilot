@@ -55,11 +55,11 @@ class Obstacle {
 		this.image.setPosition(...this.center);
 		if(this.texture_scale) this.image.setScale(...this.texture_scale);
 		//this.image.setOrigin(0.5);
-		if(scene.cfg.gen_obs.rotate !== undefined) {
+		if(scene.c.config.gen_obs.rotate !== undefined) {
 			this.tween = scene.tweens.add({
 				targets: this.image,
 				angle: (AutopRand.coinflip() ? 360 : -360),
-				duration: AutopRand.randint(...scene.cfg.gen_obs.rotate),
+				duration: AutopRand.randint(...scene.c.config.gen_obs.rotate),
 				repeat: -1
 			});			
 		}
@@ -211,10 +211,10 @@ class AutopGenObs {
 		let stats = {};
 		opts.gridCellScales.forEach((_v) => {
 			//stats['x'+_v[0]] = [Math.ceil((to_occupy * _v[1]) / (_v[0] * _v[0])), 0];
-			stats['x'+_v[0]] = [Math.floor((notimp_size * _v[1]) / (_v[0] * _v[0])), 0];
+			if(_v[1] > 0) stats['x'+_v[0]] = [Math.floor((notimp_size * _v[1]) / (_v[0] * _v[0])), 0];
 		});
 		
-		let multipliers = opts.gridCellScales.map((_x) => _x[0]);		
+		let multipliers = opts.gridCellScales.filter((_x) => {return (_x[1] > 0);}).map((_x) => _x[0]);		
 
 		['imp', 'notimp'].forEach((_imp) => {
 		tmpdata[_imp].iterate((coord) => {
@@ -286,23 +286,24 @@ class AutopGenObs {
 	}
 	
 	_gen_add_obstacle(x, y, multiplier, out) {
-		let texture_key;
+		let texture_key;		
 		let origin;		
-		let cdata_func;
-		let texture_keys = this.sc.registry.get('obstacle_textures')['x'+multiplier];
+		//let cdata_func;
+		let texture_keys = Object.keys(this.sc.registry.get('obstacle_textures'+this.cfg.gen_obs.obs_set_sfx)['x'+multiplier]);
 		if(Array.isArray(texture_keys)) {
 			texture_key = Phaser.Math.RND.pick(texture_keys);
 		} else {
 			texture_key = texture_keys;
 		}
+		let cdata = this.sc.registry.get('obstacle_textures'+this.cfg.gen_obs.obs_set_sfx)['x'+multiplier][texture_key];		
 		if(this.cfg.gen_obs.texture_selector !== 'texture' && this.cfg.gen_obs.texture_root !== undefined) {
 			texture_key = [this.cfg.gen_obs.texture_root, texture_key];
-			cdata_func = 'getFrame';			
+			//cdata_func = 'getFrame';			
 		} else {			
 			texture_key = [texture_key];
-			cdata_func = 'get';			
+			//cdata_func = 'get';			
 		}		
-		let cdata = this.sc.textures[cdata_func](...texture_key).customData;
+		//let cdata = this.sc.textures[cdata_func](...texture_key).customData;
 		
 		let shape_data = cdata.shape_data.concat([]);
 		let scale = cdata.hasOwnProperty('scale') ? cdata.scale : false;

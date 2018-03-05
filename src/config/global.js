@@ -1,6 +1,6 @@
 
 export let _config_global = {
-		v: '0.253',
+		v: '0.254',
 		theme_name: 'p3',
 		/*levels : [
 			{},
@@ -69,7 +69,14 @@ export let _config_global = {
 			minmax_method_min_max: [0.4, 1.7], //minmax
 		},
 		gen_obs: {
-			prev_collide_limit: 4
+			gridCellScales: [[1,0.25], [2, 0.25], [3, 0.25], [4, 0.25]],		
+			imp_probability: 1,
+			notimp_probability: 0.1,
+			texture_selector: 'frame',
+			rotate: [2000, 22000],
+			img_scaling_step: 0.1,
+			obs_set_sfx: '',
+			texture_root: 'obstacles_all'
 		},
 		controls: {
 			separator_line_style: [3, 0xffffff, 1], //[3, 0xff0000, 1],

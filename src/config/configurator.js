@@ -91,15 +91,15 @@ class AutopConfigurator {
 	preload(scene) {		
 		if(this.theme.preload && typeof this.theme.preload === 'function') {
 			this.theme.preload(scene);		
-			this.config_afterload = Immutable.fromJS(scene.cfg);
+			this.config_afterload = Immutable.fromJS(scene.c.config);
 		}
-		this.levels = new AutopLevels(this.theme.levels, this);
+		this.levels = new AutopLevels(this.theme.levels, this, scene);
 	}
 	
 	create(scene) {
 		if(this.theme.create && typeof this.theme.create === 'function') this.theme.create(scene);	
 		this.levels.next_section(true);
-		for(let i = 0; i < 5; i++) {
+		for(let i = 0; i < 8; i++) {
 			this.add_next_section();
 		}
 		if(this.has_theme_new_level) this.theme.new_level(scene, 0, false);		
@@ -115,7 +115,7 @@ class AutopConfigurator {
 	
 	
 	add_next_section() {
-		this.configs.push(this.levels.next_section());
+		this.configs.push(Phaser.Utils.Objects.Extend(true, {}, this.levels.next_section()));
 	}
 	
 	get_section(n, full) {
@@ -129,13 +129,21 @@ class AutopConfigurator {
 		}
 		return this.config;
 	}	
+
+	get_section_by_id_full(id) {
+		for(let i = 0; i < this.configs.length; i++) {
+			if(this.configs[i].id === id) return this.configs[i];
+		}
+		return false;
+	}	
 	
 	update_section(scene) {
 		//update _position
 		if(this.configs.length > 0) {
 			let _cfg = this.configs.shift();
-			Phaser.Utils.Objects.Extend(true, this.config, _cfg.config);
-			if(this.has_theme_new_level && _cfg.position.position === 0) this.theme.new_level(scene, _cfg.position.level, _cfg.position.is_last_level);
+			this.config = _cfg.config;
+//			Phaser.Utils.Objects.Extend(true, this.config, _cfg.config);
+			if(this.has_theme_new_level && _cfg.position.position === 0) this.theme.new_level(scene, _cfg.position.level, _cfg.is_last_level);
 			this.current_config_id = _cfg.id;
 		}
 		setTimeout(() => {this.add_next_section();}, 1000);
