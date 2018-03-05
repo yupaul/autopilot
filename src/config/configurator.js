@@ -12,8 +12,8 @@ import {AutopLevels} from '../lib/level';
 class AutopConfigurator {
 	
 	constructor(config_global, config_game, scenes) {
-		this.configs = [];
 		this.current_config_id = 0;
+		this.configs = [];
 		this._config_game;						
 		this._config_global;
 		this.config_boot;
@@ -93,16 +93,19 @@ class AutopConfigurator {
 			this.theme.preload(scene);		
 			this.config_afterload = Immutable.fromJS(scene.c.config);
 		}
+		this.configs = [];
 		this.levels = new AutopLevels(this.theme.levels, this, scene);
 	}
 	
 	create(scene) {
 		if(this.theme.create && typeof this.theme.create === 'function') this.theme.create(scene);	
-		this.levels.next_section(true);
-		for(let i = 0; i < 8; i++) {
-			this.add_next_section();
+		
+		for(let i = 0; i < 10; i++) {
+			this.add_next_section(!i);
 		}
-		if(this.has_theme_new_level) this.theme.new_level(scene, 0, false);		
+		
+		//if(this.has_theme_new_level) this.theme.new_level(scene, 0, false);		
+		this.update_section(scene, true);
 	}
 	
 	update(scene) {
@@ -114,8 +117,9 @@ class AutopConfigurator {
 	}
 	
 	
-	add_next_section() {
-		this.configs.push(Phaser.Utils.Objects.Extend(true, {}, this.levels.next_section()));
+	add_next_section(just_starting) {
+		if(just_starting === undefined) just_starting = false;
+		this.configs.push(Phaser.Utils.Objects.Extend(true, {}, this.levels.next_section(just_starting)));
 	}
 	
 	get_section(n, full) {
@@ -137,7 +141,7 @@ class AutopConfigurator {
 		return false;
 	}	
 	
-	update_section(scene) {
+	update_section(scene, no_next) {
 		//update _position
 		if(this.configs.length > 0) {
 			let _cfg = this.configs.shift();
@@ -146,7 +150,7 @@ class AutopConfigurator {
 			if(this.has_theme_new_level && _cfg.position.position === 0) this.theme.new_level(scene, _cfg.position.level, _cfg.is_last_level);
 			this.current_config_id = _cfg.id;
 		}
-		setTimeout(() => {this.add_next_section();}, 1000);
+		if(!no_next) setTimeout(() => {this.add_next_section();}, 1000);
 		
 //		scene.registry.get('state')._position.p = this.levels.position;		
 //		if(this.levels.new_level) scene.registry.get('state')._position.l = this.levels.level;

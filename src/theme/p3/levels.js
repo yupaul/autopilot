@@ -45,7 +45,7 @@ class Level1 extends AutopLevel {
 		//this.config.gen_path.scale_y = 4;
 		//this.config.gen_path.scale_y_length = (this.config.gen_path.max_y - this.config.gen_path.min_y) / (this.config.gen_path.scale_y + 1);
 		//this.config.gen_path.scale_y_length_r = Math.round(this.config.gen_path.scale_y_length);			
-		this.config.gen_obs.gridCellScales = [[1, 0], [2, 0.4], [3, 0], [4, 0.2]];
+		this.config.gen_obs.gridCellScales = [[1, 0.1], [2, 0.35], [3, 0], [4, 0.55]];
 		this.config.gridCellScales = this.config.gen_obs.gridCellScales.map((x) => (x[0])).sort((a, b) => (a - b));
 		this.config.rtreeOffset = Math.round((this.config.playerWidthHeight[0] + this.config.playerWidthHeight[1]) * this.config.rtreeCoeff);		
 		this.config.gen_obs.obs_set_sfx = '1';
@@ -54,23 +54,36 @@ class Level1 extends AutopLevel {
 		
 }
 
-class Level2 extends AutopLevel {
+class Level2 extends Level0 {
 	
-	_init() {
-		//this.c.theme.reset_grid(this.config);
+	_init(scene) {		
+		this.c.theme.reset_grid(this.config);
+		this.config.speed = this.config.speed_initial;
+		this.config.gen_path.next_x_method = 'minmax';
+		
+		this.config.gen_obs.gridCellScales = [[1, 0.1], [2, 0.3], [3, 0.3], [4, 0.3]];
+		this.config.gridCellScales = this.config.gen_obs.gridCellScales.map((x) => (x[0])).sort((a, b) => (a - b));	
+		this.config.gen_obs.obs_set_sfx = '2';
+		this.config.twoCorrectChance = 2;
+		this.c.theme.create(scene, 'obstacles', this.config);
 	}
+		
 }
 
 let levels = [
 	(new Level0({
-		num_sections: 3, //[10, 15],
+		num_sections: [5, 10], //[10, 15],
 	})),
 	(new Level1({
-		num_sections: [15, 20],
+		num_sections: [5, 10],
 		reload: true,
 	})),	
 	(new Level2({		
-		//reload: true
+		num_sections: [5, 10],
+		reload: true
+	})),
+	(new AutopLevel({
+		reload: true
 	}))
 ];
 

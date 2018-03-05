@@ -8,14 +8,14 @@ export class AutopLevel {
 		this.cfg = cfg || {};
 		this._num_sections;
 		if(this.cfg.num_sections) {
-			if(Array.isArray(this.cfg.num_sections)) {
+			if(Array.isArray(this.cfg.num_sections)) {				
 				this._num_sections = AutopRand.randint(...this.cfg.num_sections);
 			} else {
-				this._num_sections = this.cfg.num_sections;
+				this._num_sections = this.cfg.num_sections;				
 			}
-		} else {
+		} else {			
 			this._set_num_sections();
-		}
+		}		
 	}		
 	
 	_set_num_sections() {
@@ -71,7 +71,7 @@ export class AutopLevels {
 		this.level = -1;
 		this.level_obj;
 		this.position = -1;
-		this.id = 1;
+		this.id = -1;
 		this.new_level;
 		this.is_last_level;
 		this.sc = scene;
@@ -85,7 +85,7 @@ export class AutopLevels {
 	
 	next_section(just_starting) {
 		let position = this.position + 1;
-		if((this.current_num_sections !== -1 && position === this.current_num_sections) || just_starting !== undefined) {
+		if((this.current_num_sections !== -1 && position === this.current_num_sections) || just_starting) {
 			position = 0;
 			this.load_level(this.level + 1);
 		} else {

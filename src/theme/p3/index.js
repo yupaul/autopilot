@@ -108,16 +108,16 @@ let theme = {
 			was_playing = scene.registry.has('player') && scene.registry.get('player').pathTween.isPlaying();
 			if(was_playing) scene.registry.get('player').pause();
 		}});
-		let level_msg = is_last_level ? 'ENDLESS MODE' : ('LEVEL'+(level + 1));
+		let level_msg = is_last_level ? '∞' : ('LEVEL'+(level + 1));
 		let _x0 = scene.cameras.main.scrollX + scene.c.config._rwhcfg.cfg_w * 0.5;
-		let _x = scene.cameras.main.scrollX + scene.c.config._rwhcfg.cfg_w * 0.1;
+		let _x = scene.cameras.main.scrollX + scene.c.config._rwhcfg.cfg_w * (is_last_level ? 0.3 : 0.1);
 		let _y0 = -20;
 		let _y = scene.c.config._rwhcfg.cfg_h * 0.1;
-		let level_text = scene.add.text(_x0, _y0, level_msg, {color: (is_last_level ? '#343' : '#aba'), fill: (is_last_level ? '#010' : '#aba'), fontSize: '48px', fontFamily: 'Georgia'}).setDepth(1000).setScale(0.25).setAlpha(0.1);
+		let level_text = scene.add.text(_x0, _y0, level_msg, {color: (is_last_level ? '#434' : '#aba'), fill: (is_last_level ? '#010' : '#aba'), fontSize: (is_last_level ? '128px' : '48px'), fontFamily: 'Georgia'}).setDepth(1000).setScale(is_last_level ? 0.5 : 0.25).setAlpha(0.1);
 		
 		scene.add.tween({
 			targets: level_text,
-			scaleX: 3,
+			scaleX: (is_last_level ? 5: 3),
 			scaleY: 3,
 				x: _x,
 				y: _y,

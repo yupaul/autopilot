@@ -35,9 +35,10 @@ class AutopLIB {
 	
 	player_update(player) {
 		let _k = Phaser.Math.Snap[this.rwh ? 'Ceil' : 'Floor'](player[this.rwh ? 'y' : 'x'], this.c.config.grid);
+	
 		let _rects = this.sc.registry.get('obstacles').get(_k);
 		if(_rects && _rects.length > 0) {
-			for(let _i = 0; _i < _rects.length; _i++) {
+			for(let _i = 0; _i < _rects.length; _i++) {				
 				if(_rects[_i].contains(player.x, player.y)) {
 					//player.stop();
 					this.gameover();
