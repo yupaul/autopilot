@@ -16,6 +16,7 @@ export class AutopLevel {
 		} else {			
 			this._set_num_sections();
 		}		
+		this.step = this._num_sections > 0 ? 1 / this._num_sections : false;
 	}		
 	
 	_set_num_sections() {

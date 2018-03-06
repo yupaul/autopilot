@@ -30,6 +30,7 @@ module.exports = {
       drop_console: true,
       minimize: true,
       output: {
+        ascii_only: true,
         comments: false
       }
     }),

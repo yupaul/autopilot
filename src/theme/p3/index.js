@@ -108,7 +108,7 @@ let theme = {
 			was_playing = scene.registry.has('player') && scene.registry.get('player').pathTween.isPlaying();
 			if(was_playing) scene.registry.get('player').pause();
 		}});
-		let level_msg = is_last_level ? '∞' : ('LEVEL'+(level + 1));
+		let level_msg = is_last_level ? '\u221E' : ('LEVEL'+(level + 1));
 		let _x0 = scene.cameras.main.scrollX + scene.c.config._rwhcfg.cfg_w * 0.5;
 		let _x = scene.cameras.main.scrollX + scene.c.config._rwhcfg.cfg_w * (is_last_level ? 0.3 : 0.1);
 		let _y0 = -20;

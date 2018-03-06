@@ -1,6 +1,6 @@
 
 export let _config_global = {
-		v: '0.255',
+		v: '0.256',
 		theme_name: 'p3',
 		/*levels : [
 			{},
@@ -22,6 +22,7 @@ export let _config_global = {
 //		speedUpCoeff: 0.07,
 //		speed: 120,
 		speedUp: 8, //7
+		speedFinalCoeff: 1.5,
 		cameraOffset: 0.3,
 		start_x: 10,
 		heightControlsRate: 0.2,

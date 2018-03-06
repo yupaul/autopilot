@@ -445,7 +445,7 @@ class AutopLIB {
 			cfg = this.sc.c.get_section_by_id(config_id);
 			let pobj_correct = [this.gen_path.setConfig(cfg).generate_path(prev_tail)];	
 			pobj_correct[0].config_id = config_id;
-			if(this.c.config.twoCorrectChance && AutopRand.chanceOneIn(this.c.config.twoCorrectChance)) {
+			if(this.c.config.twoCorrectChance && (this.c.config.twoCorrectChance < 2 || AutopRand.chanceOneIn(this.c.config.twoCorrectChance))) {
 				pobj_correct.push(this.gen_path.generate_path(prev_tail, false, pobj_correct[0].path_x_length));
 				pobj_correct[1].config_id = config_id;
 			}

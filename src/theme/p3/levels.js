@@ -1,32 +1,51 @@
+
 import AutopRand from '../../util/autoprand';
 import {AutopLevel} from '../../lib/level';
 
 class Level0 extends AutopLevel {
+
+	_speed_control(position) {
+		if(!this.step) return;
+		if(!this.cfg.hasOwnProperty('speedFinal')) {
+			this.cfg.speedFinal = this.config.speed_initial * this.config.speedFinalCoeff;
+			this.cfg.speedDiff = this.cfg.speedFinal - this.config.speed_initial;
+		}
+		if(this.cfg.speedDiff > 0) {
+			if(position === (this._num_sections - 1)) {
+				this.config.speed = this.config.speed_initial;
+			} else {
+				this.config.speed = this.config.speed_initial + this.cfg.speedDiff * Phaser.Math.Easing.Cubic.Out(Math.min((position + 1) * this.step, 1));
+			}			
+		}
+	}
+
 	_load_section(position) {	
-		if(position === (this._num_sections - 1)) {
+		this._speed_control(position);
+/*		if(position === (this._num_sections - 1)) {
 			this.config.speed = this.config.speed_initial;
 		} else if(position > 0 && this.config.speedUp) {
 			this.config.speed += this.config.speedUp;
-		}			
+		}			*/
 	}	
 }
 
-class Level1 extends AutopLevel {
+class Level1 extends Level0 {
 	_load_section(position) {	
+		this._speed_control(position);		
 		if(position < (this._num_sections - 1)) {
-			let v = Phaser.Math.Easing.Expo.Out(Math.min((position + 1) * this.cfg.step, 1));
+			let v = Phaser.Math.Easing.Expo.Out(Math.min((position + 1) * this.step, 1));
 			this.config.gen_obs.imp_probability = this.cfg.initial.imp_probability * (1 - v) + this.cfg.target.imp_probability * v;
 			this.config.gen_obs.notimp_probability = this.cfg.initial.notimp_probability * (1 - v) + this.cfg.target.notimp_probability * v;
 
-			if(position > 0 && this.config.speedUp) this.config.speed += this.config.speedUp;
+//			if(position > 0 && this.config.speedUp) this.config.speed += this.config.speedUp;
+			if(position === (this._num_sections - 3)) this.config.twoCorrectChance = 1;
 			//console.log(v, this.sc.cfg.gen_obs);//tmp to delete
-		} else {
+		} /*else {
 			this.config.speed = this.config.speed_initial;			
-		}
+		}*/
 	}	
 	
 	_init(scene) {
-		this.cfg.step = 1 / this._num_sections;
 		this.cfg.initial = {
 			imp_probability: this.config.gen_obs.imp_probability,
 			notimp_probability: this.config.gen_obs.notimp_probability,
@@ -39,7 +58,7 @@ class Level1 extends AutopLevel {
 		this.c.theme.reset_grid(this.config);
 		//this.config.gen_obs.img_scaling_step = 0.15;
 		//scene.c.theme.create(scene, 'obstacles');
-		this.config.rtreeCoeff = 0.5;
+		this.config.rtreeCoeff = 0.2;
 		this.config.speed = this.config.speed_initial;
 		this.config.gen_path.next_x_method = 'softmax';
 		//this.config.gen_path.scale_y = 4;
@@ -55,6 +74,11 @@ class Level1 extends AutopLevel {
 }
 
 class Level2 extends Level0 {
+
+	_load_section(position) {	
+		this._speed_control(position);		
+		if(position === (this._num_sections - 3)) this.config.twoCorrectChance = 3;
+	}
 	
 	_init(scene) {		
 		this.c.theme.reset_grid(this.config);
@@ -64,7 +88,7 @@ class Level2 extends Level0 {
 		this.config.gen_obs.gridCellScales = [[1, 0.1], [2, 0.3], [3, 0.3], [4, 0.3]];
 		this.config.gridCellScales = this.config.gen_obs.gridCellScales.map((x) => (x[0])).sort((a, b) => (a - b));	
 		this.config.gen_obs.obs_set_sfx = '2';
-		this.config.twoCorrectChance = 2;
+		this.config.twoCorrectChance = 1;
 		this.c.theme.create(scene, 'obstacles', this.config);
 	}
 		
@@ -72,17 +96,20 @@ class Level2 extends Level0 {
 
 let levels = [
 	(new Level0({
-		num_sections: [5, 10], //[10, 15],
+		num_sections: 10, //[10, 15],
 	})),
 	(new Level1({
-		num_sections: [5, 10],
+		num_sections: 10,
 		reload: true,
 	})),	
 	(new Level2({		
-		num_sections: [5, 10],
+		num_sections: 10,
 		reload: true
 	})),
 	(new AutopLevel({
+		config: {
+			twoCorrectChance: 3
+		},
 		reload: true
 	}))
 ];

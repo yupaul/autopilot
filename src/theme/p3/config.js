@@ -26,7 +26,8 @@ let _config = {
 	farMaskMoveDuration: 700,
 	farMaskOffset: 300,
 	playerMaskMoveSpeed: 2,
-	speedUp: 20,	
+	speedUp: 25,	
+	speedFinalCoeff: 1.5,
 	gen_obs: {		
 		//prev_collide_limit: 4
 		//to_occupy: 0.85, 
