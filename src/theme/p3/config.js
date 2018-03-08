@@ -1,5 +1,7 @@
 
 let _config = {	
+
+	bgcolor: {h: 1 / 3, s: 1, v: [0.498039, 0.188235]},//0x007f00, 0x003000
 	playerWidthHeight: [34, 34],
 	rtreeCoeff: 0.3,
 	heightControlsRate: 0.2,

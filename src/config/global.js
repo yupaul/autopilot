@@ -1,6 +1,6 @@
 
 export let _config_global = {
-		v: '0.256',
+		v: '0.257',
 		theme_name: 'p3',
 		/*levels : [
 			{},

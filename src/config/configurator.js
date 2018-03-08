@@ -151,6 +151,7 @@ class AutopConfigurator {
 			this.current_config_id = _cfg.id;
 		}
 		if(!no_next) setTimeout(() => {this.add_next_section();}, 1000);
+		//scene.lib.update_bgcolor();				
 		
 //		scene.registry.get('state')._position.p = this.levels.position;		
 //		if(this.levels.new_level) scene.registry.get('state')._position.l = this.levels.level;

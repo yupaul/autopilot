@@ -14,6 +14,9 @@ class AutopLIB {
 	}
 	
 	camera_follow(player) {
+		
+		if(player.bgtween && player.bgtween.isPlaying() && AutopRand.chanceOneIn(10)) this.update_bgcolor([this.c.config.bgcolor.h, this.c.config.bgcolor.s, player.bgtween.getValue()]);
+		
 		if(!this.rwh) {
 			if(player.x > this.c.config.cameraOffsetPx) {
 				let _p = Math.round(player.x) - this.c.config.cameraOffsetPx;
@@ -189,6 +192,7 @@ class AutopLIB {
 		_player.start(config);
 		_player.setRotateToPath(false, config.rotationOffset, config.verticalAdjust);	
 		this.sc.registry.get('state')._pause_scheduled = true;	
+		this.add_to_update_queue('player_bgtween', 2, [_player]);
 		return _player;	
 	}
 
@@ -204,10 +208,33 @@ class AutopLIB {
 		player.setPath(_path, config);
 		player.setRotateToPath(true, config.rotationOffset, config.verticalAdjust);	
 		//if(this.c.config.speedUp) this.c.config.speed += this.c.config.speedUp;	
-		this.sc.c.update_section(this.sc);
+		this.c.update_section(this.sc);
 		if(!this.sc.registry.get('state')._buttons_enabled && this.sc.registry.get('state')._correct_selected) this.controls_buttons_enable();
+		this.add_to_update_queue('player_bgtween', 2, [player]);
+		
 		this.add_to_update_queue('update_section_counter', 5);
+		this.add_to_update_queue('add_background', 100);
 	}
+	
+	player_bgtween(player) {
+		if(this.c.config.bgcolor_change && this.c.config.bgcolor_change.length === 2) player.bgtween = this.sc.tweens.addCounter({
+				from: this.c.config.bgcolor_change[0],
+				to: this.c.config.bgcolor_change[1],
+				duration: Math.round(player.pathTween.duration * 0.9)
+		  });
+	}
+	
+	add_background(check) {
+		if(check === undefined) check = true;
+		if(check && this.sc.registry.get('player').x < (this.sc.registry.get('state').bgt_next.x - this.c.config._rwhcfg.w * 2)) return;
+		this.sc.add.image(0, 0, 'bgt').setOrigin(0).setDepth(-1080).setDisplaySize(this.sc.registry.get('state').bgt_next.w, this.sc.registry.get('state').bgt_next.h).setPosition(this.sc.registry.get('state').bgt_next.x, 0);
+		this.sc.registry.get('state').bgt_next.x += this.sc.registry.get('state').bgt_next.w + 1;	
+	}
+	
+	update_bgcolor(hsv) {
+		if(hsv === undefined) hsv = [this.c.config.bgcolor.h, this.c.config.bgcolor.s, this.c.config.bgcolor.v[0]];
+		this.sc.cameras.main.setBackgroundColor(Phaser.Display.Color.HSVToRGB(...hsv).color);		
+	}	
 	
 	activate_path_buttons(num) {
 		let x;		

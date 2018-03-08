@@ -70,14 +70,30 @@ class AutopCreator {
 	}
 
 	background() {
-		//this.sc.sys.game.textures.create('bg_dark', this.sc.sys.game.textures.get('bg_dark_src').getSourceImage(), this.sc.sys.game.config.width, this.sc.sys.game.config.height).add('__BASE', 0, 0, 0, this.sc.sys.game.config.width, this.sc.sys.game.config.height);
-		//this.sc.sys.game.textures.get('bg_dark').add('bg_dark_resized', 0, 0, 0, this.sc.sys.game.config.width, this.sc.sys.game.config.height);
-		let bg = this.sc.add.tileSprite(0, 0, Phaser.Math.Pow2.GetNext(this.sc.sys.game.config.width), Phaser.Math.Pow2.GetNext(this.sc.sys.game.config.height), 'bg_dark').setOrigin(0).setDepth(-1080);
-		//let bg = this.sc.add.image(0, 0, 'bg_dark').setOrigin(0).setDisplaySize(this.sc.sys.game.config.width, this.sc.sys.game.config.height);
-//		bg.setScrollFactor(0);
-//		if(this.sc.cameras.cameras.length > 1) this.sc.cameras.cameras[1].ignore(bg);
-		this.sc.registry.set('bg', bg);
-		//this.sc.add.image(0, 0, 'bg_dark').setOrigin(0).setSize(this.sc.sys.game.config.width, this.sc.sys.game.config.height).setPosition(this.sc.sys.game.config.width, 0);		
+		let _h = this.c.config._rwhcfg.h;
+		let bg_top = this.sc.add.image(0, 0, 'bg_top').setDepth(-1001).setScrollFactor(0).setPosition(0, 0).setOrigin(0); 
+		let bg_bottom = this.sc.add.image(0, 0, 'bg_bottom').setDepth(-1001).setScrollFactor(0).setOrigin(0).setPosition(0, this.sc.sys.game.config[_h] - 250);		
+		
+		//let bgt = this.sc.add.tileSprite(0, 0, this.sc.sys.game.config.width, this.sc.sys.game.config.height, 'bgt').setOrigin(0).setDepth(-1080);
+		let bgt = this.sc.add.image(0, 0, 'bgt').setOrigin(0).setDepth(-1080);		
+		bgt.setDisplaySize(Math.round(bgt.frame.realWidth * (this.sc.sys.game.config[_h] / bgt.frame.realHeight)), this.sc.sys.game.config[_h]);
+		this.sc.registry.get('state').bgt_next = {
+			x: bgt.displayWidth + 1,
+			w: bgt.displayWidth,
+			h: bgt.displayHeight
+		};
+		for(let _i = 0; _i < 10; _i++) {
+			this.sc.lib.add_background(false);
+		}
+		
+		//Phaser.Math.Pow2.GetNext
+		/*this.sc.sys.game.textures.create('bg_dark', this.sc.sys.game.textures.get('bg_dark_src').getSourceImage(), this.sc.sys.game.config.width, this.sc.sys.game.config.height).add('__BASE', 0, 0, 0, this.sc.sys.game.config.width, this.sc.sys.game.config.height);
+		this.sc.sys.game.textures.get('bg_dark').add('bg_dark_resized', 0, 0, 0, this.sc.sys.game.config.width, this.sc.sys.game.config.height);
+		let bg = this.sc.add.image(0, 0, 'bg_dark').setOrigin(0).setDisplaySize(this.sc.sys.game.config.width, this.sc.sys.game.config.height);
+		bg.setScrollFactor(0);
+		if(this.sc.cameras.cameras.length > 1) this.sc.cameras.cameras[1].ignore(bg);
+
+		this.sc.add.image(0, 0, 'bg_dark').setOrigin(0).setSize(this.sc.sys.game.config.width, this.sc.sys.game.config.height).setPosition(this.sc.sys.game.config.width, 0);*/
 	}
 
 	bg_particles() {

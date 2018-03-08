@@ -38,8 +38,22 @@ let theme = {
 	
 	preload: function(scene) {
 		this.reset_grid(scene.c.config);
+		let _h = scene.c.config._rwhcfg.h;
+		let h = scene.sys.game.config[_h];
+		let _ar = [128, 256, 512, 1024];
+		let r;
+		for(let _i = 0; _i < _ar.length; _i++) {
+			r = _ar[_i];
+			if(r >= h) break;
+		}
+		//console.log(r);
+		//r = 1024;
+		scene.load.image('bgt', './assets/'+this.theme_name+'/images/bgt'+r+'.png');
+		
 		scene.load.image('pause', './assets/'+this.theme_name+'/images/pause.png');
-		scene.load.image('bg_dark', './assets/'+this.theme_name+'/images/bg_dark2.png');
+		//scene.load.image('bg_dark', './assets/'+this.theme_name+'/images/bg_dark2.png');
+		scene.load.image('bg_top', './assets/'+this.theme_name+'/images/bg_top.png');
+		scene.load.image('bg_bottom', './assets/'+this.theme_name+'/images/bg_bottom.png');		
 		scene.load.image('player', './assets/'+this.theme_name+'/images/player2.png');
 		scene.load.image('player_body_particle', './assets/'+this.theme_name+'/images/pbp1.png');
 		scene.load.image('bg_particle0', './assets/'+this.theme_name+'/images/bgp1.png');
@@ -60,6 +74,7 @@ let theme = {
 	},
 	
 	create: function(scene, method, config) {
+		scene.lib.update_bgcolor();		
 		let cr = new AutopCreator(scene);
 		if(method !== undefined && !!cr[method] === true && typeof cr[method] === 'function') {
 			(config ? cr[method](config) : cr[method]);
