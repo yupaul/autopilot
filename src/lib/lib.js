@@ -15,7 +15,8 @@ class AutopLIB {
 	
 	camera_follow(player) {
 		
-		if(player.bgtween && player.bgtween.isPlaying() && AutopRand.chanceOneIn(10)) this.update_bgcolor([this.c.config.bgcolor.h, this.c.config.bgcolor.s, player.bgtween.getValue()]);
+		//if(player.bgtween && player.bgtween.isPlaying() && AutopRand.chanceOneIn(10)) this.update_bgcolor([this.c.config.bgcolor.h, this.c.config.bgcolor.s, player.bgtween.getValue()]);
+		if(player.bgtween && player.bgtween.isPlaying() && AutopRand.chanceOneIn(3)) this.update_bgcolor(player.bgtween.getValue());
 		
 		if(!this.rwh) {
 			if(player.x > this.c.config.cameraOffsetPx) {
@@ -232,7 +233,13 @@ class AutopLIB {
 	}
 	
 	update_bgcolor(hsv) {
-		if(hsv === undefined) hsv = [this.c.config.bgcolor.h, this.c.config.bgcolor.s, this.c.config.bgcolor.v[0]];
+		if(hsv === undefined) {
+			hsv = [this.c.config.bgcolor.h, this.c.config.bgcolor.s, (Array.isArray(this.c.config.bgcolor.v) ? this.c.config.bgcolor.v[0] : this.c.config.bgcolor.v)];
+		} else if(!Array.isArray(hsv)) {
+			hsv = 1 / hsv;
+			this.c.config.bgcolor = {h: hsv, s: 1, v: hsv};			
+			hsv = [hsv, 1, hsv];
+		}
 		this.sc.cameras.main.setBackgroundColor(Phaser.Display.Color.HSVToRGB(...hsv).color);		
 	}	
 	

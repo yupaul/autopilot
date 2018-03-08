@@ -1,7 +1,9 @@
 
 let _config = {	
 
-	bgcolor: {h: 1 / 3, s: 1, v: [0.498039, 0.188235]},//0x007f00, 0x003000
+	//bgcolor: {h: 1 / 3, s: 1, v: [0.498039, 0.188235]},//0x007f00, 0x003000
+	bgcolor: {h: 1 / 1.8, s: 1, v: 1 / 1.8},//0x007f00, 0x003000
+	bgcolor_div: [1.8, 5],
 	playerWidthHeight: [34, 34],
 	rtreeCoeff: 0.3,
 	heightControlsRate: 0.2,
@@ -29,7 +31,7 @@ let _config = {
 	farMaskOffset: 300,
 	playerMaskMoveSpeed: 2,
 	speedUp: 25,	
-	speedFinalCoeff: 1.5,
+	speedFinalCoeff: 1.7,
 	gen_obs: {		
 		//prev_collide_limit: 4
 		//to_occupy: 0.85, 

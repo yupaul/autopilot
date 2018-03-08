@@ -1,12 +1,8 @@
 
 export let _config_global = {
-		v: '0.257',
+		v: '0.258',
 		theme_name: 'p3',
-		/*levels : [
-			{},
-			{},
-			{}
-		],*/
+
 		dbg: false, //tmp
 		twoCorrectChance: 3, //tmp
 		fourPathsChance: 3, //tmp

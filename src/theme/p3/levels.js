@@ -3,9 +3,29 @@ import AutopRand from '../../util/autoprand';
 import {AutopLevel} from '../../lib/level';
 
 class Level0 extends AutopLevel {
+
+	__prepare_bgcolor_div() {
+		if(this.cfg.config.bgcolor_div.length !== 2) return;
+		this.cfg.bgcolor_div = this.cfg.config.bgcolor_div;
+		this.cfg.bgcolor_changes = [];
+		let _changes = [];
+		let _diff = this.cfg.bgcolor_div[1] - this.cfg.bgcolor_div[0];
+		for(let i = 1; i < this._num_sections; i++) {
+			let l = this.cfg.bgcolor_changes.length;
+			let _ar = [(l > 0 ? this.cfg.bgcolor_changes[l - 1][1] : this.cfg.bgcolor_div[0])];			
+			_ar.push(this.cfg.bgcolor_div[0] + _diff * Phaser.Math.Easing.Cubic.InOut(this.step * i));
+			//_ar.push(this.cfg.bgcolor_div[0] + _diff * Phaser.Math.Easing.Quadratic.Out(this.step * i));
+			//_ar.push(this.cfg.bgcolor_div[0] + _diff * this.step * i);
+			this.cfg.bgcolor_changes.push(_ar);
+		}
+		this.cfg.bgcolor_changes.push([this.cfg.bgcolor_changes[this.cfg.bgcolor_changes.length - 1][1], this.cfg.bgcolor_div[1]]);			
+//console.log(this.cfg.bgcolor_changes);//tmp		
+	}
 	
 	_prepare_bgcolor() {
-		if(!this.step || !this.cfg.config.hasOwnProperty('bgcolor') || this.cfg.config.bgcolor.v.length !== 2) return;
+		if(!this.step) return;
+		if(this.cfg.config.hasOwnProperty('bgcolor_div')) return this.__prepare_bgcolor_div();
+		if(!this.cfg.config.hasOwnProperty('bgcolor') || this.cfg.config.bgcolor.v.length !== 2) return;
 		this.cfg.bgcolor = this.cfg.config.bgcolor;
 		this.cfg.bgcolor_changes = [];
 		let _changes = [];
@@ -126,27 +146,34 @@ class Level2 extends Level0 {
 let levels = [
 	(new Level0({
 		config: {
-			bgcolor: {h: 1 / 3, s: 1, v: [0.498039, 0.188235]} //[0x007f00, 0x003000],
+			//bgcolor: {h: 1 / 3, s: 1, v: [0.498039, 0.188235]} //[0x007f00, 0x003000],
+			bgcolor: {h: 1 / 1.8, s: 1, v: 1 / 1.8},
+			bgcolor_div: [1.8, 5.5]
 		},		
 		num_sections: 10, //[10, 15],
 	})),
 	(new Level1({
 		config: {
-			bgcolor: {h: 1 / 3, s: 1, v: [0.188235, 0.498039]} //[0x003000, 0x007f00],
+			//bgcolor: {h: 1 / 3, s: 1, v: [0.188235, 0.498039]} //[0x003000, 0x007f00],
+			bgcolor: {h: 1 / 5.5, s: 1, v: 1 / 5.5},
+			bgcolor_div: [5.5, 1.8]
 		},
 		num_sections: 10,
 		reload: true,
 	})),	
 	(new Level2({
 		config: {
-			bgcolor: {h: 1 / 3, s: 1, v: [0.498039, 0.188235]} //[0x007f00, 0x003000],
+			//bgcolor: {h: 1 / 3, s: 1, v: [0.498039, 0.188235]} //[0x007f00, 0x003000],
+			bgcolor: {h: 1 / 1.8, s: 1, v: 1 / 1.8},
+			bgcolor_div: [1.8, 5.5]
 		},		
 		num_sections: 10,
 		reload: true
 	})),
 	(new AutopLevel({
 		config: {
-			bgcolor: {h: 1 / 3, s: 1, v: [0.188235]}, //[0x003000],			
+			//bgcolor: {h: 1 / 3, s: 1, v: [0.188235]}, //[0x003000],			
+			bgcolor: {h: 1 / 5.5, s: 1, v: 1 / 5.5}, //[0x003000],			
 			twoCorrectChance: 3
 		},
 		reload: true

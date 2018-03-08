@@ -38,7 +38,7 @@ create() {
 	
 	let _play_button_coords_dbg = [w * 0.75, 60, (w * 0.75) + 30, 75, w * 0.75, 90];
 	let play_triangle_dbg = new Phaser.Geom.Triangle(..._play_button_coords_dbg);
-	_play_button.fillStyle(0xab32ba).fillTriangle(..._play_button_coords_dbg);
+	if(document && /dbg$/.test(document.location.href)) _play_button.fillStyle(0xab32ba).fillTriangle(..._play_button_coords_dbg);
 
 	let game_over_text = this.add.text(Math.round((0.5 + _hsize) * w * 0.5), Math.round((0.5 - _hsize) * h * 0.5), this.c.config_menu.gameOverText, this.c.config_menu.gameOverStyle);
 	if(!this.registry.get('_do_gameover')) {
