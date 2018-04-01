@@ -1,6 +1,6 @@
 
 export let _config_global = {
-		v: '0.258',
+		v: '0.259',
 		theme_name: 'p3',
 
 		dbg: false, //tmp

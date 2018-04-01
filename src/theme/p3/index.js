@@ -121,7 +121,7 @@ let theme = {
 		let was_playing;
 		scene.time.addEvent({delay: 100, callback: () => {
 			was_playing = scene.registry.has('player') && scene.registry.get('player').pathTween.isPlaying();
-			if(was_playing) scene.registry.get('player').pause();
+			if(was_playing) scene.registry.get('player').pauseFollow();
 		}});
 		let level_msg = is_last_level ? '\u221E' : ('LEVEL'+(level + 1));
 		let _x0 = scene.cameras.main.scrollX + scene.c.config._rwhcfg.cfg_w * 0.5;
@@ -154,7 +154,7 @@ let theme = {
 					level_text.destroy();
 				}
 			});			
-			if(was_playing && !scene.registry.get('player').pathTween.isPlaying()) scene.registry.get('player').resume();
+			if(was_playing && !scene.registry.get('player').pathTween.isPlaying()) scene.registry.get('player').resumeFollow();
 		}});
 		}});
 	},

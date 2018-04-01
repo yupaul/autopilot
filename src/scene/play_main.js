@@ -105,7 +105,7 @@ update() {
 	let player = this.registry.get('player');
 //	console.log(player.pathTween.getValue(), Math.round(player.x * 100) / 100, Math.round(player.y * 100) / 100);//tmp debug to fix start / end 2 frame delay
 	if(this.registry.get('state')._pause_scheduled !== undefined && this.registry.get('state')._pause_scheduled && player.isFollowing()) {
-		player.pause();
+		player.pauseFollow();
 		this.registry.get('state')._pause_scheduled = false;
 		return;
 	}

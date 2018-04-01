@@ -190,7 +190,7 @@ class AutopLIB {
 		config.onComplete = () => {this.path_continue(config, _player);};
 		config.onCompleteScope = this.sc;	
 	
-		_player.start(config);
+		_player.startFollow(config);
 		_player.setRotateToPath(false, config.rotationOffset, config.verticalAdjust);	
 		this.sc.registry.get('state')._pause_scheduled = true;	
 		this.add_to_update_queue('player_bgtween', 2, [_player]);
@@ -425,7 +425,7 @@ class AutopLIB {
 		let buttons = this.sc.registry.get('buttons');		
 		if(i >= buttons.length || !buttons[i].button.visible) return;
 		let player = this.sc.registry.get('player');
-		if(!player.isFollowing()) player.resume();
+		if(!player.isFollowing()) player.resumeFollow();
 		if(this.sc.registry.get('state')._just_started) {
 			this.click_just_started();
 		} else {
@@ -614,9 +614,9 @@ class AutopLIB {
 		} else {		
 			var p = this.sc.registry.get('player');
 			if(p.pathTween.isPlaying()) {
-				p.pause();
+				p.pauseFollow();
 			} else {
-				p.resume();
+				p.resumeFollow();
 			}
 		}
 		return true;
@@ -626,7 +626,7 @@ class AutopLIB {
 		if(!this.c.config.gameOver) return;		
 		let _xy = [this.sc.registry.get('player').x, this.sc.registry.get('player').y];
 		this.sc.registry.get('player').setAlpha(0);
-		if(this.sc.registry.get('player').pathTween.isPlaying()) this.sc.registry.get('player').stop();				
+		if(this.sc.registry.get('player').pathTween.isPlaying()) this.sc.registry.get('player').stopFollow();				
 		this.sc.registry.get('player_body_group').manager.setDepth(100);
 		this.sc.registry.get('player_body_group').setPosition(..._xy);		
 		//this.sc.registry.get('player_body_group').manager.setDepth(100);
