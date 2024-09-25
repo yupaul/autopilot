@@ -23,7 +23,10 @@ class AutopConfigurator {
 		this.config_menu;		
 		this.levels;
 		this.set_global(config_global);
-		this.set_game(config_game, scenes);				
+		this.set_game(config_game, scenes);
+
+		this._config_global.revertWidthHeight = this._config_game.height > this._config_game.width;
+
 		this.theme = require('../theme/'+this._config_global.theme_name);		
 		this.has_theme_update = this.theme.update && typeof this.theme.update === 'function';
 		this.has_theme_player_update = this.theme.player_update && typeof this.theme.player_update === 'function';
@@ -49,7 +52,8 @@ class AutopConfigurator {
 //		this.registry.get('state')._current_camera_offset = 0;
 //		this.registry.get('state')._current_camera_inc_speed = 0;		
 		
-		cstm.heightControls = Math.round(this._config_game.height * cstm.heightControlsRate);
+//		cstm.heightControls = Math.round(this._config_game.height * cstm.heightControlsRate);
+		cstm.heightControls = Math.round(this._config_game[_h] * cstm.heightControlsRate);
 		cstm.heightField = this._config_game.height - cstm.heightControls;		
 		
 		if(rwh) {
@@ -62,7 +66,9 @@ class AutopConfigurator {
 		cstm._rwhcfg.cfg_w = cfg_w;
 		cstm._rwhcfg.cfg_h = cfg_h;
 		
-		cstm.cameraOffsetPx = Math.round(cfg_w * (rwh ? (1 - cstm.cameraOffset) : cstm.cameraOffset));
+//		cstm.cameraOffsetPx = Math.round(cfg_w * (rwh ? (1 - cstm.cameraOffset) : cstm.cameraOffset));
+		cstm.cameraOffsetPx = Math.round(cfg_w * cstm.cameraOffset);
+
 		cstm.speedMult = cstm.useFrames ? 100 : 1500;		
 		//if(this.config.f.init && typeof this.config.f.init === 'function') this.config.f.init(this.cfg);//tmp
 		if(this.theme.boot && typeof this.theme.boot === 'function') this.theme.boot(cstm);

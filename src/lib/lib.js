@@ -9,7 +9,8 @@ class AutopLIB {
 //		this.cfg = this.sc.c.config;
 		this.c = this.sc.c;
 		this.rwh = this.c.config.revertWidthHeight;
-		this.gen_path = this.rwh ? (new AutopGenPathH(this.c.config)) : (new AutopGenPathW(this.c.config));
+//		this.gen_path = this.rwh ? (new AutopGenPathH(this.c.config)) : (new AutopGenPathW(this.c.config));
+		this.gen_path = new AutopGenPathW(this.c.config);
 		this.gen_obs = new AutopGenObs(this.c.config, this.sc);
 	}
 	
@@ -18,7 +19,7 @@ class AutopLIB {
 		//if(player.bgtween && player.bgtween.isPlaying() && AutopRand.chanceOneIn(10)) this.update_bgcolor([this.c.config.bgcolor.h, this.c.config.bgcolor.s, player.bgtween.getValue()]);
 		if(player.bgtween && player.bgtween.isPlaying() && AutopRand.chanceOneIn(3)) this.update_bgcolor(player.bgtween.getValue());
 		
-		if(!this.rwh) {
+		if(!this.rwh || true) {
 			if(player.x > this.c.config.cameraOffsetPx) {
 				let _p = Math.round(player.x) - this.c.config.cameraOffsetPx;
 				if(_p > this.sc.cameras.main.scrollX) {
@@ -228,8 +229,9 @@ class AutopLIB {
 	add_background(check) {
 		if(check === undefined) check = true;
 		if(check && this.sc.registry.get('player').x < (this.sc.registry.get('state').bgt_next.x - this.c.config._rwhcfg.w * 2)) return;
-		this.sc.add.image(0, 0, 'bgt').setOrigin(0).setDepth(-1080).setDisplaySize(this.sc.registry.get('state').bgt_next.w, this.sc.registry.get('state').bgt_next.h).setPosition(this.sc.registry.get('state').bgt_next.x, 0);
+		let bg = this.sc.add.image(0, 0, 'bgt').setOrigin(0).setDepth(-1080).setDisplaySize(this.sc.registry.get('state').bgt_next.w, this.sc.registry.get('state').bgt_next.h).setPosition(this.sc.registry.get('state').bgt_next.x, 0);
 		this.sc.registry.get('state').bgt_next.x += this.sc.registry.get('state').bgt_next.w + 1;	
+		if(this.sc.cameras.cameras.length > 1) this.sc.cameras.cameras[1].ignore(bg);
 	}
 	
 	update_bgcolor(hsv) {
@@ -316,7 +318,7 @@ class AutopLIB {
 			this.sc.registry.remove('far_mask');
 		}
 		this.sc.registry.set('far_mask', this.sc.add.image(0, 0, 'far_mask').setOrigin(0).setPosition(x - this.c.config.farMaskOffset, 0).setDepth(500));	
-//		this.sc.cameras.cameras[1].ignore(this.sc.registry.get('far_mask'));
+		this.sc.cameras.cameras[1].ignore(this.sc.registry.get('far_mask'));
 	}
 	
 	move_far_mask() {
@@ -544,9 +546,9 @@ class AutopLIB {
 		minipath.lineStyle(...this.c.config.controls.button_path_style);	
 		let cfg = this.sc.c.get_section_by_id(this.sc.c.current_config_id + 1);
 		btn.path = this.gen_path.setConfig(cfg).minipath(minipath, points, btn, texture_name, (this.c.config.controls.button_path_styles_add ? this.c.config.controls.button_path_styles_add : false), this.sc);
-		btn.path.setDepth(-100).setScrollFactor(0);
+//		btn.path.setDepth(-100).setScrollFactor(0);
 		if(this.c.config.controls.button_path_path_tint) btn.path.setTint(this.c.config.controls.button_path_path_tint);
-		//this.sc.cameras.main.ignore(btn.path);
+		this.sc.cameras.main.ignore(btn.path);
 		btn.path_index = path_index;
 		btn.is_correct = is_correct;
 		if(this.sc.registry.get('state').dbg) btn.button.setAlpha(is_correct ? 1 : 0.25);//tmp
@@ -632,8 +634,8 @@ class AutopLIB {
 		//this.sc.registry.get('player_body_group').manager.setDepth(100);
 		//this.sc.registry.get('player_body_group').setAlpha(0.9).explode(200, ..._xy);
 		this.sc.sys.game.registry.set('_do_gameover', true);		
-		//this.sc.cameras.cameras.forEach((c) => {c.fade(this.c.config.gameOverFade);});
-		this.sc.cameras.main.fade(this.c.config.gameOverFade);
+		this.sc.cameras.cameras.forEach((c) => {c.fade(this.c.config.gameOverFade);});
+		//this.sc.cameras.main.fade(this.c.config.gameOverFade);
 		var _this = this;
 		this.sc.time.addEvent({delay: Math.round(this.c.config.gameOverFade * 0.9), callback: function() {	                         				
 			_this.sc.scene.stop('PlayMain');			

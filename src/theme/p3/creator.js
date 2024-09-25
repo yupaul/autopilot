@@ -73,10 +73,12 @@ class AutopCreator {
 		let _h = this.c.config._rwhcfg.h;
 		let bg_top = this.sc.add.image(0, 0, 'bg_top').setDepth(-1001).setScrollFactor(0).setPosition(0, 0).setOrigin(0); 
 		let bg_bottom = this.sc.add.image(0, 0, 'bg_bottom').setDepth(-1001).setScrollFactor(0).setOrigin(0).setPosition(0, this.sc.sys.game.config[_h] - 250);		
-		
 		//let bgt = this.sc.add.tileSprite(0, 0, this.sc.sys.game.config.width, this.sc.sys.game.config.height, 'bgt').setOrigin(0).setDepth(-1080);
 		let bgt = this.sc.add.image(0, 0, 'bgt').setOrigin(0).setDepth(-1080);		
 		bgt.setDisplaySize(Math.round(bgt.frame.realWidth * (this.sc.sys.game.config[_h] / bgt.frame.realHeight)), this.sc.sys.game.config[_h]);
+		if(this.sc.cameras.cameras.length > 1) this.sc.cameras.cameras[1].ignore(bg_bottom);		
+		if(this.sc.cameras.cameras.length > 1) this.sc.cameras.cameras[1].ignore(bg_top);		
+		if(this.sc.cameras.cameras.length > 1) this.sc.cameras.cameras[1].ignore(bgt);
 		this.sc.registry.get('state').bgt_next = {
 			x: bgt.displayWidth + 1,
 			w: bgt.displayWidth,
@@ -148,8 +150,8 @@ class AutopCreator {
 	controls() {
 		this.sc.registry.set('button_pause', {button: this.sc.add.image(Math.round(this.sc.sys.game.config.width * this.c.config.controls.pause_button_x_position), Math.round(this.sc.sys.game.config.height - this.c.config.heightControls * 0.5), 'pause').setInteractive().setName('button_pause')});		
 		this.sc.lib._set_button_bounds('button_pause');
-		this.sc.registry.get('button_pause').button.setScrollFactor(0);
-//		this.sc.cameras.main.ignore(this.sc.registry.get('button_pause').button);
+//		this.sc.registry.get('button_pause').button.setScrollFactor(0);
+		this.sc.cameras.main.ignore(this.sc.registry.get('button_pause').button);
 		/*var gr_separator_line = this.sc.add.graphics();		
 		gr_separator_line.lineStyle(...this.c.config.controls.separator_line_style);	
 		let _l = new Phaser.Curves.Line([0, this.c.config.heightField + 1, this.sc.sys.game.config.width + 1, this.c.config.heightField + 1]);
@@ -169,11 +171,13 @@ class AutopCreator {
 		//grs_rect.strokeRect(0, 0, button_width, button_height).generateTexture('button_bounds', button_width, button_height); 
 		//b.button.texture.frames[b.button.texture.firstFrame].customData
 		for(let i = 0; i < this.c.config.maxNumPaths; i++) {
-			let _btn = this.sc.add.image(0, 0, 'path_buttons', 'button_on').setInteractive().setVisible(false).setName('button_path_'+i).setScrollFactor(0).setDisplaySize(button_width, button_height).setDepth(-10);
+			let _btn = this.sc.add.image(0, 0, 'path_buttons', 'button_on').setInteractive().setVisible(false).setName('button_path_'+i)/*setScrollFactor(0).*/.setDisplaySize(button_width, button_height).setDepth(-10);
+			if(this.sc.cameras.cameras.length > 1) this.sc.cameras.main.ignore(_btn);
 			if(this.c.config.controls.button_path_tint) _btn.setTint(this.c.config.controls.button_path_tint);			
 			this.sc.registry.get('buttons').push({button: _btn});
 			let _cdata = this.sc.textures.get('path_buttons').frames['button_sh'].customData;
-			let _sh = this.sc.add.image(0, 0, 'path_buttons', 'button_sh').setVisible(false).setName('button_sh_'+i).setScrollFactor(0).setDisplaySize(button_width * (1 / _cdata.w_factor), button_height * (1 / _cdata.h_factor)).setDepth(-11);
+			let _sh = this.sc.add.image(0, 0, 'path_buttons', 'button_sh').setVisible(false).setName('button_sh_'+i)/*setScrollFactor(0).*/.setDisplaySize(button_width * (1 / _cdata.w_factor), button_height * (1 / _cdata.h_factor)).setDepth(-11);
+			if(this.sc.cameras.cameras.length > 1) this.sc.cameras.main.ignore(_sh);
 			this.sc.registry.get('buttons')[this.sc.registry.get('buttons').length - 1].shadow = _sh;
 			this.sc.registry.get('buttons')[this.sc.registry.get('buttons').length - 1].shadow_data = _cdata;			
 			//this.sc.registry.get('buttons').push({button: this.sc.add.image(0, 0, 'button_bounds').setInteractive().setVisible(false).setName('button_path_'+i)});			
@@ -299,8 +303,8 @@ class AutopCreator {
 
 	section_counter() {
 		let counter = this.sc.add.text(50, this.c.config.heightField + this.c.config.heightControls * 0.5 - 20, '0', this.c.config.sectionCounterStyle);
-		counter.setScrollFactor(0);
-//		this.sc.cameras.main.ignore(counter);
+//		counter.setScrollFactor(0);
+		this.sc.cameras.main.ignore(counter);
 		this.sc.registry.set(this.c.config.sectionCounterName, counter);
 	}
 	

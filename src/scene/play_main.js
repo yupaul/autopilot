@@ -21,9 +21,9 @@ class PlayMain extends PlayBase {
 
 create () {		
 	console.log('PlayMain create()');//tmp
-	var rwh = this.c.config.revertWidthHeight;
-	var _w = rwh ? 'height' : 'width';
-	var _h = rwh ? 'width' : 'height';
+//	var rwh = this.c.config.revertWidthHeight;
+//	var _w = rwh ? 'height' : 'width';
+//	var _h = rwh ? 'width' : 'height';
 	
 	this.registry.set('buttons', []);
 	this.registry.set('paths', []);
@@ -38,7 +38,7 @@ create () {
 //	this.lib.config_preprocess(rwh, _w, _h);//tmp to delete
 
 	//this.cameras.main.setSize(this.cameras.main.width, this.c.config.heightField);	
-//	if(this.cameras.cameras.length < 2) this.cameras.add(0, this.c.config.heightField, this.cameras.main.width, this.c.config.heightControls).setBounds(0, this.c.config.heightField, this.cameras.main.width, this.c.config.heightControls);
+	if(this.cameras.cameras.length < 2) this.cameras.add(0, this.c.config.heightField, this.cameras.main.width, this.c.config.heightControls).setBounds(0, this.c.config.heightField, this.cameras.main.width, this.c.config.heightControls);
 	for (let _i in this.cameras.cameras) {
 		this.cameras.cameras[_i].setScroll(0, 0);
 		for (let _k in this.cameras.cameras[_i]) {
@@ -46,6 +46,10 @@ create () {
 		}
 	}
 	
+	this.sys.events.on('resize', (w, h) => {
+	 	this.cameras.main.setAngle(h > w ? -90 : 0);
+	});
+	this.cameras.main.setAngle(this.sys.game.config.height > this.sys.game.config.width ? -90 : 0);
 	//this.lib.create();	
 	this.c.create(this);	
 	
